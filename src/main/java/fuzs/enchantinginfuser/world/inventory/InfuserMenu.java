@@ -1,28 +1,45 @@
 package fuzs.enchantinginfuser.world.inventory;
 
+import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
+import fuzs.enchantinginfuser.EnchantingInfuser;
+import fuzs.enchantinginfuser.network.message.S2CCompatibleEnchantsMessage;
 import fuzs.enchantinginfuser.registry.ModRegistry;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.BookItem;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.*;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class InfuserMenu extends AbstractContainerMenu {
     private static final ResourceLocation[] TEXTURE_EMPTY_SLOTS = new ResourceLocation[]{InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS, InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS, InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE, InventoryMenu.EMPTY_ARMOR_SLOT_HELMET};
     private static final EquipmentSlot[] SLOT_IDS = new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
-    private final Container blockEntity;
+    private final Container enchantSlots;
     private final ContainerLevelAccess levelAccess;
+    private final Player player;
+    private final DataSlot enchantingPower = DataSlot.standalone();
+    private Map<Enchantment, Integer> enchantmentsToLevel;
 
     public InfuserMenu(int id, Inventory playerInventory) {
         this(id, playerInventory, new SimpleContainer(1), ContainerLevelAccess.NULL);
@@ -30,8 +47,9 @@ public class InfuserMenu extends AbstractContainerMenu {
 
     public InfuserMenu(int id, Inventory inventory, Container container, ContainerLevelAccess levelAccess) {
         super(ModRegistry.INFUSING_MENU_TYPE.get(), id);
-        this.blockEntity = container;
+        this.enchantSlots = container;
         this.levelAccess = levelAccess;
+        this.player = inventory.player;
         this.addSlot(new Slot(container, 0, 8, 34) {
             @Override
             public boolean mayPlace(ItemStack stack) {
@@ -83,11 +101,179 @@ public class InfuserMenu extends AbstractContainerMenu {
                 return Pair.of(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
             }
         });
+        this.addDataSlot(this.enchantingPower);
     }
 
     @Override
     public boolean stillValid(Player pPlayer) {
-        return this.blockEntity.stillValid(pPlayer);
+        return this.enchantSlots.stillValid(pPlayer);
+    }
+
+    @Override
+    public void slotsChanged(Container pInventory) {
+        if (pInventory == this.enchantSlots) {
+            ItemStack itemstack = pInventory.getItem(0);
+            if (!itemstack.isEmpty() && itemstack.isEnchantable()) {
+                this.levelAccess.execute((Level level, BlockPos pos) -> {
+                    int power = this.getEnchantingPower(level, pos);
+                    this.enchantingPower.set(power);
+                    final List<Enchantment> availableEnchantments = getAvailableEnchantments(itemstack, power >= 25, power >= 30);
+                    this.setEnchantments(availableEnchantments);
+                    // could be needed to sync enchantingPower, but:
+                    // don't think this is needed here, server player call this every tick anyways
+//                    this.broadcastChanges();
+                });
+            } else {
+                this.enchantmentsToLevel.clear();
+            }
+        }
+    }
+
+    private int getEnchantingPower(Level world, BlockPos pos) {
+        int power = 0;
+        for (int k = -1; k <= 1; ++k) {
+            for (int l = -1; l <= 1; ++l) {
+                if ((k != 0 || l != 0) && isBlockEmpty(world, pos.offset(l, 0, k)) && isBlockEmpty(world, pos.offset(l, 1, k))) {
+                    power += this.getPower(world, pos.offset(l * 2, 0, k * 2));
+                    power += this.getPower(world, pos.offset(l * 2, 1, k * 2));
+                    if (l != 0 && k != 0) {
+                        power += this.getPower(world, pos.offset(l * 2, 0, k));
+                        power += this.getPower(world, pos.offset(l * 2, 1, k));
+                        power += this.getPower(world, pos.offset(l, 0, k * 2));
+                        power += this.getPower(world, pos.offset(l, 1, k * 2));
+                    }
+                }
+            }
+        }
+        return power;
+    }
+
+    private float getPower(Level world, BlockPos pos) {
+        return world.getBlockState(pos).getEnchantPowerBonus(world, pos);
+    }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (id != 0) return false;
+        ItemStack itemstack = this.enchantSlots.getItem(0);
+        final int cost = this.enchantmentsToLevel.entrySet().stream()
+                .mapToInt(entry -> this.getCostByRarity(entry.getKey(), entry.getValue()))
+                .sum();
+        if (itemstack.isEmpty() || cost <= 0 || player.experienceLevel < cost && !player.getAbilities().instabuild) {
+            return false;
+        } else {
+            this.levelAccess.execute((level, pos) -> {
+                ItemStack itemstack2 = itemstack;
+                if (!this.enchantmentsToLevel.isEmpty()) {
+                    player.onEnchantmentPerformed(itemstack, cost);
+                    boolean isBook = itemstack.is(Items.BOOK);
+                    if (isBook) {
+                        itemstack2 = new ItemStack(Items.ENCHANTED_BOOK);
+                        CompoundTag compoundtag = itemstack.getTag();
+                        if (compoundtag != null) {
+                            itemstack2.setTag(compoundtag.copy());
+                        }
+                        this.enchantSlots.setItem(0, itemstack2);
+                    }
+                    for (Map.Entry<Enchantment, Integer> entry : this.enchantmentsToLevel.entrySet()) {
+                        if (entry.getValue() > 0) {
+                            if (isBook) {
+                                EnchantedBookItem.addEnchantment(itemstack2, new EnchantmentInstance(entry.getKey(), entry.getValue()));
+                            } else {
+                                itemstack2.enchant(entry.getKey(), entry.getValue());
+                            }
+                        }
+                    }
+                    player.awardStat(Stats.ENCHANT_ITEM);
+                    if (player instanceof ServerPlayer) {
+                        CriteriaTriggers.ENCHANTED_ITEM.trigger((ServerPlayer)player, itemstack2, cost);
+                    }
+                    this.enchantSlots.setChanged();
+                    this.slotsChanged(this.enchantSlots);
+                    level.playSound(null, pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1.0F, level.random.nextFloat() * 0.1F + 0.9F);
+                }
+
+            });
+            return true;
+        }
+    }
+
+    private int getCostByRarity(Enchantment enchantment, int level) {
+        return level * switch (enchantment.getRarity()) {
+            case COMMON -> 1;
+            case UNCOMMON -> 2;
+            case RARE -> 5;
+            case VERY_RARE -> 10;
+        };
+    }
+
+    @Override
+    public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
+        ItemStack itemstack = ItemStack.EMPTY;
+        Slot slot = this.slots.get(pIndex);
+        if (slot != null && slot.hasItem()) {
+            ItemStack itemstack1 = slot.getItem();
+            itemstack = itemstack1.copy();
+            EquipmentSlot equipmentslot = Mob.getEquipmentSlotForItem(itemstack);
+            if (pIndex == 0) {
+                if (equipmentslot.getType() == EquipmentSlot.Type.ARMOR && !this.slots.get(4 - equipmentslot.getIndex()).hasItem()) {
+                    int i = 4 - equipmentslot.getIndex();
+                    if (!this.moveItemStackTo(itemstack1, i, i + 1, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                } else if (equipmentslot == EquipmentSlot.OFFHAND && !this.slots.get(41).hasItem()) {
+                    if (!this.moveItemStackTo(itemstack1, 41, 42, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                }
+                if (!this.moveItemStackTo(itemstack1, 5, 41, true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (itemstack1.isEnchantable() || itemstack1.getItem() instanceof BookItem) {
+                if (this.slots.get(0).hasItem()) {
+                    return ItemStack.EMPTY;
+                }
+                ItemStack itemstack2 = itemstack1.copy();
+                itemstack2.setCount(1);
+                itemstack1.shrink(1);
+                this.slots.get(0).set(itemstack2);
+            }
+            if (itemstack1.isEmpty()) {
+                slot.set(ItemStack.EMPTY);
+            } else {
+                slot.setChanged();
+            }
+            if (itemstack1.getCount() == itemstack.getCount()) {
+                return ItemStack.EMPTY;
+            }
+            slot.onTake(pPlayer, itemstack1);
+        }
+        return itemstack;
+    }
+
+    public int getEnchantingPower() {
+        return this.enchantingPower.get();
+    }
+
+    public void setEnchantments(List<Enchantment> enchantments) {
+        this.enchantmentsToLevel = enchantments.stream()
+                .collect(Collectors.toMap(Function.identity(), enchantment -> 0));
+        this.levelAccess.execute((Level level, BlockPos blockPos) -> {
+            EnchantingInfuser.NETWORK.sendTo(new S2CCompatibleEnchantsMessage(this.containerId, enchantments), (ServerPlayer) this.player);
+        });
+    }
+
+    public static List<Enchantment> getAvailableEnchantments(ItemStack stack, boolean allowTreasure, boolean allowDiscoverable) {
+        List<Enchantment> list = Lists.newArrayList();
+        boolean isBook = stack.is(Items.BOOK);
+        for (Enchantment enchantment : ForgeRegistries.ENCHANTMENTS) {
+            if (enchantment.canApplyAtEnchantingTable(stack) || (isBook && enchantment.isAllowedOnBooks())) {
+                if ((!enchantment.isTreasureOnly() || allowTreasure) && (enchantment.isDiscoverable() || allowDiscoverable)) {
+                    list.add(enchantment);
+                }
+            }
+        }
+        return list;
     }
 
     public static boolean isBlockEmpty(Level world, BlockPos pos) {
