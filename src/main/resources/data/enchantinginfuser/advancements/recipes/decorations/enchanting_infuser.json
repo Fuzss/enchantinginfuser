@@ -1,0 +1,47 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "enchantinginfuser:enchanting_infuser"
+    ]
+  },
+  "criteria": {
+    "has_crying_obsidian": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:crying_obsidian"
+            ]
+          }
+        ]
+      }
+    },
+      "has_amethyst_shard": {
+        "trigger": "minecraft:inventory_changed",
+        "conditions": {
+          "items": [
+            {
+              "items": [
+                "minecraft:amethyst_shard"
+              ]
+            }
+          ]
+        }
+      },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "enchantinginfuser:enchanting_infuser"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_crying_obsidian",
+      "has_amethyst_shard",
+      "has_the_recipe"
+    ]
+  ]
+}
