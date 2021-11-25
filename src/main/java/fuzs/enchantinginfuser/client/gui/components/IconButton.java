@@ -2,7 +2,6 @@ package fuzs.enchantinginfuser.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
@@ -62,19 +61,11 @@ public class IconButton extends Button {
 
     @Override
     public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-        Minecraft minecraft = Minecraft.getInstance();
-        int index = this.getYImage(this.isHovered());
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
-        this.blit(poseStack, this.x, this.y, 0, 46 + index * 20, this.width / 2, this.height);
-        this.blit(poseStack, this.x + this.width / 2, this.y, 200 - this.width / 2, 46 + index * 20, this.width / 2, this.height);
-        this.renderBg(poseStack, minecraft, mouseX, mouseY);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, this.resourceLocation);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
+        int index = this.getYImage(this.isHovered());
         blit(poseStack, this.x, this.y, this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
         if (this.isHovered()) {
             this.renderToolTip(poseStack, mouseX, mouseY);

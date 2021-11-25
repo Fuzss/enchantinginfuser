@@ -43,6 +43,11 @@ public class InfuserBlock extends EnchantmentTableBlock {
                 return InteractionResult.SUCCESS;
             }
             pPlayer.openMenu(blockEntity);
+            if (pPlayer.containerMenu instanceof InfuserMenu menu) {
+                // items might still be in inventory slots, so this needs to update so that enchantment buttons are shown
+                menu.slotsChanged(blockEntity);
+                menu.setEnchantingPower(pLevel, pPos);
+            }
             return InteractionResult.CONSUME;
         }
         return InteractionResult.PASS;

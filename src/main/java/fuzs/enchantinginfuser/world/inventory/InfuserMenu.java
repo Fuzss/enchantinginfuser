@@ -4,15 +4,18 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.network.message.S2CCompatibleEnchantsMessage;
+import fuzs.enchantinginfuser.network.message.S2CEnchantmentLevelMessage;
 import fuzs.enchantinginfuser.registry.ModRegistry;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -27,6 +30,7 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -39,6 +43,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     private final ContainerLevelAccess levelAccess;
     private final Player player;
     private final DataSlot enchantingPower = DataSlot.standalone();
+    private final DataSlot enchantingCost = DataSlot.standalone();
     private Map<Enchantment, Integer> enchantmentsToLevel;
 
     public InfuserMenu(int id, Inventory playerInventory) {
@@ -102,6 +107,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
             }
         });
         this.addDataSlot(this.enchantingPower);
+        this.addDataSlot(this.enchantingCost);
         this.addSlotListener(this);
     }
 
@@ -113,15 +119,16 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     @Override
     public void slotsChanged(Container pInventory) {
         if (pInventory == this.enchantSlots) {
+            this.enchantingCost.set(0);
             ItemStack itemstack = pInventory.getItem(0);
             if (!itemstack.isEmpty() && itemstack.isEnchantable()) {
                 this.levelAccess.execute((Level level, BlockPos pos) -> {
-                    int power = this.enchantingPower.get();
+                    int power = this.setEnchantingPower(level, pos);
                     final List<Enchantment> availableEnchantments = getAvailableEnchantments(itemstack, power >= 25, power >= 30);
                     this.setEnchantments(availableEnchantments);
                 });
             } else {
-                this.enchantmentsToLevel.clear();
+                this.setEnchantments(List.of());
             }
         }
     }
@@ -131,13 +138,16 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         if (abstractContainerMenu == this) {
             this.levelAccess.execute((Level level, BlockPos pos) -> {
                 if (i == 0) {
-                    // TODO get this sent to client even without an item in the enchanting slot
-                    int power = this.getEnchantingPower(level, pos);
-                    this.enchantingPower.set(power);
                     this.slotsChanged(this.enchantSlots);
                 }
             });
         }
+    }
+
+    public int setEnchantingPower(Level level, BlockPos pos) {
+        int power = this.getEnchantingPower(level, pos);
+        this.enchantingPower.set(power);
+        return power;
     }
 
     @Override
@@ -168,13 +178,23 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         return world.getBlockState(pos).getEnchantPowerBonus(world, pos);
     }
 
+    public void clickEnchantmentButton(Enchantment enchantment, boolean increase) {
+        int level = this.enchantmentsToLevel.get(enchantment) + (increase ? 1 : -1);
+        level = Mth.clamp(level, 0, enchantment.getMaxLevel());
+        this.enchantmentsToLevel.put(enchantment, level);
+        this.enchantingCost.set(this.getAllCosts());
+        EnchantingInfuser.NETWORK.sendTo(new S2CEnchantmentLevelMessage(this.containerId, enchantment, level), (ServerPlayer) this.player);
+    }
+
+    public void setEnchantmentLevel(Enchantment enchantment, int level) {
+        this.enchantmentsToLevel.put(enchantment, level);
+    }
+
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (id != 0) return false;
         ItemStack itemstack = this.enchantSlots.getItem(0);
-        final int cost = this.enchantmentsToLevel.entrySet().stream()
-                .mapToInt(entry -> this.getCostByRarity(entry.getKey(), entry.getValue()))
-                .sum();
+        final int cost = this.getAllCosts();
         if (itemstack.isEmpty() || cost <= 0 || player.experienceLevel < cost && !player.getAbilities().instabuild) {
             return false;
         } else {
@@ -214,12 +234,19 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         }
     }
 
-    private int getCostByRarity(Enchantment enchantment, int level) {
-        return level * switch (enchantment.getRarity()) {
-            case COMMON -> 1;
-            case UNCOMMON -> 2;
-            case RARE -> 5;
-            case VERY_RARE -> 10;
+    private int getAllCosts() {
+        return this.enchantmentsToLevel.entrySet().stream()
+                .filter(entry -> entry.getValue() > 0)
+                .mapToInt(entry -> this.getCostByRarity(entry.getKey()) * entry.getValue())
+                .sum();
+    }
+
+    private int getCostByRarity(Enchantment enchantment) {
+        return switch (enchantment.getRarity()) {
+            case COMMON -> EnchantingInfuser.CONFIG.server().costs.commonCost;
+            case UNCOMMON -> EnchantingInfuser.CONFIG.server().costs.uncommonCost;
+            case RARE -> EnchantingInfuser.CONFIG.server().costs.rareCost;
+            case VERY_RARE -> EnchantingInfuser.CONFIG.server().costs.veryRareCost;
         };
     }
 
@@ -272,8 +299,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     public int getCost() {
-        // TODO actual value via container data
-        return 12;
+        return this.enchantingCost.get();
     }
 
     public boolean canEnchant(Player player) {
@@ -281,9 +307,11 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         return cost > 0 && player.experienceLevel >= cost;
     }
 
-//    public boolean hasEnchantingItem() {
-//        return !this.enchantSlots.getItem(0).isEmpty();
-//    }
+    public List<Map.Entry<Enchantment, Integer>> getSortedEntries() {
+        return this.enchantmentsToLevel.entrySet().stream()
+                .sorted(Comparator.<Map.Entry<Enchantment, Integer>>comparingInt(e -> e.getKey().getRarity().ordinal()).thenComparing(e -> new TranslatableComponent(e.getKey().getDescriptionId()).getString()))
+                .collect(Collectors.toList());
+    }
 
     public void setEnchantments(List<Enchantment> enchantments) {
         this.enchantmentsToLevel = enchantments.stream()

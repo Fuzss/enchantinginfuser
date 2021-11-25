@@ -1,8 +1,10 @@
 package fuzs.enchantinginfuser.network.message;
 
 import com.google.common.collect.Lists;
+import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.puzzleslib.network.message.Message;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -54,6 +56,7 @@ public class S2CCompatibleEnchantsMessage implements Message {
         public void handle(S2CCompatibleEnchantsMessage packet, Player player, Object gameInstance) {
             if (player.containerMenu.containerId == packet.containerId && player.containerMenu instanceof InfuserMenu menu) {
                 menu.setEnchantments(packet.enchantments);
+                if (((Minecraft) gameInstance).screen instanceof InfuserScreen screen) screen.refreshSearchResults();
             }
         }
     }
