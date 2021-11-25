@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class InfuserMenu extends AbstractContainerMenu {
+public class InfuserMenu extends AbstractContainerMenu implements ContainerListener {
     private static final ResourceLocation[] TEXTURE_EMPTY_SLOTS = new ResourceLocation[]{InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS, InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS, InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE, InventoryMenu.EMPTY_ARMOR_SLOT_HELMET};
     private static final EquipmentSlot[] SLOT_IDS = new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
     private final Container enchantSlots;
@@ -102,6 +102,7 @@ public class InfuserMenu extends AbstractContainerMenu {
             }
         });
         this.addDataSlot(this.enchantingPower);
+        this.addSlotListener(this);
     }
 
     @Override
@@ -115,18 +116,33 @@ public class InfuserMenu extends AbstractContainerMenu {
             ItemStack itemstack = pInventory.getItem(0);
             if (!itemstack.isEmpty() && itemstack.isEnchantable()) {
                 this.levelAccess.execute((Level level, BlockPos pos) -> {
-                    int power = this.getEnchantingPower(level, pos);
-                    this.enchantingPower.set(power);
+                    int power = this.enchantingPower.get();
                     final List<Enchantment> availableEnchantments = getAvailableEnchantments(itemstack, power >= 25, power >= 30);
                     this.setEnchantments(availableEnchantments);
-                    // could be needed to sync enchantingPower, but:
-                    // don't think this is needed here, server player call this every tick anyways
-//                    this.broadcastChanges();
                 });
             } else {
                 this.enchantmentsToLevel.clear();
             }
         }
+    }
+
+    @Override
+    public void slotChanged(AbstractContainerMenu abstractContainerMenu, int i, ItemStack itemStack) {
+        if (abstractContainerMenu == this) {
+            this.levelAccess.execute((Level level, BlockPos pos) -> {
+                if (i == 0) {
+                    // TODO get this sent to client even without an item in the enchanting slot
+                    int power = this.getEnchantingPower(level, pos);
+                    this.enchantingPower.set(power);
+                    this.slotsChanged(this.enchantSlots);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void dataChanged(AbstractContainerMenu abstractContainerMenu, int i, int j) {
+
     }
 
     private int getEnchantingPower(Level world, BlockPos pos) {
@@ -254,6 +270,20 @@ public class InfuserMenu extends AbstractContainerMenu {
     public int getEnchantingPower() {
         return this.enchantingPower.get();
     }
+
+    public int getCost() {
+        // TODO actual value via container data
+        return 12;
+    }
+
+    public boolean canEnchant(Player player) {
+        final int cost = this.getCost();
+        return cost > 0 && player.experienceLevel >= cost;
+    }
+
+//    public boolean hasEnchantingItem() {
+//        return !this.enchantSlots.getItem(0).isEmpty();
+//    }
 
     public void setEnchantments(List<Enchantment> enchantments) {
         this.enchantmentsToLevel = enchantments.stream()

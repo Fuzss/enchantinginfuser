@@ -1,3 +1,4 @@
 {
-  "block.enchantinginfuser.enchanting_infuser": "Enchanting Infuser"
+  "block.enchantinginfuser.enchanting_infuser": "Enchanting Infuser",
+  "gui.enchantinginfuser.tooltip.enchanting_power": "Enchanting Power: %s"
 }

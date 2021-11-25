@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.enchantinginfuser.EnchantingInfuser;
+import fuzs.enchantinginfuser.client.gui.components.IconButton;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -19,12 +20,10 @@ import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.List;
@@ -37,6 +36,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
 
     private final Random random = new Random();
     private final ScrollingList scrollingList = new ScrollingList();
+    private List<FormattedCharSequence> activeTooltip;
     private float scrollOffs;
     private boolean scrolling;
     private EditBox searchBox;
@@ -54,9 +54,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     @Override
     public void containerTick() {
         super.containerTick();
-        if (this.searchBox != null) {
-            this.searchBox.tick();
-        }
+        this.searchBox.tick();
+        this.updateButtons();
     }
 
     @Override
@@ -68,9 +67,12 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         this.searchBox.setBordered(false);
         this.searchBox.setTextColor(16777215);
         this.addWidget(this.searchBox);
-        int i = (this.width - this.imageWidth) / 2;
-        int j = (this.height - this.imageHeight) / 2;
-        this.enchantButton = this.addRenderableWidget(new ImageButton(i + 7, j + 55, 18, 18, 126, 185, INFUSER_LOCATION, button -> {}));
+        this.enchantButton = this.addRenderableWidget(new IconButton(this.leftPos + 7, this.topPos + 55, 18, 18, 126, 185, INFUSER_LOCATION, button -> {}));
+        this.updateButtons();
+    }
+
+    private void updateButtons() {
+        this.enchantButton.active = this.menu.canEnchant(this.minecraft.player);
     }
 
     @Override
@@ -89,6 +91,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
     }
 
+    @Override
     public boolean charTyped(char pCodePoint, int pModifiers) {
         if (this.ignoreTextInput) {
             return false;
@@ -104,6 +107,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         }
     }
 
+    @Override
     public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
         this.ignoreTextInput = false;
         if (!this.searchBox.isFocused()) {
@@ -126,7 +130,6 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
                     if (!Objects.equals(s, this.searchBox.getValue())) {
                         this.refreshSearchResults();
                     }
-
                     return true;
                 } else {
                     return this.searchBox.isFocused() && this.searchBox.isVisible() && pKeyCode != 256 || super.keyPressed(pKeyCode, pScanCode, pModifiers);
@@ -135,6 +138,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         }
     }
 
+    @Override
     public boolean keyReleased(int pKeyCode, int pScanCode, int pModifiers) {
         this.ignoreTextInput = false;
         return super.keyReleased(pKeyCode, pScanCode, pModifiers);
@@ -156,6 +160,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         this.scrollingList.scrollTo(0.0F);
     }
 
+    @Override
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
         if (pButton == 0) {
             if (this.insideScrollbar(pMouseX, pMouseY)) {
@@ -174,6 +179,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         return pMouseX >= (double)fromX && pMouseY >= (double)fromY && pMouseX < (double)toX && pMouseY < (double)toY;
     }
 
+    @Override
     public boolean mouseReleased(double pMouseX, double pMouseY, int pButton) {
         if (pButton == 0) {
             this.scrolling = false;
@@ -181,6 +187,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         return super.mouseReleased(pMouseX, pMouseY, pButton);
     }
 
+    @Override
     public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
         if (!this.scrollingList.canScroll()) {
             return false;
@@ -193,11 +200,12 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         }
     }
 
+    @Override
     public boolean mouseDragged(double pMouseX, double pMouseY, int pButton, double pDragX, double pDragY) {
         if (this.scrolling) {
             int i = this.topPos + 17;
             int j = i + 72;
-            this.scrollOffs = ((float)pMouseY - (float)i - 7.5F) / ((float)(j - i) - 15.0F);
+            this.scrollOffs = ((float) pMouseY - (float)i - 7.5F) / ((float)(j - i) - 15.0F);
             this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
             this.scrollingList.scrollTo(this.scrollOffs);
             return true;
@@ -207,11 +215,55 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     }
 
     @Override
-    public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
-        this.renderBackground(pPoseStack);
-        super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
+    public void render(PoseStack poseStack, int pMouseX, int pMouseY, float pPartialTick) {
+        this.activeTooltip = null;
+        this.renderBackground(poseStack);
+        super.render(poseStack, pMouseX, pMouseY, pPartialTick);
+        this.renderEnchantingPower(pMouseX, pMouseY);
+        this.renderEnchantingCost(poseStack, pMouseX, pMouseY);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        this.renderTooltip(pPoseStack, pMouseX, pMouseY);
+        if (this.activeTooltip != null) {
+            this.renderTooltip(poseStack, this.activeTooltip, pMouseX, pMouseY);
+        } else {
+            this.renderTooltip(poseStack, pMouseX, pMouseY);
+        }
+    }
+
+    private void renderEnchantingCost(PoseStack poseStack, int mouseX, int mouseY) {
+        final boolean canEnchant = this.menu.canEnchant(this.minecraft.player);
+        final int costColor = canEnchant ? 8453920 : 16733525;
+        final int cost = this.menu.getCost();
+        final int posX = this.leftPos + 7;
+        final int posY = this.topPos + 55;
+        this.renderReadableText(poseStack, posX + 1, posY + 1, String.valueOf(cost), costColor);
+        if (!canEnchant && mouseX >= posX && mouseY >= posY && mouseX < posX + 18 && mouseY < posY + 18) {
+            this.activeTooltip = Lists.newArrayList(new TranslatableComponent("container.enchant.level.requirement", cost).withStyle(ChatFormatting.RED).getVisualOrderText());
+        }
+    }
+
+    private void renderReadableText(PoseStack poseStack, int posX, int posY, String text, int color) {
+        posX += 19 - 2 - this.font.width(text);
+        posY += 6 + 3;
+        // render shadow on every side due avoid clashing with colorful background
+        this.font.draw(poseStack, text, posX - 1, posY, 0);
+        this.font.draw(poseStack, text, posX + 1, posY, 0);
+        this.font.draw(poseStack, text, posX, posY - 1, 0);
+        this.font.draw(poseStack, text, posX, posY + 1, 0);
+        this.font.draw(poseStack, text, posX, posY, color);
+    }
+
+    private void renderEnchantingPower(int mouseX, int mouseY) {
+        final int power = this.menu.getEnchantingPower();
+        ItemStack itemstack = new ItemStack(Items.BOOKSHELF, power);
+        this.itemRenderer.blitOffset = 100.0F;
+        int posX = this.leftPos + 196;
+        int posY = this.topPos + 161;
+        this.itemRenderer.renderAndDecorateFakeItem(itemstack, posX, posY);
+        this.itemRenderer.renderGuiItemDecorations(this.font, itemstack, posX, posY);
+        this.itemRenderer.blitOffset = 0.0F;
+        if (!itemstack.isEmpty() && mouseX >= posX && mouseY >= posY && mouseX < posX + 16 && mouseY < posY + 16) {
+            this.activeTooltip = Lists.newArrayList(new TranslatableComponent("gui.enchantinginfuser.tooltip.enchanting_power", power).withStyle(ChatFormatting.YELLOW).getVisualOrderText());
+        }
     }
 
     @Override
@@ -223,13 +275,13 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         int j = (this.height - this.imageHeight) / 2;
         this.blit(pPoseStack, i, j, 0, 0, this.imageWidth, this.imageHeight);
         this.searchBox.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
-        int sliderX = this.leftPos + 197 - 2;
-        int sliderY = this.topPos + 17 - 2;
-        int sliderRange = sliderY + 72 + 2 + 2;
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, INFUSER_LOCATION);
-        this.blit(pPoseStack, sliderX, sliderY + (int)((float)(sliderRange - sliderY - 20) * this.scrollOffs), 220, 48 + (this.scrollingList.canScroll() ? 18 : 0), 18, 18);
+        int sliderX = this.leftPos + 197 - 2;
+        int sliderY = this.topPos + 17 - 2;
+        int sliderRange = sliderY + 72 + 2 + 2;
+        this.blit(pPoseStack, sliderX, sliderY + (int)((float)(sliderRange - sliderY - 18) * this.scrollOffs), 220, 48 + (this.scrollingList.canScroll() ? 18 : 0), 18, 18);
     }
 
     private static class ScrollingList {
