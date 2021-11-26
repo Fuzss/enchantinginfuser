@@ -178,12 +178,25 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         return world.getBlockState(pos).getEnchantPowerBonus(world, pos);
     }
 
-    public void clickEnchantmentButton(Enchantment enchantment, boolean increase) {
+    public int clickEnchantmentButton(Enchantment enchantment, boolean increase) {
+        final boolean incompatible = this.enchantmentsToLevel.entrySet().stream()
+                .filter(e -> e.getValue() > 0)
+                .map(Map.Entry::getKey)
+                .filter(e -> e != enchantment)
+                .anyMatch(e -> !e.isCompatibleWith(enchantment));
+        if (incompatible) {
+            EnchantingInfuser.LOGGER.warn("trying to add incompatible enchantment");
+            return -1;
+        }
         int level = this.enchantmentsToLevel.get(enchantment) + (increase ? 1 : -1);
-        level = Mth.clamp(level, 0, enchantment.getMaxLevel());
-        this.enchantmentsToLevel.put(enchantment, level);
+        int clampedLevel = Mth.clamp(level, 0, enchantment.getMaxLevel());
+        if (level != clampedLevel) {
+            EnchantingInfuser.LOGGER.warn("trying change enchantment level beyond bounds");
+            return -1;
+        }
+        this.enchantmentsToLevel.put(enchantment, clampedLevel);
         this.enchantingCost.set(this.getAllCosts());
-        EnchantingInfuser.NETWORK.sendTo(new S2CEnchantmentLevelMessage(this.containerId, enchantment, level), (ServerPlayer) this.player);
+        return level;
     }
 
     public void setEnchantmentLevel(Enchantment enchantment, int level) {

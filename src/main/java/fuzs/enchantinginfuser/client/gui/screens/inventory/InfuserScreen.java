@@ -339,10 +339,54 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
 
         protected void addEntry(EnchantmentListEntry pEntry) {
             this.children.add(pEntry);
+            pEntry.setList(this);
         }
 
         protected int getItemCount() {
             return this.children.size();
+        }
+
+        public void markOthersIncompatible(EnchantmentListEntry entry) {
+            return;
+             // TODO doesn't work like this, use a list
+//            this.children.stream()
+//                    .peek(e -> e.markIncompatible(false))
+//                    .filter(e -> e.isIncompatibleWith(entry))
+//                    .forEach(e -> e.markIncompatible(true));
+        }
+
+        @Nullable
+        protected final EnchantmentListEntry getEntryAtPosition(double mouseX, double mouseY) {
+            return this.isMouseOver(mouseX, mouseY) ? this.children.get(this.scrollPosition + (int) ((mouseY - this.posY) / this.itemHeight)) : null;
+        }
+
+        @Override
+        public boolean isMouseOver(double mouseX, double mouseY) {
+            return mouseX >= this.posX && mouseX < this.posX + this.itemWidth && mouseY >= this.posY && mouseY < this.posY + this.itemHeight * this.length;
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (!this.isMouseOver(mouseX, mouseY)) {
+                return false;
+            } else {
+                EnchantmentListEntry entry = this.getEntryAtPosition(mouseX, mouseY);
+                if (entry != null) {
+                    if (entry.mouseClicked(mouseX, mouseY, button)) {
+                        this.setFocused(entry);
+                        this.setDragging(true);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public boolean mouseReleased(double pMouseX, double pMouseY, int pButton) {
+            if (this.getFocused() != null) {
+                this.getFocused().mouseReleased(pMouseX, pMouseY, pButton);
+            }
+            return false;
         }
 
         @Override
@@ -374,25 +418,33 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         private static final TranslatableComponent LOW_POWER_COMPONENT = new TranslatableComponent("gui.enchantinginfuser.tooltip.low_power");
 
         private final Enchantment enchantment;
-        private final Button decrement;
-        private final Button increment;
+        private final Button decrButton;
+        private final Button incrButton;
         private int level;
+        private ScrollingList list;
         @Nullable
         private GuiEventListener focused;
         private boolean dragging;
+        private boolean incompatible;
 
         public EnchantmentListEntry(Enchantment enchantment, int level) {
             this.enchantment = enchantment;
             this.level = level;
-            this.decrement = new IconButton(0, 0, 10, 16, 220, 0, INFUSER_LOCATION, button -> {
-                this.level = Math.max(0, --this.level);
-                this.updateButtons();
+            this.decrButton = new IconButton(0, 0, 10, 16, 220, 0, INFUSER_LOCATION, button -> {
+                final int newLevel = InfuserScreen.this.menu.clickEnchantmentButton(this.enchantment, false);
+                if (newLevel == -1) return;
+                this.level = newLevel;
                 EnchantingInfuser.NETWORK.sendToServer(new C2SAddEnchantLevelMessage(InfuserScreen.this.menu.containerId, this.enchantment, false));
-            });
-            this.increment = new IconButton(0, 0, 10, 16, 230, 0, INFUSER_LOCATION, button -> {
-                this.level = Math.min(this.enchantment.getMaxLevel(), ++this.level);
                 this.updateButtons();
+                this.list.markOthersIncompatible(this);
+            });
+            this.incrButton = new IconButton(0, 0, 10, 16, 230, 0, INFUSER_LOCATION, button -> {
+                final int newLevel = InfuserScreen.this.menu.clickEnchantmentButton(this.enchantment, true);
+                if (newLevel == -1) return;
+                this.level = newLevel;
                 EnchantingInfuser.NETWORK.sendToServer(new C2SAddEnchantLevelMessage(InfuserScreen.this.menu.containerId, this.enchantment, true));
+                this.updateButtons();
+                this.list.markOthersIncompatible(this);
             }, (button, matrixStack, mouseX, mouseY) -> {
                 if (!button.active) {
                     InfuserScreen.this.setActiveTooltip(InfuserScreen.this.font.split(LOW_POWER_COMPONENT, 175));
@@ -401,18 +453,40 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             this.updateButtons();
         }
 
+        public void setList(ScrollingList list) {
+            this.list = list;
+        }
+
+        public void markIncompatible(boolean incompatible) {
+            this.incompatible = incompatible;
+            if (incompatible) this.level = 0;
+            this.updateButtons();
+            this.decrButton.active = !incompatible;
+            this.incrButton.active = !incompatible;
+        }
+
         private void updateButtons() {
-            this.decrement.visible = this.level > 0;
-            this.increment.visible = this.level < this.enchantment.getMaxLevel();
+            this.decrButton.visible = this.level > 0;
+            this.incrButton.visible = this.level < this.enchantment.getMaxLevel();
             // TODO proper check for enough power
-            this.increment.active = true;
+            this.incrButton.active = true;
+        }
+
+        private int getYImage() {
+            if (this.incompatible) return 0;
+            return this.level > 0 ? 2 : 1;
+        }
+
+        public boolean isIncompatibleWith(EnchantmentListEntry other) {
+            if (other == this) return false;
+            return (this.level > 0 || other.level > 0) && !this.enchantment.isCompatibleWith(other.enchantment);
         }
 
         public void render(PoseStack poseStack, int leftPos, int topPos, int width, int height, int mouseX, int mouseY, float partialTicks) {
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderTexture(0, INFUSER_LOCATION);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            InfuserScreen.this.blit(poseStack, leftPos + 18, topPos, 0, this.level > 0 ? 221 : 203, 126, 18);
+            InfuserScreen.this.blit(poseStack, leftPos + 18, topPos, 0, 185 + this.getYImage() * 18, 126, 18);
             final MutableComponent component = new TranslatableComponent(this.enchantment.getDescriptionId());
             if (this.level > 0) {
                 component.append(" ").append(new TranslatableComponent("enchantment.level." + this.level));
@@ -421,17 +495,22 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             if (mouseX >= leftPos + 18 && mouseX < leftPos + 18 + 126 && mouseY >= topPos && mouseY < topPos + 18) {
                 InfuserScreen.this.setActiveTooltip(InfuserScreen.this.font.split(UNKNOWN_ENCHANT_COMPONENT, 175));
             }
-            this.decrement.x = leftPos + 4;
-            this.decrement.y = topPos + 1;
-            this.decrement.render(poseStack, mouseX, mouseY, partialTicks);
-            this.increment.x = leftPos + width - 10 - 4;
-            this.increment.y = topPos + 1;
-            this.increment.render(poseStack, mouseX, mouseY, partialTicks);
+            this.decrButton.x = leftPos + 4;
+            this.decrButton.y = topPos + 1;
+            this.decrButton.render(poseStack, mouseX, mouseY, partialTicks);
+            this.incrButton.x = leftPos + width - 10 - 4;
+            this.incrButton.y = topPos + 1;
+            this.incrButton.render(poseStack, mouseX, mouseY, partialTicks);
+        }
+
+        @Override
+        public boolean isMouseOver(double pMouseX, double pMouseY) {
+            return Objects.equals(this.list.getEntryAtPosition(pMouseX, pMouseY), this);
         }
 
         @Override
         public List<? extends GuiEventListener> children() {
-            return ImmutableList.of(this.decrement, this.increment);
+            return ImmutableList.of(this.decrButton, this.incrButton);
         }
 
         @Override
