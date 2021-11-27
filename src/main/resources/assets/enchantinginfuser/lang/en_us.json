@@ -1,6 +1,9 @@
 {
   "block.enchantinginfuser.enchanting_infuser": "Enchanting Infuser",
-  "gui.enchantinginfuser.tooltip.enchanting_power": "Enchanting Power: %s",
-  "gui.enchantinginfuser.tooltip.unknown_enchantment": "The enchanting power for this table is too low to understand this enchantment.",
-  "gui.enchantinginfuser.tooltip.low_power": "The enchanting power for this table is too low to increase the level of this enchantment."
+  "gui.enchantinginfuser.tooltip.enchanting_power": "%s Enchanting Power",
+  "gui.enchantinginfuser.tooltip.required_enchanting_power": "Required Enchanting Power: %s",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "This enchantment is too powerful for a table with such little enchanting power.",
+  "gui.enchantinginfuser.tooltip.low_power": "Further increasing the level for this enchantment requires a table with more enchanting power.",
+  "gui.enchantinginfuser.tooltip.incompatible": "This enchantment is incompatible with: %s",
+  "enchantment.minecraft.efficiency.desc": "Increases mining speed of the tool."
 }
