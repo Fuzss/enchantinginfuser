@@ -5,8 +5,10 @@ import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EnchantmentTableBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -30,6 +32,10 @@ public class InfuserBlock extends EnchantmentTableBlock {
         return new InfuserBlockEntity(pPos, pState);
     }
 
+    protected InfuserType getInfuserType() {
+        return InfuserType.NORMAL;
+    }
+
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
@@ -42,7 +48,7 @@ public class InfuserBlock extends EnchantmentTableBlock {
             if (pLevel.isClientSide) {
                 return InteractionResult.SUCCESS;
             }
-            pPlayer.openMenu(blockEntity);
+            pPlayer.openMenu(pState.getMenuProvider(pLevel, pPos));
             if (pPlayer.containerMenu instanceof InfuserMenu menu) {
                 // items might still be in inventory slots, so this needs to update so that enchantment buttons are shown
                 menu.slotsChanged(blockEntity);
@@ -51,6 +57,22 @@ public class InfuserBlock extends EnchantmentTableBlock {
             return InteractionResult.CONSUME;
         }
         return InteractionResult.PASS;
+    }
+
+    @Override
+    @Nullable
+    public MenuProvider getMenuProvider(BlockState pState, Level pLevel, BlockPos pPos) {
+        if (pLevel.getBlockEntity(pPos) instanceof InfuserBlockEntity blockentity) {
+            Component component = blockentity.getDisplayName();
+            return new SimpleMenuProvider((p_52959_, p_52960_, p_52961_) -> {
+                if (blockentity.canOpen(p_52961_)) {
+                    return new InfuserMenu(p_52959_, p_52960_, blockentity, ContainerLevelAccess.create(pLevel, pPos), this.getInfuserType());
+                }
+                return null;
+            }, component);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -99,5 +121,9 @@ public class InfuserBlock extends EnchantmentTableBlock {
             }
         }
         return 0;
+    }
+
+    public enum InfuserType {
+        NORMAL, ADVANCED
     }
 }

@@ -4,9 +4,12 @@ import fuzs.puzzleslib.config.AbstractConfig;
 import fuzs.puzzleslib.config.annotation.Config;
 
 public class ServerConfig extends AbstractConfig {
-    @Config(description = "Maximum enchanting power provided by bookshelves to scale table costs by.")
+    @Config(description = {"Maximum enchanting power provided by bookshelves to scale infuser costs by.", "This is basically how many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "This option only affects normal enchanting infusers."})
     @Config.IntRange(min = 0)
-    public int maxEnchantingPower = 30;
+    public int maximumPowerNormal = 30;
+    @Config(description = {"Maximum enchanting power provided by bookshelves to scale infuser costs by.", "This is basically how many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "This option only affects advanced enchanting infusers."})
+    @Config.IntRange(min = 0)
+    public int maximumPowerAdvanced = 30;
     @Config
     public CostsConfig costs = new CostsConfig();
     @Config
@@ -28,7 +31,13 @@ public class ServerConfig extends AbstractConfig {
         @Config(description = "Base cost multiplier for each level for very rare enchantments.")
         public int veryRareCost = 5;
         @Config(description = "Double prices for enchantments normally unobtainable from enchanting tables (e.g. mending, soul speed).")
-        public boolean doubleTreasure = true;
+        public boolean doubleUniques = true;
+        @Config(description = {"Cost level to scale prices by. This is not a strict value, meaning it can be exceeded (e.g. when applying treasure enchantments).", "This option only affects normal enchanting infusers."})
+        public int maximumCostNormal = 25;
+        @Config(description = {"Cost level to scale prices by. This is not a strict value, meaning it can be exceeded (e.g. when applying treasure enchantments).", "This option only affects advanced enchanting infusers."})
+        public int maximumCostAdvanced = 15;
+        @Config(description = "When scaling costs, only account for vanilla enchantments. Otherwise enchanting costs will become ludicrously cheap with many modded enchantments present.")
+        public boolean vanillaCostOnly = true;
 
         public CostsConfig() {
             super("costs");

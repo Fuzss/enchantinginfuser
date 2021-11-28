@@ -1,11 +1,12 @@
 package fuzs.enchantinginfuser.world.inventory;
 
 import com.google.common.collect.Lists;
-import com.mojang.datafixers.util.Either;
+import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.network.message.S2CCompatibleEnchantsMessage;
 import fuzs.enchantinginfuser.registry.ModRegistry;
+import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -23,7 +24,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.BookItem;
+import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
@@ -46,13 +50,14 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     private final Player player;
     private final DataSlot enchantingPower = DataSlot.standalone();
     private final DataSlot enchantingCost = DataSlot.standalone();
+    private final DataSlot infuserType = DataSlot.standalone();
     private Map<Enchantment, Integer> enchantmentsToLevel;
 
     public InfuserMenu(int id, Inventory playerInventory) {
-        this(id, playerInventory, new SimpleContainer(1), ContainerLevelAccess.NULL);
+        this(id, playerInventory, new SimpleContainer(1), ContainerLevelAccess.NULL, InfuserBlock.InfuserType.NORMAL);
     }
 
-    public InfuserMenu(int id, Inventory inventory, Container container, ContainerLevelAccess levelAccess) {
+    public InfuserMenu(int id, Inventory inventory, Container container, ContainerLevelAccess levelAccess, InfuserBlock.InfuserType type) {
         super(ModRegistry.INFUSING_MENU_TYPE.get(), id);
         this.enchantSlots = container;
         this.levelAccess = levelAccess;
@@ -110,6 +115,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         });
         this.addDataSlot(this.enchantingPower);
         this.addDataSlot(this.enchantingCost);
+        this.addDataSlot(this.infuserType).set(type == InfuserBlock.InfuserType.ADVANCED ? 1 : 0);
         this.addSlotListener(this);
     }
 
@@ -199,7 +205,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
             return -1;
         }
         this.enchantmentsToLevel.put(enchantment, level);
-        this.enchantingCost.set(this.getAllCosts());
+        this.enchantingCost.set(this.getScaledCosts());
         return level;
     }
 
@@ -207,7 +213,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     public boolean clickMenuButton(Player player, int id) {
         if (id != 0) return false;
         ItemStack itemstack = this.enchantSlots.getItem(0);
-        final int cost = this.getAllCosts();
+        final int cost = this.getScaledCosts();
         if (itemstack.isEmpty() || cost <= 0 || player.experienceLevel < cost && !player.getAbilities().instabuild) {
             return false;
         } else {
@@ -215,7 +221,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 ItemStack itemstack2 = itemstack;
                 if (!this.enchantmentsToLevel.isEmpty()) {
                     player.onEnchantmentPerformed(itemstack, cost);
-                    boolean isBook = itemstack.is(Items.BOOK);
+                    boolean isBook = itemstack.getItem() instanceof BookItem;
                     if (isBook) {
                         itemstack2 = new ItemStack(Items.ENCHANTED_BOOK);
                         CompoundTag compoundtag = itemstack.getTag();
@@ -249,7 +255,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     public Pair<Optional<Integer>, Integer> getMaxLevel(Enchantment enchantment) {
         final int currentPower = this.getCurrentPower();
-        final int maxPower = EnchantingInfuser.CONFIG.server().maxEnchantingPower;
+        final int maxPower = this.isAdvanced() ? EnchantingInfuser.CONFIG.server().maximumPowerAdvanced : EnchantingInfuser.CONFIG.server().maximumPowerNormal;
         Pair<Optional<Integer>, Integer> maxLevelSpecial = this.getSpecialMaxLevel(enchantment, currentPower, maxPower);
         if (maxLevelSpecial != null) return maxLevelSpecial;
         int minPowerByRarity = this.getMinPowerByRarity(enchantment, maxPower);
@@ -293,6 +299,54 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 });
     }
 
+    private int getScaledCosts() {
+        final double totalCosts = this.getTotalCosts();
+        final int maxCost = this.isAdvanced() ? EnchantingInfuser.CONFIG.server().costs.maximumCostAdvanced : EnchantingInfuser.CONFIG.server().costs.maximumCostNormal;
+        if (totalCosts > maxCost && !(this.enchantSlots.getItem(0).getItem() instanceof BookItem)) {
+            final double ratio = maxCost / totalCosts;
+            final int minCosts = this.enchantmentsToLevel.values().stream()
+                    .mapToInt(Integer::intValue)
+                    .sum();
+            return Math.max((int) Math.round(this.getAllCosts() * ratio), minCosts);
+        }
+        return this.getAllCosts();
+    }
+
+    private boolean isAdvanced() {
+        return this.infuserType.get() == 1;
+    }
+    
+    private int getTotalCosts() {
+        // this loops through all enchantments that can be applied to the current item
+        // it then checks for compatibility and treats those as duplicates, the 'duplicate' with the higher cost is kept
+        // TODO books!
+        Map<Enchantment, Pair<Enchantment.Rarity, Integer>> map = Maps.newHashMap();
+        for (Enchantment enchantment : this.enchantmentsToLevel.keySet()) {
+            if (!EnchantingInfuser.CONFIG.server().costs.vanillaCostOnly || ForgeRegistries.ENCHANTMENTS.getKey(enchantment).getNamespace().equals("minecraft")) {
+                final Pair<Enchantment.Rarity, Integer> pair2 = Pair.of(enchantment.getRarity(), enchantment.getMaxLevel());
+                final Optional<Map.Entry<Enchantment, Pair<Enchantment.Rarity, Integer>>> any = map.entrySet().stream()
+                        .filter(e -> !e.getKey().isCompatibleWith(enchantment))
+                        .findAny();
+                if (any.isPresent()) {
+                    final Map.Entry<Enchantment, Pair<Enchantment.Rarity, Integer>> enchantmentData = any.get();
+                    final Pair<Enchantment.Rarity, Integer> pair1 = enchantmentData.getValue();
+                    map.put(enchantmentData.getKey(), this.compareEnchantmentData(pair1, pair2));
+                } else {
+                    map.put(enchantment, pair2);
+                }
+            }
+        }
+        return map.values().stream()
+                .mapToInt(e -> this.getCostByRarity(e.getFirst()) * e.getSecond())
+                .sum();
+    }
+    
+    private Pair<Enchantment.Rarity, Integer> compareEnchantmentData(Pair<Enchantment.Rarity, Integer> pair1, Pair<Enchantment.Rarity, Integer> pair2) {
+        int cost1 = this.getCostByRarity(pair1.getFirst()) * pair1.getSecond();
+        int cost2 = this.getCostByRarity(pair2.getFirst()) * pair2.getSecond();
+        return cost2 > cost1 ? pair2 : pair1;
+    }
+
     private int getAllCosts() {
         return this.enchantmentsToLevel.entrySet().stream()
                 .filter(entry -> entry.getValue() > 0)
@@ -301,16 +355,20 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     private int getCostByRarity(Enchantment enchantment) {
-        int cost = switch (enchantment.getRarity()) {
+        int cost = this.getCostByRarity(enchantment.getRarity());
+        if (EnchantingInfuser.CONFIG.server().costs.doubleUniques && (enchantment.isTreasureOnly() || !enchantment.isDiscoverable()) && !enchantment.isCurse()) {
+            cost *= 2;
+        }
+        return cost;
+    }
+
+    private int getCostByRarity(Enchantment.Rarity rarity) {
+        return switch (rarity) {
             case COMMON -> EnchantingInfuser.CONFIG.server().costs.commonCost;
             case UNCOMMON -> EnchantingInfuser.CONFIG.server().costs.uncommonCost;
             case RARE -> EnchantingInfuser.CONFIG.server().costs.rareCost;
             case VERY_RARE -> EnchantingInfuser.CONFIG.server().costs.veryRareCost;
         };
-        if (EnchantingInfuser.CONFIG.server().costs.doubleTreasure && (enchantment.isTreasureOnly() || !enchantment.isDiscoverable()) && !enchantment.isCurse()) {
-            cost *= 2;
-        }
-        return cost;
     }
 
     @Override
@@ -370,7 +428,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     public boolean canEnchant(Player player) {
         final int cost = this.getCost();
-        return cost > 0 && player.experienceLevel >= cost;
+        return cost > 0 && (player.experienceLevel >= cost || player.getAbilities().instabuild);
     }
 
     public Stream<Map.Entry<Enchantment, Integer>> getValidEnchantments() {
@@ -393,7 +451,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     public static List<Enchantment> getAvailableEnchantments(ItemStack stack, boolean allowTreasure, boolean allowUndiscoverable, boolean allowCurse) {
         List<Enchantment> list = Lists.newArrayList();
-        boolean isBook = stack.is(Items.BOOK);
+        boolean isBook = stack.getItem() instanceof BookItem;
         for (Enchantment enchantment : ForgeRegistries.ENCHANTMENTS) {
             if (enchantment.canApplyAtEnchantingTable(stack) || (isBook && enchantment.isAllowedOnBooks())) {
                 if ((!enchantment.isTreasureOnly() || allowTreasure || (enchantment.isCurse() && allowCurse)) && (enchantment.isDiscoverable() || allowUndiscoverable)) {

@@ -1,7 +1,6 @@
 package fuzs.enchantinginfuser.world.level.block.entity;
 
 import fuzs.enchantinginfuser.registry.ModRegistry;
-import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -9,11 +8,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.*;
-import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.LockCode;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.BookItem;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +28,7 @@ import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import javax.annotation.Nullable;
 
 @SuppressWarnings("NullableProblems")
-public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements Container, MenuProvider, WorldlyContainer {
+public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements WorldlyContainer {
     private final NonNullList<ItemStack> inventory = NonNullList.withSize(1, ItemStack.EMPTY);
     private LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.UP, Direction.DOWN, Direction.NORTH);
     private LockCode code = LockCode.NO_LOCK;
@@ -176,16 +174,6 @@ public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements C
 
     public boolean canOpen(Player p_213904_1_) {
         return BaseContainerBlockEntity.canUnlock(p_213904_1_, this.code, this.getDisplayName());
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
-        return this.canOpen(player) ? this.createMenu(id, playerInventory) : null;
-    }
-
-    protected AbstractContainerMenu createMenu(int id, Inventory playerInventory) {
-        return new InfuserMenu(id, playerInventory, this, ContainerLevelAccess.create(this.level, this.worldPosition));
     }
 
     @Override

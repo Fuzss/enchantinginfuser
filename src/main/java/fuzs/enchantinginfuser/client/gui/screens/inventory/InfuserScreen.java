@@ -22,6 +22,7 @@ import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentNames;
 import net.minecraft.client.renderer.GameRenderer;
@@ -480,20 +481,24 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             this.requiredPower = maxLevelResult.getFirst().orElse(-1);
             this.level = level;
             this.decrButton = new IconButton(0, 0, 10, 16, 220, 0, INFUSER_LOCATION, button -> {
-                final int newLevel = InfuserScreen.this.menu.clickEnchantmentButton(this.enchantment, false);
-                if (newLevel == -1) return;
-                this.level = newLevel;
-                EnchantingInfuser.NETWORK.sendToServer(new C2SAddEnchantLevelMessage(InfuserScreen.this.menu.containerId, this.enchantment, false));
-                this.updateButtons();
-                this.list.markOthersIncompatible();
+                do {
+                    final int newLevel = InfuserScreen.this.menu.clickEnchantmentButton(this.enchantment, false);
+                    if (newLevel == -1) return;
+                    this.level = newLevel;
+                    EnchantingInfuser.NETWORK.sendToServer(new C2SAddEnchantLevelMessage(InfuserScreen.this.menu.containerId, this.enchantment, false));
+                    this.updateButtons();
+                    this.list.markOthersIncompatible();
+                } while (button.active && button.visible && Screen.hasShiftDown());
             });
             this.incrButton = new IconButton(0, 0, 10, 16, 230, 0, INFUSER_LOCATION, button -> {
-                final int newLevel = InfuserScreen.this.menu.clickEnchantmentButton(this.enchantment, true);
-                if (newLevel == -1) return;
-                this.level = newLevel;
-                EnchantingInfuser.NETWORK.sendToServer(new C2SAddEnchantLevelMessage(InfuserScreen.this.menu.containerId, this.enchantment, true));
-                this.updateButtons();
-                this.list.markOthersIncompatible();
+                do {
+                    final int newLevel = InfuserScreen.this.menu.clickEnchantmentButton(this.enchantment, true);
+                    if (newLevel == -1) return;
+                    this.level = newLevel;
+                    EnchantingInfuser.NETWORK.sendToServer(new C2SAddEnchantLevelMessage(InfuserScreen.this.menu.containerId, this.enchantment, true));
+                    this.updateButtons();
+                    this.list.markOthersIncompatible();
+                } while (button.active && button.visible && Screen.hasShiftDown());
             }, (button, matrixStack, mouseX, mouseY) -> {
                 if (this.level >= this.maxLevel && !this.isObfuscated()) {
                     InfuserScreen.this.setActiveTooltip(this.getLowPowerComponent(LOW_POWER_COMPONENT));

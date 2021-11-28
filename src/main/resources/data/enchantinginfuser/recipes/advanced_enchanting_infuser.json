@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "A#A",
+    "#T#"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:book"
+    },
+    "#": {
+      "item": "minecraft:crying_obsidian"
+    },
+    "A": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "T": {
+      "item": "enchantinginfuser:enchanting_infuser"
+    }
+  },
+  "result": {
+    "item": "enchantinginfuser:advanced_enchanting_infuser"
+  }
+}
