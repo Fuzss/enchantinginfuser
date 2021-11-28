@@ -1,6 +1,7 @@
 package fuzs.enchantinginfuser.world.inventory;
 
 import com.google.common.collect.Lists;
+import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.network.message.S2CCompatibleEnchantsMessage;
@@ -32,6 +33,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -192,7 +194,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
             EnchantingInfuser.LOGGER.warn("trying change enchantment level beyond bounds");
             return -1;
         }
-        if (level > this.getMaxLevel(enchantment)) {
+        if (level > this.getMaxLevel(enchantment).getSecond()) {
             EnchantingInfuser.LOGGER.warn("trying change enchantment level beyond max allowed level");
             return -1;
         }
@@ -245,25 +247,26 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         }
     }
 
-    public int getMaxLevel(Enchantment enchantment) {
+    public Pair<Optional<Integer>, Integer> getMaxLevel(Enchantment enchantment) {
         final int currentPower = this.getCurrentPower();
         final int maxPower = EnchantingInfuser.CONFIG.server().maxEnchantingPower;
-        int maxLevelSpecial = this.getSpecialMaxLevel(enchantment, currentPower, maxPower);
-        if (maxLevelSpecial != -1) return maxLevelSpecial;
+        Pair<Optional<Integer>, Integer> maxLevelSpecial = this.getSpecialMaxLevel(enchantment, currentPower, maxPower);
+        if (maxLevelSpecial != null) return maxLevelSpecial;
         int minPowerByRarity = this.getMinPowerByRarity(enchantment, maxPower);
-        if (currentPower < minPowerByRarity) return 0;
+        if (currentPower < minPowerByRarity) return Pair.of(Optional.of(minPowerByRarity), 0);
         final int levelRange = (int) Math.round(maxPower * EnchantingInfuser.CONFIG.server().power.levelMultiplier);
         final int totalLevels = enchantment.getMaxLevel() - enchantment.getMinLevel();
         final int levelPercentile = totalLevels > 0 ? levelRange / totalLevels : 0;
         for (int i = 0; i <= totalLevels; i++) {
-            if (currentPower < Math.min(maxPower, minPowerByRarity + i * levelPercentile)) {
-                return enchantment.getMinLevel() + i - 1;
+            final int nextPower = Math.min(maxPower, minPowerByRarity + i * levelPercentile);
+            if (currentPower < nextPower) {
+                return Pair.of(Optional.of(nextPower), enchantment.getMinLevel() + i - 1);
             }
         }
-        return enchantment.getMaxLevel();
+        return Pair.of(Optional.empty(), enchantment.getMaxLevel());
     }
 
-    private int getSpecialMaxLevel(Enchantment enchantment, int currentPower, int maxPower) {
+    private Pair<Optional<Integer>, Integer> getSpecialMaxLevel(Enchantment enchantment, int currentPower, int maxPower) {
         double multiplier = -1.0;
         if (enchantment.isCurse()) {
             multiplier = EnchantingInfuser.CONFIG.server().power.curseMultiplier;
@@ -273,9 +276,10 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
             multiplier = EnchantingInfuser.CONFIG.server().power.treasureMultiplier;
         }
         if (multiplier != -1.0) {
-            return currentPower < maxPower * multiplier ? 0 : enchantment.getMaxLevel();
+            final int nextPower = (int) Math.round(maxPower * multiplier);
+            return currentPower < nextPower ? Pair.of(Optional.of(nextPower), 0) : Pair.of(Optional.empty(), enchantment.getMaxLevel());
         }
-        return -1;
+        return null;
     }
 
     private int getMinPowerByRarity(Enchantment enchantment, int maxPower) {

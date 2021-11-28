@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.client.gui.components.IconButton;
 import fuzs.enchantinginfuser.network.client.message.C2SAddEnchantLevelMessage;
@@ -311,7 +312,6 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         poseStack.translate(0.0, 0.0, 300.0);
         this.font.drawShadow(poseStack, power, posX + 19 - 2 - this.font.width(power), posY + 6 + 3, 16777215);
         poseStack.popPose();
-//        this.itemRenderer.renderGuiItemDecorations(this.font, itemstack, posX, posY);
         this.itemRenderer.blitOffset = 0.0F;
         if (mouseX >= posX && mouseY >= posY && mouseX < posX + 16 && mouseY < posY + 16) {
             this.setActiveTooltip(Lists.newArrayList(new TranslatableComponent("gui.enchantinginfuser.tooltip.enchanting_power", power).withStyle(ChatFormatting.YELLOW).getVisualOrderText()));
@@ -458,11 +458,12 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     }
 
     private class EnchantmentListEntry implements ContainerEventHandler {
-        private static final TranslatableComponent UNKNOWN_ENCHANT_COMPONENT = new TranslatableComponent("gui.enchantinginfuser.tooltip.unknown_enchantment");
-        private static final TranslatableComponent LOW_POWER_COMPONENT = new TranslatableComponent("gui.enchantinginfuser.tooltip.low_power");
+        private static final Component UNKNOWN_ENCHANT_COMPONENT = new TranslatableComponent("gui.enchantinginfuser.tooltip.unknown_enchantment").withStyle(ChatFormatting.GRAY);
+        private static final Component LOW_POWER_COMPONENT = new TranslatableComponent("gui.enchantinginfuser.tooltip.low_power").withStyle(ChatFormatting.GRAY);
 
         private final Enchantment enchantment;
         private final int maxLevel;
+        private final int requiredPower;
         private final Button decrButton;
         private final Button incrButton;
         private int level;
@@ -474,7 +475,9 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
 
         public EnchantmentListEntry(Enchantment enchantment, int level) {
             this.enchantment = enchantment;
-            this.maxLevel = InfuserScreen.this.menu.getMaxLevel(enchantment);
+            final Pair<Optional<Integer>, Integer> maxLevelResult = InfuserScreen.this.menu.getMaxLevel(enchantment);
+            this.maxLevel = maxLevelResult.getSecond();
+            this.requiredPower = maxLevelResult.getFirst().orElse(-1);
             this.level = level;
             this.decrButton = new IconButton(0, 0, 10, 16, 220, 0, INFUSER_LOCATION, button -> {
                 final int newLevel = InfuserScreen.this.menu.clickEnchantmentButton(this.enchantment, false);
@@ -493,10 +496,17 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
                 this.list.markOthersIncompatible();
             }, (button, matrixStack, mouseX, mouseY) -> {
                 if (this.level >= this.maxLevel && !this.isObfuscated()) {
-                    InfuserScreen.this.setActiveTooltip(InfuserScreen.this.font.split(LOW_POWER_COMPONENT, 175));
+                    InfuserScreen.this.setActiveTooltip(this.getLowPowerComponent(LOW_POWER_COMPONENT));
                 }
             });
             this.updateButtons();
+        }
+
+        private List<FormattedCharSequence> getLowPowerComponent(Component component) {
+            List<FormattedCharSequence> list = Lists.newArrayList();
+            list.add(new TranslatableComponent("gui.enchantinginfuser.tooltip.required_enchanting_power", new TextComponent(String.valueOf(InfuserScreen.this.menu.getCurrentPower())).withStyle(ChatFormatting.RED), new TextComponent(String.valueOf(this.requiredPower))).getVisualOrderText());
+            list.addAll(InfuserScreen.this.font.split(component, 175));
+            return list;
         }
 
         public void setList(ScrollingList list) {
@@ -581,7 +591,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
 
         private void handleTooltip(Enchantment enchantment) {
             if (this.isObfuscated()) {
-                InfuserScreen.this.setActiveTooltip(InfuserScreen.this.font.split(UNKNOWN_ENCHANT_COMPONENT, 175));
+                InfuserScreen.this.setActiveTooltip(this.getLowPowerComponent(UNKNOWN_ENCHANT_COMPONENT));
             } else if (this.isIncompatible()) {
                 final Component incompatibleComponent = new TranslatableComponent("gui.enchantinginfuser.tooltip.incompatible", this.incompatible.stream()
                         .map(e -> (MutableComponent) new TranslatableComponent(e.getDescriptionId()))
