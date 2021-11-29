@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Vector3f;
 import fuzs.enchantinginfuser.EnchantingInfuser;
+import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -20,7 +21,7 @@ import net.minecraft.world.level.block.entity.EnchantmentTableBlockEntity;
  * copied from enchanting table renderer so we can replace book texture
  * also book texture needs to be stitched on atlas
  */
-public class InfuserRenderer implements BlockEntityRenderer<EnchantmentTableBlockEntity> {
+public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> {
    /** The texture for the book above the enchantment table. */
    public static final Material BOOK_LOCATION = new Material(InventoryMenu.BLOCK_ATLAS, new ResourceLocation(EnchantingInfuser.MOD_ID, "entity/enchanting_infuser_book"));
    private final BookModel bookModel;
@@ -29,7 +30,8 @@ public class InfuserRenderer implements BlockEntityRenderer<EnchantmentTableBloc
       this.bookModel = new BookModel(pContext.bakeLayer(ModelLayers.BOOK));
    }
 
-   public void render(EnchantmentTableBlockEntity pBlockEntity, float pPartialTick, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pPackedOverlay) {
+   @Override
+   public void render(InfuserBlockEntity pBlockEntity, float pPartialTick, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pPackedOverlay) {
       pPoseStack.pushPose();
       pPoseStack.translate(0.5D, 0.75D, 0.5D);
       float f = (float)pBlockEntity.time + pPartialTick;

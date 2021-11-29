@@ -9,6 +9,7 @@ issueTrackerURL="${modIssueUrl}"
     description="${modDescription}"
     version="${modVersion}"
     authors="${modAuthor}"
+    credits="release"
     logoFile="mod_banner.png"
     logoBlur=false
     displayURL="${modPageUrl}"

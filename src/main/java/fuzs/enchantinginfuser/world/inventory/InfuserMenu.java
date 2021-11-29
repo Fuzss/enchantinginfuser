@@ -319,7 +319,6 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     private int getTotalCosts() {
         // this loops through all enchantments that can be applied to the current item
         // it then checks for compatibility and treats those as duplicates, the 'duplicate' with the higher cost is kept
-        // TODO books!
         Map<Enchantment, Pair<Enchantment.Rarity, Integer>> map = Maps.newHashMap();
         for (Enchantment enchantment : this.enchantmentsToLevel.keySet()) {
             if (!EnchantingInfuser.CONFIG.server().costs.vanillaCostOnly || ForgeRegistries.ENCHANTMENTS.getKey(enchantment).getNamespace().equals("minecraft")) {

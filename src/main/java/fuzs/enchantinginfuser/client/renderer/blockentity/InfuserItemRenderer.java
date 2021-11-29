@@ -2,6 +2,7 @@ package fuzs.enchantinginfuser.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
+import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -20,7 +21,7 @@ public class InfuserItemRenderer extends InfuserRenderer {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void render(EnchantmentTableBlockEntity tileEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
+    public void render(InfuserBlockEntity tileEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
         super.render(tileEntityIn, partialTicks, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
         if (tileEntityIn.open == 0.0F && tileEntityIn.oOpen == 0.0F) return;
         ItemStack itemToEnchant = ((Container) tileEntityIn).getItem(0);
