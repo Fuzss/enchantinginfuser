@@ -10,16 +10,16 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.entity.EnchantmentTableBlockEntity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
+/**
+ * copied from enchanting table renderer so we can replace book texture
+ * also book texture needs to be stitched on atlas
+ */
 public class InfuserRenderer implements BlockEntityRenderer<EnchantmentTableBlockEntity> {
    /** The texture for the book above the enchantment table. */
    public static final Material BOOK_LOCATION = new Material(InventoryMenu.BLOCK_ATLAS, new ResourceLocation(EnchantingInfuser.MOD_ID, "entity/enchanting_infuser_book"));

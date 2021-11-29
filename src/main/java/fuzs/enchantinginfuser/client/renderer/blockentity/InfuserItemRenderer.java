@@ -22,13 +22,17 @@ public class InfuserItemRenderer extends InfuserRenderer {
     @Override
     public void render(EnchantmentTableBlockEntity tileEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
         super.render(tileEntityIn, partialTicks, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
+        if (tileEntityIn.open == 0.0F && tileEntityIn.oOpen == 0.0F) return;
         ItemStack itemToEnchant = ((Container) tileEntityIn).getItem(0);
         matrixStackIn.pushPose();
         matrixStackIn.translate(0.5F, 1.0F, 0.5F);
         BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(itemToEnchant, tileEntityIn.getLevel(), null, 0);
         float hoverOffset = Mth.sin((tileEntityIn.time + partialTicks) / 10.0F) * 0.1F + 0.1F;
         float modelYScale = model.getTransforms().getTransform(ItemTransforms.TransformType.GROUND).scale.y();
-        matrixStackIn.translate(0.0, hoverOffset + 0.25F * modelYScale, 0.0);
+        float openness = Mth.lerp(partialTicks, tileEntityIn.oOpen, tileEntityIn.open);
+        matrixStackIn.translate(0.0, hoverOffset + 0.25F * modelYScale * openness - 0.15F * (1.0F - openness), 0.0);
+        final float scale = openness * 0.8F + 0.2F;
+        matrixStackIn.scale(scale, scale, scale);
         matrixStackIn.mulPose(Vector3f.YP.rotation((tileEntityIn.time + partialTicks) / 20.0F));
         Minecraft.getInstance().getItemRenderer().render(itemToEnchant, ItemTransforms.TransformType.GROUND, false, matrixStackIn, bufferIn, combinedLightIn, OverlayTexture.NO_OVERLAY, model);
         matrixStackIn.popPose();

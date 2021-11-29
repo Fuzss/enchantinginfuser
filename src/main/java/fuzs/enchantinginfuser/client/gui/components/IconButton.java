@@ -12,12 +12,12 @@ import net.minecraft.resources.ResourceLocation;
  * a copy of {@link net.minecraft.client.gui.components.ImageButton} with mutable texture coordinates
  */
 public class IconButton extends Button {
-    private final ResourceLocation resourceLocation;
+    protected final ResourceLocation resourceLocation;
     protected int xTexStart;
     protected int yTexStart;
-    private final int yDiffTex;
-    private final int textureWidth;
-    private final int textureHeight;
+    protected final int yDiffTex;
+    protected final int textureWidth;
+    protected final int textureHeight;
 
     public IconButton(int x, int y, int width, int height, int xTexStart, int yTexStart, ResourceLocation resourceLocation, OnPress onPress) {
         this(x, y, width, height, xTexStart, yTexStart, height, resourceLocation, 256, 256, onPress);
