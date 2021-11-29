@@ -113,9 +113,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         String s = this.searchBox.getValue();
         super.resize(pMinecraft, pWidth, pHeight);
         this.searchBox.setValue(s);
-        if (!this.searchBox.getValue().isEmpty()) {
-            this.refreshSearchResults();
-        }
+        this.refreshSearchResults();
     }
 
     @Override
@@ -187,6 +185,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         } else {
             this.menu.getSortedEntries().stream()
                     .filter(e -> new TranslatableComponent(e.getKey().getDescriptionId()).getString().toLowerCase(Locale.ROOT).contains(s))
+                    // don't show obfuscated entries
+                    .filter(e -> this.menu.getMaxLevel(e.getKey()).getSecond() > 0)
                     .map(e -> new EnchantmentListEntry(e.getKey(), e.getValue()))
                     .forEach(this.scrollingList::addEntry);
         }
@@ -648,7 +648,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
                     list.addAll(InfuserScreen.this.font.split(new TranslatableComponent(enchantment.getDescriptionId() + ".description").withStyle(ChatFormatting.GRAY), 175));
                 }
                 // kinda useless for there to just be a name on the tooltip without a description
-                // descriptions may be provided by enchantment descriptions mod
+                // descriptions may be provided by enchantment descriptions mod, but many mods have them built-in now anyways
                 if (!list.isEmpty()) {
                     final MutableComponent levelsComponent = new TranslatableComponent("enchantment.level." + enchantment.getMinLevel());
                     if (enchantment.getMinLevel() != enchantment.getMaxLevel()) {

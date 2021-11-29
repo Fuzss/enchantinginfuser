@@ -1,6 +1,6 @@
 {   "parent": "minecraft:block/block",
     "textures": {
-        "particle": "enchantinginfuser:block/enchanting_infuser_bottom_amethyst",
+        "particle": "enchantinginfuser:block/enchanting_infuser_top_amethyst",
         "bottom": "enchantinginfuser:block/enchanting_infuser_bottom_amethyst",
         "top": "enchantinginfuser:block/enchanting_infuser_top_amethyst",
         "side": "enchantinginfuser:block/enchanting_infuser_side_amethyst"

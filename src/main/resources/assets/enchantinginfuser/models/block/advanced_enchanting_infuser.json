@@ -1,6 +1,6 @@
 {   "parent": "minecraft:block/block",
     "textures": {
-        "particle": "enchantinginfuser:block/enchanting_infuser_bottom_netherite",
+        "particle": "enchantinginfuser:block/enchanting_infuser_top_netherite",
         "bottom": "enchantinginfuser:block/enchanting_infuser_bottom_netherite",
         "top": "enchantinginfuser:block/enchanting_infuser_top_netherite",
         "side": "enchantinginfuser:block/enchanting_infuser_side_netherite"
