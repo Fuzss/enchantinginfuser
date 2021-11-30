@@ -48,9 +48,9 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     private final Container enchantSlots;
     private final ContainerLevelAccess levelAccess;
     private final Player player;
+    private InfuserBlock.InfuserType infuserType;
     private final DataSlot enchantingPower = DataSlot.standalone();
     private final DataSlot enchantingCost = DataSlot.standalone();
-    private final DataSlot infuserType = DataSlot.standalone();
     private Map<Enchantment, Integer> enchantmentsToLevel;
 
     public InfuserMenu(int id, Inventory playerInventory) {
@@ -62,6 +62,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         this.enchantSlots = container;
         this.levelAccess = levelAccess;
         this.player = inventory.player;
+        this.infuserType = type;
         this.addSlot(new Slot(container, 0, 8, 34) {
             @Override
             public boolean mayPlace(ItemStack stack) {
@@ -115,7 +116,6 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         });
         this.addDataSlot(this.enchantingPower);
         this.addDataSlot(this.enchantingCost);
-        this.addDataSlot(this.infuserType).set(type == InfuserBlock.InfuserType.ADVANCED ? 1 : 0);
         this.addSlotListener(this);
     }
 
@@ -152,8 +152,13 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         }
     }
 
-    public void setEnchantingPower(Level level, BlockPos pos) {
+    public int setEnchantingPower(Level level, BlockPos pos) {
         int power = this.getAvailablePower(level, pos);
+        this.enchantingPower.set(power);
+        return power;
+    }
+
+    public void setEnchantingPower(int power) {
         this.enchantingPower.set(power);
     }
 
@@ -255,7 +260,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     public Pair<Optional<Integer>, Integer> getMaxLevel(Enchantment enchantment) {
         final int currentPower = this.getCurrentPower();
-        final int maxPower = this.isAdvanced() ? EnchantingInfuser.CONFIG.server().maximumPowerAdvanced : EnchantingInfuser.CONFIG.server().maximumPowerNormal;
+        final int maxPower = this.infuserType.isAdvanced() ? EnchantingInfuser.CONFIG.server().maximumPowerAdvanced : EnchantingInfuser.CONFIG.server().maximumPowerNormal;
         Pair<Optional<Integer>, Integer> maxLevelSpecial = this.getSpecialMaxLevel(enchantment, currentPower, maxPower);
         if (maxLevelSpecial != null) return maxLevelSpecial;
         int minPowerByRarity = this.getMinPowerByRarity(enchantment, maxPower);
@@ -301,7 +306,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     private int getScaledCosts() {
         final double totalCosts = this.getTotalCosts();
-        final int maxCost = this.isAdvanced() ? EnchantingInfuser.CONFIG.server().costs.maximumCostAdvanced : EnchantingInfuser.CONFIG.server().costs.maximumCostNormal;
+        final int maxCost = this.infuserType.isAdvanced() ? EnchantingInfuser.CONFIG.server().costs.maximumCostAdvanced : EnchantingInfuser.CONFIG.server().costs.maximumCostNormal;
         if (totalCosts > maxCost && !(this.enchantSlots.getItem(0).getItem() instanceof BookItem)) {
             final double ratio = maxCost / totalCosts;
             final int minCosts = this.enchantmentsToLevel.values().stream()
@@ -312,8 +317,8 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         return this.getAllCosts();
     }
 
-    private boolean isAdvanced() {
-        return this.infuserType.get() == 1;
+    public void setType(InfuserBlock.InfuserType type) {
+        this.infuserType = type;
     }
     
     private int getTotalCosts() {

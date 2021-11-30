@@ -226,7 +226,10 @@ curseforge {
         project.findProperty('curseProjectVersion').replaceAll(" ", "").split(",").each { version -> addGameVersion version }
         mainArtifact jar
         addArtifact sourceJar
-        relations { requiredDependency 'puzzles-lib' }
+        relations {
+            requiredDependency 'puzzles-lib'
+            optionalDependency 'enchantment-descriptions'
+        }
     }
     options {
         // doesn't upload, only prints json to console

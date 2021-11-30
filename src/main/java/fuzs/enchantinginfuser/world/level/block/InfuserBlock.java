@@ -1,11 +1,14 @@
 package fuzs.enchantinginfuser.world.level.block;
 
+import fuzs.enchantinginfuser.EnchantingInfuser;
+import fuzs.enchantinginfuser.network.message.S2CInfuserDataMessage;
 import fuzs.enchantinginfuser.registry.ModRegistry;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -52,7 +55,8 @@ public class InfuserBlock extends EnchantmentTableBlock {
             if (pPlayer.containerMenu instanceof InfuserMenu menu) {
                 // items might still be in inventory slots, so this needs to update so that enchantment buttons are shown
                 menu.slotsChanged(blockEntity);
-                menu.setEnchantingPower(pLevel, pPos);
+                final int power = menu.setEnchantingPower(pLevel, pPos);
+                EnchantingInfuser.NETWORK.sendTo(new S2CInfuserDataMessage(pPlayer.containerMenu.containerId, power, this.getInfuserType()), (ServerPlayer) pPlayer);
             }
             return InteractionResult.CONSUME;
         }
@@ -124,6 +128,10 @@ public class InfuserBlock extends EnchantmentTableBlock {
     }
 
     public enum InfuserType {
-        NORMAL, ADVANCED
+        NORMAL, ADVANCED;
+
+        public boolean isAdvanced() {
+            return this == ADVANCED;
+        }
     }
 }
