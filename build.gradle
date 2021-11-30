@@ -25,7 +25,7 @@ apply plugin: 'eclipse'
 //apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(16)
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 
 ext.mcversion = "${minecraftVersion}"
@@ -72,9 +72,9 @@ dependencies {
 //    annotationProcessor 'org.spongepowered:mixin:0.8.4:processor'
 
     // don't enable these for puzzles, they'll be forced upon all dependencies then via maven
-    runtimeOnly fg.deobf("curse.maven:catalogue-459701:3399552")
-    runtimeOnly fg.deobf("curse.maven:bettermodsbutton-541584:3519040")
-    runtimeOnly fg.deobf("curse.maven:configmenusforge-544048:3518700")
+    runtimeOnly fg.deobf("curse.maven:configured-457570:3434071")
+    runtimeOnly fg.deobf("curse.maven:bettermodsbutton-541584:3508146")
+    runtimeOnly fg.deobf("curse.maven:configmenusforge-544048:3518697")
 
     // from local maven, those builds are not obfuscated
     implementation "fuzs.puzzleslib:PuzzlesLib:${puzzlesVersion}"
@@ -226,7 +226,10 @@ curseforge {
         project.findProperty('curseProjectVersion').replaceAll(" ", "").split(",").each { version -> addGameVersion version }
         mainArtifact jar
         addArtifact sourceJar
-        relations { requiredDependency 'puzzles-lib' }
+        relations {
+            requiredDependency 'puzzles-lib'
+            optionalDependency 'enchantment-descriptions'
+        }
     }
     options {
         // doesn't upload, only prints json to console

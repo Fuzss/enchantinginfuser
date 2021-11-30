@@ -1,24 +1,23 @@
 package fuzs.enchantinginfuser.world.level.block.entity;
 
 import fuzs.enchantinginfuser.registry.ModRegistry;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.ContainerHelper;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.ISidedInventory;
+import net.minecraft.inventory.ItemStackHelper;
+import net.minecraft.item.BookItem;
+import net.minecraft.item.EnchantedBookItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.tileentity.EnchantingTableTileEntity;
+import net.minecraft.tileentity.LockableTileEntity;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.LockCode;
-import net.minecraft.world.WorldlyContainer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BookItem;
-import net.minecraft.world.item.EnchantedBookItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.EnchantmentTableBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -28,58 +27,54 @@ import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import javax.annotation.Nullable;
 
 @SuppressWarnings("NullableProblems")
-public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements WorldlyContainer {
+public class InfuserBlockEntity extends EnchantingTableTileEntity implements ISidedInventory {
     private final NonNullList<ItemStack> inventory = NonNullList.withSize(1, ItemStack.EMPTY);
     private LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.UP, Direction.DOWN, Direction.NORTH);
     private LockCode code = LockCode.NO_LOCK;
 
-    public InfuserBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
-        super(pWorldPosition, pBlockState);
-    }
-
     @Override
-    public BlockEntityType<?> getType() {
+    public TileEntityType<?> getType() {
         // set in super constructor, so just override the whole method
-        return ModRegistry.INFUSER_BLOCK_ENTITY_TYPE.get();
+        return ModRegistry.INFUSER_BLOCK_ENTITY_TYPE;
     }
 
     @Override
-    public void load(CompoundTag nbt) {
-        super.load(nbt);
+    public void load(BlockState state, CompoundNBT nbt) {
+        super.load(state, nbt);
         this.inventory.clear();
-        ContainerHelper.loadAllItems(nbt, this.inventory);
+        ItemStackHelper.loadAllItems(nbt, this.inventory);
         this.code = LockCode.fromTag(nbt);
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound) {
+    public CompoundNBT save(CompoundNBT compound) {
         this.saveMetadataAndItems(compound);
         this.code.addToTag(compound);
         return compound;
     }
 
-    private CompoundTag saveMetadataAndItems(CompoundTag compound) {
+    private CompoundNBT saveMetadataAndItems(CompoundNBT compound) {
         super.save(compound);
-        ContainerHelper.saveAllItems(compound, this.inventory, true);
+        ItemStackHelper.saveAllItems(compound, this.inventory, true);
         return compound;
     }
 
     @Override
     @Nullable
-    public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return new ClientboundBlockEntityDataPacket(this.worldPosition, -1, this.getUpdateTag());
+    public SUpdateTileEntityPacket getUpdatePacket() {
+        return new SUpdateTileEntityPacket(this.worldPosition, -1, this.getUpdateTag());
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        return this.saveMetadataAndItems(new CompoundTag());
+    public CompoundNBT getUpdateTag() {
+        return this.saveMetadataAndItems(new CompoundNBT());
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt){
-        CompoundTag tag = pkt.getTag();
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt){
+        CompoundNBT tag = pkt.getTag();
         this.inventory.clear();
-        ContainerHelper.loadAllItems(tag, this.inventory);
+        ItemStackHelper.loadAllItems(tag, this.inventory);
     }
 
     @Override
@@ -112,12 +107,12 @@ public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements W
 
     @Override
     public ItemStack removeItem(int index, int count) {
-        return ContainerHelper.removeItem(this.inventory, index, count);
+        return ItemStackHelper.removeItem(this.inventory, index, count);
     }
 
     @Override
     public ItemStack removeItemNoUpdate(int index) {
-        return ContainerHelper.takeItem(this.inventory, index);
+        return ItemStackHelper.takeItem(this.inventory, index);
     }
 
     @Override
@@ -129,7 +124,7 @@ public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements W
     }
 
     @Override
-    public boolean stillValid(Player player) {
+    public boolean stillValid(PlayerEntity player) {
         if (this.level != null && this.level.getBlockEntity(this.worldPosition) != this) {
             return false;
         } else {
@@ -168,12 +163,12 @@ public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements W
     }
 
     @Override
-    public Component getDisplayName() {
+    public ITextComponent getDisplayName() {
         return this.getName();
     }
 
-    public boolean canOpen(Player p_213904_1_) {
-        return BaseContainerBlockEntity.canUnlock(p_213904_1_, this.code, this.getDisplayName());
+    public boolean canOpen(PlayerEntity p_213904_1_) {
+        return LockableTileEntity.canUnlock(p_213904_1_, this.code, this.getDisplayName());
     }
 
     @Override

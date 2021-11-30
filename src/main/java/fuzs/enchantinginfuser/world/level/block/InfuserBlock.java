@@ -1,72 +1,73 @@
 package fuzs.enchantinginfuser.world.level.block;
 
-import fuzs.enchantinginfuser.registry.ModRegistry;
+import fuzs.enchantinginfuser.EnchantingInfuser;
+import fuzs.enchantinginfuser.network.message.S2CInfuserDataMessage;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.*;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.EnchantmentTableBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.EnchantmentTableBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.EnchantingTableBlock;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.inventory.container.SimpleNamedContainerProvider;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
+import net.minecraft.util.IWorldPosCallable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.Random;
 
 @SuppressWarnings("deprecation")
-public class InfuserBlock extends EnchantmentTableBlock {
+public class InfuserBlock extends EnchantingTableBlock {
     public InfuserBlock(Properties p_52953_) {
         super(p_52953_);
     }
 
     @Override
-    public BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
-        return new InfuserBlockEntity(pPos, pState);
+    public TileEntity newBlockEntity(IBlockReader p_196283_1_) {
+        return new InfuserBlockEntity();
     }
 
     protected InfuserType getInfuserType() {
         return InfuserType.NORMAL;
     }
 
-    @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
-        return pLevel.isClientSide ? createTickerHelper(pBlockEntityType, ModRegistry.INFUSER_BLOCK_ENTITY_TYPE.get(), EnchantmentTableBlockEntity::bookAnimationTick) : null;
-    }
-
-    @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        if (pLevel.getBlockEntity(pPos) instanceof InfuserBlockEntity blockEntity) {
+    public ActionResultType use(BlockState pState, World pLevel, BlockPos pPos, PlayerEntity pPlayer, Hand pHand, BlockRayTraceResult pHit) {
+        final TileEntity blockEntity = pLevel.getBlockEntity(pPos);
+        if (blockEntity instanceof InfuserBlockEntity) {
             if (pLevel.isClientSide) {
-                return InteractionResult.SUCCESS;
+                return ActionResultType.SUCCESS;
             }
             pPlayer.openMenu(pState.getMenuProvider(pLevel, pPos));
-            if (pPlayer.containerMenu instanceof InfuserMenu menu) {
+            if (pPlayer.containerMenu instanceof InfuserMenu) {
                 // items might still be in inventory slots, so this needs to update so that enchantment buttons are shown
-                menu.slotsChanged(blockEntity);
-                menu.setEnchantingPower(pLevel, pPos);
+                pPlayer.containerMenu.slotsChanged(((InfuserBlockEntity) blockEntity));
+                final int power = ((InfuserMenu) pPlayer.containerMenu).setEnchantingPower(pLevel, pPos);
+                EnchantingInfuser.NETWORK.sendTo(new S2CInfuserDataMessage(pPlayer.containerMenu.containerId, power, this.getInfuserType()), (ServerPlayerEntity) pPlayer);
             }
-            return InteractionResult.CONSUME;
+            return ActionResultType.CONSUME;
         }
-        return InteractionResult.PASS;
+        return ActionResultType.PASS;
     }
 
     @Override
     @Nullable
-    public MenuProvider getMenuProvider(BlockState pState, Level pLevel, BlockPos pPos) {
-        if (pLevel.getBlockEntity(pPos) instanceof InfuserBlockEntity blockentity) {
-            Component component = blockentity.getDisplayName();
-            return new SimpleMenuProvider((p_52959_, p_52960_, p_52961_) -> {
-                if (blockentity.canOpen(p_52961_)) {
-                    return new InfuserMenu(p_52959_, p_52960_, blockentity, ContainerLevelAccess.create(pLevel, pPos), this.getInfuserType());
+    public INamedContainerProvider getMenuProvider(BlockState pState, World pLevel, BlockPos pPos) {
+        final TileEntity blockEntity = pLevel.getBlockEntity(pPos);
+        if (blockEntity instanceof InfuserBlockEntity) {
+            ITextComponent component = ((InfuserBlockEntity) blockEntity).getDisplayName();
+            return new SimpleNamedContainerProvider((p_52959_, p_52960_, p_52961_) -> {
+                if (((InfuserBlockEntity) blockEntity).canOpen(p_52961_)) {
+                    return new InfuserMenu(p_52959_, p_52960_, ((InfuserBlockEntity) blockEntity), IWorldPosCallable.create(pLevel, pPos), this.getInfuserType());
                 }
                 return null;
             }, component);
@@ -76,7 +77,7 @@ public class InfuserBlock extends EnchantmentTableBlock {
     }
 
     @Override
-    public void animateTick(BlockState pState, Level pLevel, BlockPos pPos, Random pRand) {
+    public void animateTick(BlockState pState, World pLevel, BlockPos pPos, Random pRand) {
         super.animateTick(pState, pLevel, pPos, pRand);
         for(int i = -2; i <= 2; ++i) {
             for(int j = -2; j <= 2; ++j) {
@@ -99,10 +100,11 @@ public class InfuserBlock extends EnchantmentTableBlock {
     }
 
     @Override
-    public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+    public void onRemove(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!state.is(newState.getBlock())) {
-            if (worldIn.getBlockEntity(pos) instanceof InfuserBlockEntity blockEntity) {
-                Containers.dropContents(worldIn, pos, blockEntity);
+            final TileEntity blockEntity = worldIn.getBlockEntity(pos);
+            if (blockEntity instanceof InfuserBlockEntity) {
+                InventoryHelper.dropContents(worldIn, pos, ((InfuserBlockEntity) blockEntity));
             }
         }
         super.onRemove(state, worldIn, pos, newState, isMoving);
@@ -114,9 +116,10 @@ public class InfuserBlock extends EnchantmentTableBlock {
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState blockState, Level worldIn, BlockPos pos) {
-        if (worldIn.getBlockEntity(pos) instanceof InfuserBlockEntity blockEntity) {
-            if (!blockEntity.getItem(0).isEmpty()) {
+    public int getAnalogOutputSignal(BlockState blockState, World worldIn, BlockPos pos) {
+        final TileEntity blockEntity = worldIn.getBlockEntity(pos);
+        if (blockEntity instanceof InfuserBlockEntity) {
+            if (!((InfuserBlockEntity) blockEntity).getItem(0).isEmpty()) {
                 return 15;
             }
         }
@@ -124,6 +127,10 @@ public class InfuserBlock extends EnchantmentTableBlock {
     }
 
     public enum InfuserType {
-        NORMAL, ADVANCED
+        NORMAL, ADVANCED;
+
+        public boolean isAdvanced() {
+            return this == ADVANCED;
+        }
     }
 }

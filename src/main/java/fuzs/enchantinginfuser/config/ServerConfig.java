@@ -1,7 +1,7 @@
 package fuzs.enchantinginfuser.config;
 
-import fuzs.puzzleslib.config.AbstractConfig;
-import fuzs.puzzleslib.config.annotation.Config;
+import fuzs.puzzleslib.config.v2.AbstractConfig;
+import fuzs.puzzleslib.config.v2.annotation.Config;
 
 public class ServerConfig extends AbstractConfig {
     @Config(description = {"Maximum enchanting power provided by bookshelves to scale infuser costs by.", "This is basically how many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "This option only affects normal enchanting infusers."})

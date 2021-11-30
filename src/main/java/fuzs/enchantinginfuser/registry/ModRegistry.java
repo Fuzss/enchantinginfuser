@@ -5,24 +5,30 @@ import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.enchantinginfuser.world.level.block.AdvancedInfuserBlock;
 import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
-import fuzs.puzzleslib.registry.RegistryManager;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
-import net.minecraftforge.fmllegacy.RegistryObject;
+import fuzs.puzzleslib.PuzzlesLib;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.material.MaterialColor;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraftforge.registries.ObjectHolder;
 
 public class ModRegistry {
-    private static final RegistryManager REGISTRY = RegistryManager.of(EnchantingInfuser.MOD_ID);
-    public static final RegistryObject<Block> INFUSER_BLOCK = REGISTRY.registerBlockWithItem("enchanting_infuser", () -> new InfuserBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().strength(5.0F, 1200.0F)), CreativeModeTab.TAB_DECORATIONS);
-    public static final RegistryObject<Block> ADVANCED_INFUSER_BLOCK = REGISTRY.registerBlockWithItem("advanced_enchanting_infuser", () -> new AdvancedInfuserBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().strength(5.0F, 1200.0F)), CreativeModeTab.TAB_DECORATIONS);
-    public static final RegistryObject<BlockEntityType<InfuserBlockEntity>> INFUSER_BLOCK_ENTITY_TYPE = REGISTRY.registerRawBlockEntityType("enchanting_infuser", () -> BlockEntityType.Builder.of(InfuserBlockEntity::new, INFUSER_BLOCK.get(), ADVANCED_INFUSER_BLOCK.get()));
-    public static final RegistryObject<MenuType<InfuserMenu>> INFUSING_MENU_TYPE = REGISTRY.registerRawMenuType("infusing", () -> InfuserMenu::new);
+    @ObjectHolder(EnchantingInfuser.MOD_ID + ":" + "enchanting_infuser")
+    public static final Block INFUSER_BLOCK = null;
+    @ObjectHolder(EnchantingInfuser.MOD_ID + ":" + "advanced_enchanting_infuser")
+    public static final Block ADVANCED_INFUSER_BLOCK = null;
+    @ObjectHolder(EnchantingInfuser.MOD_ID + ":" + "enchanting_infuser")
+    public static final TileEntityType<InfuserBlockEntity> INFUSER_BLOCK_ENTITY_TYPE = null;
+    @ObjectHolder(EnchantingInfuser.MOD_ID + ":" + "infusing")
+    public static final ContainerType<InfuserMenu> INFUSING_MENU_TYPE = null;
 
     public static void touch() {
-
+        PuzzlesLib.getRegistryManagerV2().registerBlockWithItem("enchanting_infuser", () -> new InfuserBlock(AbstractBlock.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().strength(5.0F, 1200.0F)), ItemGroup.TAB_DECORATIONS);
+        PuzzlesLib.getRegistryManagerV2().registerBlockWithItem("advanced_enchanting_infuser", () -> new AdvancedInfuserBlock(AbstractBlock.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().strength(5.0F, 1200.0F)), ItemGroup.TAB_DECORATIONS);
+        PuzzlesLib.getRegistryManagerV2().registerRawTileEntityType("enchanting_infuser", () -> TileEntityType.Builder.of(InfuserBlockEntity::new, INFUSER_BLOCK, ADVANCED_INFUSER_BLOCK));
+        PuzzlesLib.getRegistryManagerV2().registerRawContainerType("infusing", () -> InfuserMenu::new);
     }
 }
