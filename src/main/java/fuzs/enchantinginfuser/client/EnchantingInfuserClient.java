@@ -23,7 +23,7 @@ public class EnchantingInfuserClient {
 
     @SubscribeEvent
     public static void onTextureStitch(final TextureStitchEvent.Pre evt) {
-        if (evt.getMap().location().equals(InfuserRenderer.BOOK_LOCATION.atlasLocation())) {
+        if (evt.getAtlas().location().equals(InfuserRenderer.BOOK_LOCATION.atlasLocation())) {
             evt.addSprite(InfuserRenderer.BOOK_LOCATION.texture());
         }
     }
