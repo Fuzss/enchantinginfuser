@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v3.0.1-1.18] - 2021-12-02
+### Changed
+- Switched block entity data syncing to new vanilla methods
+
 ## [v3.0.0-1.18] - 2021-12-01
 - Ported to Minecraft 1.18
 

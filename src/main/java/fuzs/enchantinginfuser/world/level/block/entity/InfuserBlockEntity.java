@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.ContainerHelper;
@@ -46,40 +45,27 @@ public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements W
     @Override
     public void load(CompoundTag nbt) {
         super.load(nbt);
+        this.code = LockCode.fromTag(nbt);
         this.inventory.clear();
         ContainerHelper.loadAllItems(nbt, this.inventory);
-        this.code = LockCode.fromTag(nbt);
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound) {
-        this.saveMetadataAndItems(compound);
-        this.code.addToTag(compound);
-        return compound;
-    }
-
-    private CompoundTag saveMetadataAndItems(CompoundTag compound) {
-        super.save(compound);
-        ContainerHelper.saveAllItems(compound, this.inventory, true);
-        return compound;
+    protected void saveAdditional(CompoundTag compoundTag) {
+        super.saveAdditional(compoundTag);
+        this.code.addToTag(compoundTag);
+        ContainerHelper.saveAllItems(compoundTag, this.inventory, true);
     }
 
     @Override
-    @Nullable
+    @org.jetbrains.annotations.Nullable
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
     public CompoundTag getUpdateTag() {
-        return this.saveMetadataAndItems(new CompoundTag());
-    }
-
-    @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt){
-        CompoundTag tag = pkt.getTag();
-        this.inventory.clear();
-        ContainerHelper.loadAllItems(tag, this.inventory);
+        return this.saveWithoutMetadata();
     }
 
     @Override
