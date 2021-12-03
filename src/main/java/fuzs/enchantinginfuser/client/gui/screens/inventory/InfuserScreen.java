@@ -498,10 +498,10 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
                         RenderSystem.setShader(GameRenderer::getPositionTexShader);
                         RenderSystem.setShaderTexture(0, this.resourceLocation);
                         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-                        int index = this.getYImage(this.isHovered);
+                        int index = this.getYImage(this.isHoveredOrFocused());
                         blit(poseStack, this.x + 2, this.y, this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
                         blit(poseStack, this.x - 4, this.y, this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
-                        if (this.isHovered) {
+                        if (this.isHoveredOrFocused()) {
                             this.renderToolTip(poseStack, mouseX, mouseY);
                         }
                     } else {
@@ -530,10 +530,10 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
                         RenderSystem.setShader(GameRenderer::getPositionTexShader);
                         RenderSystem.setShaderTexture(0, this.resourceLocation);
                         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-                        int index = this.getYImage(this.isHovered);
+                        int index = this.getYImage(this.isHoveredOrFocused());
                         blit(poseStack, this.x - 2, this.y, this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
                         blit(poseStack, this.x + 4, this.y, this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
-                        if (this.isHovered) {
+                        if (this.isHoveredOrFocused()) {
                             this.renderToolTip(poseStack, mouseX, mouseY);
                         }
                     } else {

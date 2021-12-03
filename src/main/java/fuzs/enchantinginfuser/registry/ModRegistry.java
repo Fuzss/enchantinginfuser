@@ -17,8 +17,8 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class ModRegistry {
     private static final RegistryManager REGISTRY = RegistryManager.of(EnchantingInfuser.MOD_ID);
-    public static final RegistryObject<Block> INFUSER_BLOCK = REGISTRY.registerBlockWithItem("enchanting_infuser", () -> new InfuserBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().strength(5.0F, 1200.0F)), CreativeModeTab.TAB_DECORATIONS);
-    public static final RegistryObject<Block> ADVANCED_INFUSER_BLOCK = REGISTRY.registerBlockWithItem("advanced_enchanting_infuser", () -> new AdvancedInfuserBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().strength(5.0F, 1200.0F)), CreativeModeTab.TAB_DECORATIONS);
+    public static final RegistryObject<Block> INFUSER_BLOCK = REGISTRY.registerBlockWithItem("enchanting_infuser", () -> new InfuserBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().lightLevel(blockState -> 7).strength(5.0F, 1200.0F)), CreativeModeTab.TAB_DECORATIONS);
+    public static final RegistryObject<Block> ADVANCED_INFUSER_BLOCK = REGISTRY.registerBlockWithItem("advanced_enchanting_infuser", () -> new AdvancedInfuserBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().lightLevel(blockState -> 7).strength(5.0F, 1200.0F)), CreativeModeTab.TAB_DECORATIONS);
     public static final RegistryObject<BlockEntityType<InfuserBlockEntity>> INFUSER_BLOCK_ENTITY_TYPE = REGISTRY.registerRawBlockEntityType("enchanting_infuser", () -> BlockEntityType.Builder.of(InfuserBlockEntity::new, INFUSER_BLOCK.get(), ADVANCED_INFUSER_BLOCK.get()));
     public static final RegistryObject<MenuType<InfuserMenu>> INFUSING_MENU_TYPE = REGISTRY.registerRawMenuType("infusing", () -> InfuserMenu::new);
 
