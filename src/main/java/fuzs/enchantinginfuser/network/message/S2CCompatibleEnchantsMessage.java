@@ -29,7 +29,7 @@ public class S2CCompatibleEnchantsMessage implements Message {
     @Override
     public void write(PacketBuffer buf) {
         buf.writeByte(this.containerId);
-        buf.writeByte(this.enchantments.size());
+        buf.writeInt(this.enchantments.size());
         for (Enchantment enchantment : this.enchantments) {
             buf.writeInt(((ForgeRegistry<Enchantment>) ForgeRegistries.ENCHANTMENTS).getID(enchantment));
         }
@@ -38,7 +38,7 @@ public class S2CCompatibleEnchantsMessage implements Message {
     @Override
     public void read(PacketBuffer buf) {
         this.containerId = buf.readByte();
-        final int size = buf.readByte();
+        final int size = buf.readInt();
         List<Enchantment> enchantments = Lists.newArrayListWithCapacity(size);
         for (int i = 0; i < size; i++) {
             enchantments.add(((ForgeRegistry<Enchantment>) ForgeRegistries.ENCHANTMENTS).getValue(buf.readInt()));
