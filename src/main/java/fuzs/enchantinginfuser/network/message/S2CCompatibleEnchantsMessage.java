@@ -5,6 +5,7 @@ import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.puzzleslib.network.message.Message;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -29,7 +30,7 @@ public class S2CCompatibleEnchantsMessage implements Message {
     @Override
     public void write(FriendlyByteBuf buf) {
         buf.writeByte(this.containerId);
-        buf.writeByte(this.enchantments.size());
+        buf.writeInt(this.enchantments.size());
         for (Enchantment enchantment : this.enchantments) {
             buf.writeInt(((ForgeRegistry<Enchantment>) ForgeRegistries.ENCHANTMENTS).getID(enchantment));
         }
@@ -38,7 +39,7 @@ public class S2CCompatibleEnchantsMessage implements Message {
     @Override
     public void read(FriendlyByteBuf buf) {
         this.containerId = buf.readByte();
-        final int size = buf.readByte();
+        final int size = buf.readInt();
         List<Enchantment> enchantments = Lists.newArrayListWithCapacity(size);
         for (int i = 0; i < size; i++) {
             enchantments.add(((ForgeRegistry<Enchantment>) ForgeRegistries.ENCHANTMENTS).getValue(buf.readInt()));

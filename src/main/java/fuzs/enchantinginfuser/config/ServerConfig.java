@@ -4,10 +4,10 @@ import fuzs.puzzleslib.config.AbstractConfig;
 import fuzs.puzzleslib.config.annotation.Config;
 
 public class ServerConfig extends AbstractConfig {
-    @Config(description = {"Maximum enchanting power provided by bookshelves to scale infuser costs by.", "This is basically how many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "This option only affects normal enchanting infusers."})
+    @Config(description = {"Maximum enchanting power provided by bookshelves to scale infuser costs by.", "This is basically how many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "All bookshelves on the same level as the infuser and one block above are counted, all need to have a taxicab distance of exactly 2 blocks (meaning corners count too).", "This option only affects normal enchanting infusers."})
     @Config.IntRange(min = 0)
     public int maximumPowerNormal = 30;
-    @Config(description = {"Maximum enchanting power provided by bookshelves to scale infuser costs by.", "This is basically how many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "This option only affects advanced enchanting infusers."})
+    @Config(description = {"Maximum enchanting power provided by bookshelves to scale infuser costs by.", "This is basically how many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "All bookshelves on the same level as the infuser and one block above are counted, all need to have a taxicab distance of exactly 2 blocks (meaning corners count too).", "This option only affects advanced enchanting infusers."})
     @Config.IntRange(min = 0)
     public int maximumPowerAdvanced = 30;
     @Config
@@ -78,9 +78,9 @@ public class ServerConfig extends AbstractConfig {
     public static class TypesConfig extends AbstractConfig {
         @Config(description = "Allow treasure enchantments (e.g. mending) to be applied using the enchanting infuser.")
         public boolean treasure = false;
-        @Config(description = "Allow undiscoverable enchantments (e.g. soul speed) to be applied using the enchanting infuser.")
+        @Config(description = {"Allow undiscoverable enchantments (e.g. soul speed) to be applied using the enchanting infuser.", "This option takes precedence over other options for treasure and curse enchantments."})
         public boolean undiscoverable = false;
-        @Config(description = "Allow curses (e.g. curse of vanishing) to be applied using the enchanting infuser.")
+        @Config(description = {"Allow curses (e.g. curse of vanishing) to be applied using the enchanting infuser.", "This option takes precedence over option for treasure enchantments."})
         public boolean curses = false;
 
         public TypesConfig() {
