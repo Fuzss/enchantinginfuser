@@ -46,7 +46,7 @@ public class C2SAddEnchantLevelMessage implements Message {
         @Override
         public void handle(C2SAddEnchantLevelMessage packet, Player player, Object gameInstance) {
             if (player.containerMenu.containerId == packet.containerId && player.containerMenu instanceof InfuserMenu menu) {
-                menu.clickEnchantmentButton(packet.enchantment, packet.increase);
+                menu.clickEnchantmentButton(player, packet.enchantment, packet.increase);
             }
         }
     }

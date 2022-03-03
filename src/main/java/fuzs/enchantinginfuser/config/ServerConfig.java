@@ -4,12 +4,16 @@ import fuzs.puzzleslib.config.AbstractConfig;
 import fuzs.puzzleslib.config.annotation.Config;
 
 public class ServerConfig extends AbstractConfig {
-    @Config(description = {"Maximum enchanting power provided by bookshelves to scale infuser costs by.", "This is basically how many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "All bookshelves on the same level as the infuser and one block above are counted, all need to have a taxicab distance of exactly 2 blocks (meaning corners count too).", "This option only affects normal enchanting infusers."})
+    @Config(description = {"Maximum enchanting power provided by bookshelves to scale infuser costs by.", "This is basically how many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "All bookshelves on up to four layers (ranging from one level below up to two above) are counted, all need to have a taxicab distance of exactly 2 blocks (meaning corners count too).", "This option only affects normal enchanting infusers."})
     @Config.IntRange(min = 0)
     public int maximumPowerNormal = 30;
-    @Config(description = {"Maximum enchanting power provided by bookshelves to scale infuser costs by.", "This is basically how many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "All bookshelves on the same level as the infuser and one block above are counted, all need to have a taxicab distance of exactly 2 blocks (meaning corners count too).", "This option only affects advanced enchanting infusers."})
+    @Config(description = {"Maximum enchanting power provided by bookshelves to scale infuser costs by.", "This is basically how many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "All bookshelves on up to four layers (ranging from one level below up to two above) are counted, all need to have a taxicab distance of exactly 2 blocks (meaning corners count too).", "This option only affects advanced enchanting infusers."})
     @Config.IntRange(min = 0)
-    public int maximumPowerAdvanced = 30;
+    public int maximumPowerAdvanced = 15;
+    @Config(description = "Which kind of items are allowed to be enchanted / modified in an infuser?")
+    public AllowedItems allowedItems = AllowedItems.ALL;
+    @Config
+    public RepairConfig repair = new RepairConfig();
     @Config
     public CostsConfig costs = new CostsConfig();
     @Config
@@ -19,6 +23,23 @@ public class ServerConfig extends AbstractConfig {
 
     public ServerConfig() {
         super("");
+    }
+
+    public enum AllowedItems {
+        ALL, FULLY_REPAIRED, UNENCHANTED
+    }
+
+    public static class RepairConfig extends AbstractConfig {
+        @Config(description = "How many percentage points of an items total durability a single repair step will restore. The amount of these steps is then multiplied with a value to yield the final cost for repairing.")
+        @Config.DoubleRange(min = 0.1, max = 1.0)
+        public double repairPercentageStep = 0.25;
+        @Config(description = "Cost multiplier for each repair percentage step, result will be rounded up.")
+        @Config.DoubleRange(min = 0.0)
+        public double repairStepMultiplier = 2.0;
+
+        public RepairConfig() {
+            super("repair");
+        }
     }
 
     public static class CostsConfig extends AbstractConfig {

@@ -1,5 +1,6 @@
 package fuzs.enchantinginfuser.world.level.block.entity;
 
+import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.registry.ModRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -132,7 +133,7 @@ public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements W
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
         if (index == 0) {
-            return this.inventory.get(0).isEmpty() && (stack.isEnchantable() || stack.getItem() instanceof BookItem);
+            return this.getItem(0).isEmpty();
         }
         return false;
     }
