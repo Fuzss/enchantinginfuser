@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v3.2.0-1.18.2] - 2022-03-03
+- Compiled for Minecraft 1.18.2
+
 ## [v3.1.1-1.18.1] - 2022-01-06
 ### Fixed
 - Fixed trying to enchant a book leading to a crash when many mods that add enchantments are installed

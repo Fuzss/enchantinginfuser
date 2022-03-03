@@ -13,15 +13,15 @@ import fuzs.puzzleslib.network.NetworkHandler;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Mod(EnchantingInfuser.MOD_ID)
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class EnchantingInfuser {
     public static final String MOD_ID = "enchantinginfuser";
     public static final String MOD_NAME = "Enchanting Infuser";
-    public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
     public static final NetworkHandler NETWORK = NetworkHandler.of(MOD_ID);
     @SuppressWarnings("Convert2MethodRef")
