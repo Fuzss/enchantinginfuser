@@ -3,9 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
-## [v3.2.0-1.18.1] - 2022-01-16
+## [v3.3.0-1.18.2] - 2022-03-19
 ### Changed
 - An infuser now additionally checks for bookshelves one layer below and above compared to before, to make integrating your infuser setup into builds more convenient
+
+## [v3.2.0-1.18.2] - 2022-03-03
+- Compiled for Minecraft 1.18.2
 
 ## [v3.1.1-1.18.1] - 2022-01-06
 ### Fixed
