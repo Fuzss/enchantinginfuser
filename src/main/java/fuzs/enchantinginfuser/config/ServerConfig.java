@@ -14,8 +14,12 @@ public class ServerConfig extends AbstractConfig {
     public ServerConfig() {
         super("");
         this.advancedInfuser.allowRepairing = true;
-        this.advancedInfuser.allowModifyingEnchantments = true;
+        this.advancedInfuser.allowModifyingEnchantments = ModifyableItems.ALL;
         this.advancedInfuser.costs.maximumCost = 25;
+    }
+
+    public enum ModifyableItems {
+        ALL, FULL_DURABILITY, UNENCHANTED
     }
 
     public static class InfuserConfig extends AbstractConfig {
@@ -23,7 +27,7 @@ public class ServerConfig extends AbstractConfig {
         @Config.IntRange(min = 0, max = 127)
         public int maximumPower = 15;
         @Config(description = "Allow enchantments on an already enchanted item to be increased / removed.")
-        public boolean allowModifyingEnchantments = false;
+        public ModifyableItems allowModifyingEnchantments = ModifyableItems.FULL_DURABILITY;
         @Config(description = "Allow (enchanted) books to be enchanted / modified.")
         public boolean allowBooks = false;
         @Config(description = "Can the enchanting infuser repair items using levels in addition to enchanting.")

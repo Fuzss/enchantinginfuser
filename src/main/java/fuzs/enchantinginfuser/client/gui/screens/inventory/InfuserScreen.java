@@ -2,7 +2,6 @@ package fuzs.enchantinginfuser.client.gui.screens.inventory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -375,31 +374,28 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     }
 
     private void addEnchantments(ItemStack stack, Map<Enchantment, Integer> enchantments, List<FormattedText> list) {
-        Map<Enchantment, Integer> newEnchantments = Maps.newHashMap(enchantments);
         Map<Enchantment, Integer> oldEnchantments = EnchantmentHelper.getEnchantments(stack);
-        for (Map.Entry<Enchantment, Integer> entry : oldEnchantments.entrySet()) {
-            newEnchantments.merge(entry.getKey(), entry.getValue(), Math::max);
-        }
-
         List<FormattedText> newList = Lists.newArrayList();
         List<FormattedText> changedList = Lists.newArrayList();
         List<FormattedText> oldList = Lists.newArrayList();
         List<FormattedText> removedList = Lists.newArrayList();
-        for (Map.Entry<Enchantment, Integer> entry : newEnchantments.entrySet()) {
+
+        for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
             int oldLevel = oldEnchantments.getOrDefault(entry.getKey(), 0);
-            int newLevel = enchantments.getOrDefault(entry.getKey(), 0);
+            int newLevel = entry.getValue();
             if (newLevel > 0 && oldLevel == 0) {
-                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), entry.getValue(), true);
+                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), newLevel);
                 newList.add(component.withStyle(ChatFormatting.GREEN));
             } else if (newLevel == 0 && oldLevel > 0) {
-                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), entry.getValue(), true);
+                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), oldLevel);
                 removedList.add(component.withStyle(ChatFormatting.RED));
             } else if (newLevel != oldLevel) {
-                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), entry.getValue(), false);
+                // -1 prevents level from being added so we can do it ourselves
+                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), -1);
                 TranslatableComponent changeComponent = new TranslatableComponent("gui.enchantinginfuser.tooltip.change", new TranslatableComponent("enchantment.level." + oldLevel), new TranslatableComponent("enchantment.level." + newLevel));
                 changedList.add(component.append(" ").append(changeComponent).withStyle(ChatFormatting.YELLOW));
-            } else {
-                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), entry.getValue(), true);
+            } else if (newLevel != 0 && oldLevel != 0) {
+                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), newLevel);
                 oldList.add(component.withStyle(ChatFormatting.GRAY));
             }
         }

@@ -79,6 +79,9 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:bettermodsbutton-541584:3740055")
     runtimeOnly fg.deobf("curse.maven:configmenusforge-544048:3671318")
 
+    implementation fg.deobf("curse.maven:placebo-283644:3781199")
+    implementation fg.deobf("curse.maven:apotheosis-313970:3781524")
+
     // from local maven, those builds are not obfuscated
     implementation fg.deobf("fuzs.puzzleslib:PuzzlesLib:${puzzlesVersion}")
     // try use curse maven when local maven is not available

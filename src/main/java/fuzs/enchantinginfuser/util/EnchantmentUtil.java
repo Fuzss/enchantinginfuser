@@ -93,10 +93,10 @@ public class EnchantmentUtil {
         return newStack;
     }
 
-    public static MutableComponent getPlainEnchantmentName(Enchantment enchantment, int level, boolean withLevel) {
+    public static MutableComponent getPlainEnchantmentName(Enchantment enchantment, int level) {
         // copied from Enchantment, but without curses being colored red
         MutableComponent mutablecomponent = new TranslatableComponent(enchantment.getDescriptionId());
-        if (withLevel && (level != 1 || EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment) != 1)) {
+        if (level != -1 && (level != 1 || EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment) != 1)) {
             mutablecomponent.append(" ").append(new TranslatableComponent("enchantment.level." + level));
         }
         return mutablecomponent;

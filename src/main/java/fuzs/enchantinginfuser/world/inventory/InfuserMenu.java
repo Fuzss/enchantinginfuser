@@ -163,10 +163,11 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         if ((stack.getItem() instanceof BookItem || stack.getItem() instanceof EnchantedBookItem) && !this.config.allowBooks) {
             return false;
         }
-        if (this.config.allowModifyingEnchantments) {
-            return stack.isEnchantable() || stack.isEnchanted();
-        }
-        return stack.isEnchantable();
+        return switch (this.config.allowModifyingEnchantments) {
+            case ALL -> stack.isEnchantable() || stack.isEnchanted();
+            case FULL_DURABILITY -> (stack.isEnchantable() || stack.isEnchanted()) && !stack.isDamaged();
+            case UNENCHANTED -> stack.isEnchantable();
+        };
     }
 
     @Override
@@ -554,9 +555,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     public Map<Enchantment, Integer> getValidEnchantments() {
-        return this.enchantmentsToLevel.entrySet().stream()
-                .filter(e -> e.getValue() > 0)
-                .collect(Collectors.collectingAndThen(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue), ImmutableMap::copyOf));
+        return ImmutableMap.copyOf(this.enchantmentsToLevel);
     }
 
     public List<Map.Entry<Enchantment, Integer>> getSortedEntries() {

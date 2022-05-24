@@ -1,6 +1,7 @@
 package fuzs.enchantinginfuser;
 
 import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
+import fuzs.enchantinginfuser.api.world.item.enchantment.ApotheosisEnchantStatsProvider;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.network.client.message.C2SAddEnchantLevelMessage;
 import fuzs.enchantinginfuser.network.message.S2CCompatibleEnchantsMessage;
@@ -34,6 +35,7 @@ public class EnchantingInfuser {
         ((ConfigHolderImpl<?, ?>) CONFIG).addConfigs(MOD_ID);
         registerMessages();
         ModRegistry.touch();
+        EnchantingInfuserAPI.setEnchantStatsProvider(new ApotheosisEnchantStatsProvider());
     }
 
     private static void registerMessages() {
