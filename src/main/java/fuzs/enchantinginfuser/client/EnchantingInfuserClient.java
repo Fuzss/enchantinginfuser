@@ -18,6 +18,7 @@ public class EnchantingInfuserClient {
     @SubscribeEvent
     public static void onClientSetup(final FMLClientSetupEvent evt) {
         MenuScreens.register(ModRegistry.INFUSING_MENU_TYPE.get(), InfuserScreen::new);
+        MenuScreens.register(ModRegistry.ADVANCED_INFUSING_MENU_TYPE.get(), InfuserScreen::new);
         BlockEntityRenderers.register(ModRegistry.INFUSER_BLOCK_ENTITY_TYPE.get(), InfuserItemRenderer::new);
     }
 

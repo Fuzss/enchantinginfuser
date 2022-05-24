@@ -17,6 +17,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class EnchantmentUtil {
+
     public static List<Enchantment> getAvailableEnchantments(ItemStack stack, boolean allowTreasure, boolean allowUndiscoverable, boolean allowCurse) {
         List<Enchantment> list = Lists.newArrayList();
         boolean isBook = stack.getItem() instanceof BookItem;
@@ -75,10 +76,10 @@ public class EnchantmentUtil {
         return newStack;
     }
 
-    public static MutableComponent getRawEnchantmentName(Enchantment enchantment, int level) {
+    public static MutableComponent getPlainEnchantmentName(Enchantment enchantment, int level, boolean withLevel) {
         // copied from Enchantment, but without curses being colored red
         MutableComponent mutablecomponent = new TranslatableComponent(enchantment.getDescriptionId());
-        if (level != 1 || enchantment.getMaxLevel() != 1) {
+        if (withLevel && (level != 1 || enchantment.getMaxLevel() != 1)) {
             mutablecomponent.append(" ").append(new TranslatableComponent("enchantment.level." + level));
         }
         return mutablecomponent;

@@ -2,7 +2,6 @@ package fuzs.enchantinginfuser.registry;
 
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
-import fuzs.enchantinginfuser.world.level.block.AdvancedInfuserBlock;
 import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import fuzs.puzzleslib.registry.RegistryManager;
@@ -17,10 +16,11 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class ModRegistry {
     private static final RegistryManager REGISTRY = RegistryManager.of(EnchantingInfuser.MOD_ID);
-    public static final RegistryObject<Block> INFUSER_BLOCK = REGISTRY.registerBlockWithItem("enchanting_infuser", () -> new InfuserBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().lightLevel(blockState -> 7).strength(5.0F, 1200.0F)), CreativeModeTab.TAB_DECORATIONS);
-    public static final RegistryObject<Block> ADVANCED_INFUSER_BLOCK = REGISTRY.registerBlockWithItem("advanced_enchanting_infuser", () -> new AdvancedInfuserBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().lightLevel(blockState -> 7).strength(5.0F, 1200.0F)), CreativeModeTab.TAB_DECORATIONS);
+    public static final RegistryObject<Block> INFUSER_BLOCK = REGISTRY.registerBlockWithItem("enchanting_infuser", () -> new InfuserBlock(InfuserBlock.InfuserType.NORMAL, BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().lightLevel(blockState -> 7).strength(5.0F, 1200.0F)), CreativeModeTab.TAB_DECORATIONS);
+    public static final RegistryObject<Block> ADVANCED_INFUSER_BLOCK = REGISTRY.registerBlockWithItem("advanced_enchanting_infuser", () -> new InfuserBlock(InfuserBlock.InfuserType.ADVANCED, BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().lightLevel(blockState -> 7).strength(5.0F, 1200.0F)), CreativeModeTab.TAB_DECORATIONS);
     public static final RegistryObject<BlockEntityType<InfuserBlockEntity>> INFUSER_BLOCK_ENTITY_TYPE = REGISTRY.registerRawBlockEntityType("enchanting_infuser", () -> BlockEntityType.Builder.of(InfuserBlockEntity::new, INFUSER_BLOCK.get(), ADVANCED_INFUSER_BLOCK.get()));
-    public static final RegistryObject<MenuType<InfuserMenu>> INFUSING_MENU_TYPE = REGISTRY.registerRawMenuType("infusing", () -> InfuserMenu::new);
+    public static final RegistryObject<MenuType<InfuserMenu>> INFUSING_MENU_TYPE = REGISTRY.registerRawMenuType("infusing", () -> (id, inventory) -> InfuserMenu.create(InfuserBlock.InfuserType.NORMAL, id, inventory));
+    public static final RegistryObject<MenuType<InfuserMenu>> ADVANCED_INFUSING_MENU_TYPE = REGISTRY.registerRawMenuType("advanced_infusing", () -> (id, inventory) -> InfuserMenu.create(InfuserBlock.InfuserType.ADVANCED, id, inventory));
 
     public static void touch() {
 

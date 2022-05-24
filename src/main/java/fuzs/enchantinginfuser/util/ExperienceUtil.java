@@ -1,6 +1,7 @@
 package fuzs.enchantinginfuser.util;
 
 public class ExperienceUtil {
+
     public static int convertLevelsToExperience(int level) {
         int experience = 0;
         for (int i = 0; i < Math.abs(level); i++) {

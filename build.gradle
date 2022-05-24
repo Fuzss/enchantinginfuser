@@ -48,16 +48,19 @@ minecraft {
                 jvmArgs '-ea', '-Xms1G', '-Xmx4G'
             }
             property 'fml.earlyprogresswindow', 'false'
-            // mixin properties
-            args '--mixin.config', "META-INF/${project.modid}.mixins.json".toString()
-            properties 'mixin.env.remapRefMap': 'true', 'mixin.env.refMapRemappingFile': "${project.projectDir}/build/createSrgToMcp/output.srg".toString()
+//            // mixin properties
+//            args '--mixin.config', "META-INF/${project.modid}.mixins.json".toString()
+//            properties 'mixin.env.remapRefMap': 'true', 'mixin.env.refMapRemappingFile': "${project.projectDir}/build/createSrgToMcp/output.srg".toString(), 'mixin.debug.export': 'true'
         }
         server {
             jvmArgs '-ea', '-Xms1G', '-Xmx4G'
             arg 'nogui'
-            // mixin properties
-            args '--mixin.config', "META-INF/${project.modid}.mixins.json".toString()
-            properties 'mixin.env.remapRefMap': 'true', 'mixin.env.refMapRemappingFile': "${project.projectDir}/build/createSrgToMcp/output.srg".toString()
+//            // mixin properties
+//            args '--mixin.config', "META-INF/${project.modid}.mixins.json".toString()
+//            properties 'mixin.env.remapRefMap': 'true', 'mixin.env.refMapRemappingFile': "${project.projectDir}/build/createSrgToMcp/output.srg".toString(), 'mixin.debug.export': 'true'
+        }
+        data {
+            args '--mod', "${project.modid}", '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
         }
     }
 }
@@ -72,8 +75,8 @@ dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     // don't enable these for puzzles, they'll be forced upon all dependencies then via maven
-    runtimeOnly fg.deobf("curse.maven:catalogue-459701:3559402")
-    runtimeOnly fg.deobf("curse.maven:bettermodsbutton-541584:3671308")
+    runtimeOnly fg.deobf("curse.maven:catalogue-459701:3721991")
+    runtimeOnly fg.deobf("curse.maven:bettermodsbutton-541584:3740055")
     runtimeOnly fg.deobf("curse.maven:configmenusforge-544048:3671318")
 
     // from local maven, those builds are not obfuscated

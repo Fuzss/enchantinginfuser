@@ -29,19 +29,24 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentNames;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.locale.Language;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -50,6 +55,10 @@ import java.util.stream.Collectors;
 @SuppressWarnings("ConstantConditions")
 public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     private static final ResourceLocation INFUSER_LOCATION = new ResourceLocation(EnchantingInfuser.MOD_ID, "textures/gui/container/enchanting_infuser.png");
+    private static final int BUTTONS_OFFSET_X = 7;
+    private static final int ENCHANT_BUTTON_OFFSET_Y = 44;
+    private static final int ENCHANT_ONLY_BUTTON_OFFSET_Y = 55;
+    private static final int REPAIR_BUTTON_OFFSET_Y = 66;
 
     private final int enchantmentSeed = new Random().nextInt();
     private List<FormattedCharSequence> activeTooltip;
@@ -97,24 +106,27 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         this.addWidget(this.searchBox);
         this.scrollingList = new ScrollingList(this.leftPos + 29, this.topPos + 17, 162, 18, 4);
         this.addWidget(this.scrollingList);
-        this.enchantButton = this.addRenderableWidget(new IconButton(this.leftPos + 7, this.topPos + 44, 18, 18, 126, 185, INFUSER_LOCATION, button -> {
+        this.enchantButton = this.addRenderableWidget(new IconButton(this.leftPos + BUTTONS_OFFSET_X, this.topPos + (this.menu.config.allowRepairing ? ENCHANT_BUTTON_OFFSET_Y : ENCHANT_ONLY_BUTTON_OFFSET_Y), 18, 18, 126, 185, INFUSER_LOCATION, button -> {
             if (this.menu.clickMenuButton(this.minecraft.player, 0)) {
                 this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, 0);
             }
             this.searchBox.setValue("");
         }));
-        this.enchantButton = this.addRenderableWidget(new IconButton(this.leftPos + 7, this.topPos + 66, 18, 18, 144, 185, INFUSER_LOCATION, button -> {
-            if (this.menu.clickMenuButton(this.minecraft.player, 1)) {
-                this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, 1);
-            }
-            this.searchBox.setValue("");
-        }));
+        if (this.menu.config.allowRepairing) {
+            this.repairButton = this.addRenderableWidget(new IconButton(this.leftPos + BUTTONS_OFFSET_X, this.topPos + REPAIR_BUTTON_OFFSET_Y, 18, 18, 144, 185, INFUSER_LOCATION, button -> {
+                if (this.menu.clickMenuButton(this.minecraft.player, 1)) {
+                    this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, 1);
+                }
+            }));
+        }
         this.updateButtons();
     }
 
     private void updateButtons() {
         this.enchantButton.active = this.menu.canEnchant(this.minecraft.player);
-        this.repairButton.active = this.menu.canRepair(this.minecraft.player);
+        if (this.repairButton != null) {
+            this.repairButton.active = this.menu.canRepair(this.minecraft.player);
+        }
     }
 
     public void setActiveTooltip(List<FormattedCharSequence> activeTooltip) {
@@ -267,7 +279,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         super.render(poseStack, mouseX, mouseY, partialTick);
         this.scrollingList.render(poseStack, mouseX, mouseY, partialTick);
         this.renderEnchantingPower(poseStack, mouseX, mouseY);
-        this.renderEnchantingCost(poseStack, mouseX, mouseY);
+        this.renderEnchantButtonCost(poseStack, mouseX, mouseY);
+        this.renderRepairButtonCost(poseStack, mouseX, mouseY);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         if (this.activeTooltip != null) {
             this.renderTooltip(poseStack, this.activeTooltip, mouseX, mouseY);
@@ -276,48 +289,77 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         }
     }
 
-    private void renderEnchantingCost(PoseStack poseStack, int mouseX, int mouseY) {
-        final int cost = this.menu.getCost();
-        final boolean enchantingAllowed = this.menu.canEnchant(this.minecraft.player);
-        final int posX = this.leftPos + 7;
-        final int posY = this.topPos + 55;
-        if (cost != 0) {
-            final int costColor = cost < 0 ? 16777045 : (enchantingAllowed ? 8453920 : 16733525);
-            this.renderReadableText(poseStack, posX + 1, posY + 1, String.valueOf(Math.abs(cost)), costColor);
+    private void renderRepairButtonCost(PoseStack poseStack, int mouseX, int mouseY) {
+        if (this.repairButton == null) return;
+        final int repairCost = this.menu.getRepairCost();
+        boolean canRepair = this.menu.canRepair(this.minecraft.player);
+        if (!canRepair && repairCost == 0) return;
+        final int posX = this.repairButton.x;
+        final int posY = this.repairButton.y;
+        if (repairCost != 0) {
+            final int costColor = canRepair ? ChatFormatting.GREEN.getColor() : ChatFormatting.RED.getColor();
+            this.renderReadableText(poseStack, posX + 1, posY + 1, String.valueOf(repairCost), costColor);
         }
-        if (!enchantingAllowed && cost == 0) return;
+        // cannot use hovered check on button as it does not work when the button is not active
         if (mouseX >= posX && mouseY >= posY && mouseX < posX + 18 && mouseY < posY + 18) {
             List<FormattedText> list = Lists.newArrayList();
-            if (enchantingAllowed) {
-                Map<Enchantment, Integer> enchantments = this.menu.getValidEnchantments();
-                final ItemStack stack = this.menu.getEnchantableStack();
-                MutableComponent nameComponent = (new TextComponent("")).append(stack.getHoverName()).withStyle(this.getRarity(stack.getItem(), !enchantments.isEmpty()).color);
-                if (stack.hasCustomHoverName()) {
-                    nameComponent.withStyle(ChatFormatting.ITALIC);
+            if (canRepair) {
+                MutableComponent levelComponent;
+                if (repairCost == 1) {
+                    levelComponent = new TranslatableComponent("container.enchant.level.one");
+                } else {
+                    levelComponent = new TranslatableComponent("container.enchant.level.many", repairCost);
                 }
-                list.add(nameComponent);
-                for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
-                    list.add(entry.getKey().getFullname(entry.getValue()));
-                }
-//                this.addEnchantments(stack, enchantments, list);
-                if (cost != 0) {
-                    list.add(TextComponent.EMPTY);
-                    MutableComponent levelComponent;
-                    if (Math.abs(cost) == 1) {
-                        levelComponent = new TranslatableComponent("container.enchant.level.one");
-                    } else {
-                        levelComponent = new TranslatableComponent("container.enchant.level.many", Math.abs(cost));
-                    }
-                    list.add(new TranslatableComponent(cost < 0 ? "gui.enchantinginfuser.tooltip.receive_levels" : "gui.enchantinginfuser.tooltip.spend_levels", levelComponent.withStyle(cost < 0 ? ChatFormatting.YELLOW : ChatFormatting.GREEN)).withStyle(ChatFormatting.GRAY));
-                }
+                list.add(levelComponent.withStyle(ChatFormatting.GRAY));
             } else {
-                list.add(new TranslatableComponent("container.enchant.level.requirement", cost).withStyle(ChatFormatting.RED));
+                list.add(new TranslatableComponent("container.enchant.level.requirement", repairCost).withStyle(ChatFormatting.RED));
             }
             this.setActiveTooltip(Language.getInstance().getVisualOrder(list));
         }
     }
 
-    private Rarity getRarity(Item item, boolean enchanted) {
+    private void renderEnchantButtonCost(PoseStack poseStack, int mouseX, int mouseY) {
+        final int enchantCost = this.menu.getEnchantCost();
+        final boolean canEnchant = this.menu.canEnchant(this.minecraft.player);
+        if (!canEnchant && enchantCost == 0) return;
+        final int posX = this.enchantButton.x;
+        final int posY = this.enchantButton.y;
+        if (enchantCost != 0) {
+            final int costColor = enchantCost < 0 ? ChatFormatting.YELLOW.getColor() : (canEnchant ? ChatFormatting.GREEN.getColor() : ChatFormatting.RED.getColor());
+            this.renderReadableText(poseStack, posX + 1, posY + 1, enchantCost < 0 ? "+" : String.valueOf(enchantCost), costColor);
+        }
+        // cannot use hovered check on button as it does not work when the button is not active
+        if (mouseX >= posX && mouseY >= posY && mouseX < posX + 18 && mouseY < posY + 18) {
+            List<FormattedText> list = Lists.newArrayList();
+            if (canEnchant) {
+                Map<Enchantment, Integer> enchantments = this.menu.getValidEnchantments();
+                final ItemStack stack = this.menu.getEnchantableStack();
+                MutableComponent nameComponent = (new TextComponent("")).append(stack.getHoverName()).withStyle(this.getItemNameRarity(stack.getItem(), !enchantments.isEmpty()).color);
+                if (stack.hasCustomHoverName()) {
+                    nameComponent.withStyle(ChatFormatting.ITALIC);
+                }
+                list.add(nameComponent);
+                this.addEnchantments(stack, enchantments, list);
+                if (enchantCost != 0) {
+                    list.add(TextComponent.EMPTY);
+                    MutableComponent levelComponent;
+                    if (enchantCost < 0) {
+                        levelComponent = new TranslatableComponent("gui.enchantinginfuser.tooltip.points");
+                    } else if (enchantCost == 1) {
+                        levelComponent = new TranslatableComponent("container.enchant.level.one");
+                    } else {
+                        levelComponent = new TranslatableComponent("container.enchant.level.many", enchantCost);
+                    }
+                    list.add(levelComponent.withStyle(ChatFormatting.GRAY));
+                }
+            } else {
+                list.add(new TranslatableComponent("container.enchant.level.requirement", enchantCost).withStyle(ChatFormatting.RED));
+            }
+            this.setActiveTooltip(Language.getInstance().getVisualOrder(list));
+        }
+    }
+
+    private Rarity getItemNameRarity(Item item, boolean enchanted) {
         final Rarity rarity = item.getRarity(new ItemStack(item));
         if (!enchanted) {
             return rarity;
@@ -330,27 +372,35 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     }
 
     private void addEnchantments(ItemStack stack, Map<Enchantment, Integer> enchantments, List<FormattedText> list) {
-        Map<Enchantment, Integer> tooltipEnchantments = Maps.newHashMap(enchantments);
-        final Map<Enchantment, Integer> itemEnchantments = EnchantmentHelper.getEnchantments(stack);
-        for (Map.Entry<Enchantment, Integer> entry : itemEnchantments.entrySet()) {
-            tooltipEnchantments.merge(entry.getKey(), entry.getValue(), Math::max);
+        Map<Enchantment, Integer> newEnchantments = Maps.newHashMap(enchantments);
+        Map<Enchantment, Integer> oldEnchantments = EnchantmentHelper.getEnchantments(stack);
+        for (Map.Entry<Enchantment, Integer> entry : oldEnchantments.entrySet()) {
+            newEnchantments.merge(entry.getKey(), entry.getValue(), Math::max);
         }
         List<FormattedText> newList = Lists.newArrayList();
+        List<FormattedText> changedList = Lists.newArrayList();
         List<FormattedText> oldList = Lists.newArrayList();
         List<FormattedText> removedList = Lists.newArrayList();
-        for (Map.Entry<Enchantment, Integer> entry : tooltipEnchantments.entrySet()) {
-            final MutableComponent component = EnchantmentUtil.getRawEnchantmentName(entry.getKey(), entry.getValue());
-            int itemLevel = itemEnchantments.getOrDefault(entry.getKey(), 0);
+        for (Map.Entry<Enchantment, Integer> entry : newEnchantments.entrySet()) {
+            int oldLevel = oldEnchantments.getOrDefault(entry.getKey(), 0);
             int newLevel = enchantments.getOrDefault(entry.getKey(), 0);
-            if (newLevel > 0 && itemLevel == 0) {
-                newList.add(component.withStyle(ChatFormatting.GREEN));
-            } else if (newLevel == 0 && itemLevel > 0) {
-                removedList.add(component.withStyle(ChatFormatting.RED));
+            if (newLevel > 0 && oldLevel == 0) {
+                Component component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), entry.getValue(), true);
+                newList.add(new TextComponent("+").append(component).withStyle(ChatFormatting.GREEN));
+            } else if (newLevel == 0 && oldLevel > 0) {
+                Component component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), entry.getValue(), true);
+                removedList.add(new TextComponent("-").append(component).withStyle(ChatFormatting.RED));
+            } else if (newLevel != oldLevel) {
+                Component component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), entry.getValue(), false);
+                TranslatableComponent changeComponent = new TranslatableComponent("gui.enchantinginfuser.tooltip.change", new TranslatableComponent("enchantment.level." + oldLevel), new TranslatableComponent("enchantment.level." + newLevel));
+                changedList.add(new TextComponent(" ").append(component).append(" ").append(changeComponent).withStyle(ChatFormatting.YELLOW));
             } else {
-                oldList.add(component.withStyle(ChatFormatting.GRAY));
+                Component component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), entry.getValue(), true);
+                oldList.add(new TextComponent(" ").append(component).withStyle(ChatFormatting.GRAY));
             }
         }
         list.addAll(newList);
+        list.addAll(changedList);
         list.addAll(oldList);
         list.addAll(removedList);
     }
@@ -358,7 +408,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     private void renderReadableText(PoseStack poseStack, int posX, int posY, String text, int color) {
         posX += 19 - 2 - this.font.width(text);
         posY += 6 + 3;
-        // render shadow on every side due avoid clashing with colorful background
+        // render shadow on every side to avoid readability issues with colorful background
         this.font.draw(poseStack, text, posX - 1, posY, 0);
         this.font.draw(poseStack, text, posX + 1, posY, 0);
         this.font.draw(poseStack, text, posX, posY - 1, 0);
@@ -367,16 +417,16 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     }
 
     private void renderEnchantingPower(PoseStack poseStack, int mouseX, int mouseY) {
-        ItemStack itemstack = new ItemStack(Items.BOOKSHELF);
+        int power = this.menu.getCurrentPower();
+        int maxPower = this.menu.getMaxPower();
+        ItemStack itemstack = this.makeFakeStack(power >= maxPower);
         this.itemRenderer.blitOffset = 100.0F;
         int posX = this.leftPos + 196;
         int posY = this.topPos + 161;
         this.itemRenderer.renderAndDecorateFakeItem(itemstack, posX, posY);
-        int power = this.menu.getCurrentPower();
-        int maxPower = this.menu.getMaxPower();
         poseStack.pushPose();
         poseStack.translate(0.0, 0.0, 300.0);
-        this.font.drawShadow(poseStack, String.valueOf(power), posX + 19 - 2 - this.font.width(String.valueOf(power)), posY + 6 + 3, power >= maxPower ? 16777045 : 16777215);
+        this.font.drawShadow(poseStack, String.valueOf(power), posX + 19 - 2 - this.font.width(String.valueOf(power)), posY + 6 + 3, ChatFormatting.YELLOW.getColor());
         poseStack.popPose();
         this.itemRenderer.blitOffset = 0.0F;
         if (mouseX >= posX && mouseY >= posY && mouseX < posX + 16 && mouseY < posY + 16) {
@@ -385,6 +435,20 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             list.addAll(InfuserScreen.this.font.split(new TranslatableComponent("gui.enchantinginfuser.tooltip.enchanting_power.hint").withStyle(ChatFormatting.GRAY), 175));
             this.setActiveTooltip(list);
         }
+    }
+
+    private ItemStack makeFakeStack(boolean enchanted) {
+        ItemStack itemstack = new ItemStack(Items.BOOKSHELF);
+        // make stack show up as enchanted when infuser is fully powered
+        if (enchanted) {
+            CompoundTag tag = itemstack.getOrCreateTag();
+            if (!tag.contains("Enchantments", 9)) {
+                tag.put("Enchantments", new ListTag());
+            }
+            ListTag listtag = tag.getList("Enchantments", 10);
+            listtag.add(new CompoundTag());
+        }
+        return itemstack;
     }
 
     @Override
@@ -403,6 +467,9 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         int sliderY = this.topPos + 17 - 2;
         int sliderRange = sliderY + 72 + 2 + 2;
         this.blit(pPoseStack, sliderX, sliderY + (int)((float)(sliderRange - sliderY - 18) * this.scrollOffs), 220, 54 + (this.scrollingList.canScroll() ? 18 : 0), 18, 18);
+        // render slot manually as it is placed further down when repairing is disabled
+        Slot slot = this.menu.getSlot(0);
+        this.blit(pPoseStack, this.leftPos + slot.x - 1, this.topPos + slot.y - 1, 162, 185, 18, 18);
     }
 
     private class ScrollingList extends AbstractContainerEventHandler implements Widget, NarratableEntry {
@@ -550,7 +617,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             this.level = level;
             this.decrButton = new IconButton(0, 0, 18, 18, 220, 0, INFUSER_LOCATION, button -> {
                 do {
-                    final int newLevel = InfuserScreen.this.menu.clickEnchantmentButton(InfuserScreen.this.minecraft.player, this.enchantment, false);
+                    final int newLevel = InfuserScreen.this.menu.clickEnchantmentLevelButton(InfuserScreen.this.minecraft.player, this.enchantment, false);
                     if (newLevel == -1) return;
                     this.level = newLevel;
                     EnchantingInfuser.NETWORK.sendToServer(new C2SAddEnchantLevelMessage(InfuserScreen.this.menu.containerId, this.enchantment, false));
@@ -578,7 +645,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             };
             this.incrButton = new IconButton(0, 0, 18, 18, 238, 0, INFUSER_LOCATION, button -> {
                 do {
-                    final int newLevel = InfuserScreen.this.menu.clickEnchantmentButton(InfuserScreen.this.minecraft.player, this.enchantment, true);
+                    final int newLevel = InfuserScreen.this.menu.clickEnchantmentLevelButton(InfuserScreen.this.minecraft.player, this.enchantment, true);
                     if (newLevel == -1) return;
                     this.level = newLevel;
                     EnchantingInfuser.NETWORK.sendToServer(new C2SAddEnchantLevelMessage(InfuserScreen.this.menu.containerId, this.enchantment, true));

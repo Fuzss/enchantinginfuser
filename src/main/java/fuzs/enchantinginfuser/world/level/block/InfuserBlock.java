@@ -1,6 +1,7 @@
 package fuzs.enchantinginfuser.world.level.block;
 
 import fuzs.enchantinginfuser.EnchantingInfuser;
+import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.network.message.S2CInfuserDataMessage;
 import fuzs.enchantinginfuser.registry.ModRegistry;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
@@ -12,6 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EnchantmentTableBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -26,17 +28,16 @@ import java.util.Random;
 
 @SuppressWarnings("deprecation")
 public class InfuserBlock extends EnchantmentTableBlock {
-    public InfuserBlock(Properties p_52953_) {
+    private final InfuserType type;
+
+    public InfuserBlock(InfuserType type, Properties p_52953_) {
         super(p_52953_);
+        this.type = type;
     }
 
     @Override
     public BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
         return new InfuserBlockEntity(pPos, pState);
-    }
-
-    protected InfuserType getInfuserType() {
-        return InfuserType.NORMAL;
     }
 
     @Nullable
@@ -56,7 +57,8 @@ public class InfuserBlock extends EnchantmentTableBlock {
                 // items might still be in inventory slots, so this needs to update so that enchantment buttons are shown
                 menu.slotsChanged(blockEntity);
                 final int power = menu.setEnchantingPower(pLevel, pPos);
-                EnchantingInfuser.NETWORK.sendTo(new S2CInfuserDataMessage(pPlayer.containerMenu.containerId, power, this.getInfuserType()), (ServerPlayer) pPlayer);
+                final int repairCost = menu.setRepairCost();
+                EnchantingInfuser.NETWORK.sendTo(new S2CInfuserDataMessage(pPlayer.containerMenu.containerId, power, repairCost), (ServerPlayer) pPlayer);
             }
             return InteractionResult.CONSUME;
         }
@@ -70,7 +72,7 @@ public class InfuserBlock extends EnchantmentTableBlock {
             Component component = blockentity.getDisplayName();
             return new SimpleMenuProvider((p_52959_, p_52960_, p_52961_) -> {
                 if (blockentity.canOpen(p_52961_)) {
-                    return new InfuserMenu(p_52959_, p_52960_, blockentity, ContainerLevelAccess.create(pLevel, pPos), this.getInfuserType());
+                    return InfuserMenu.create(this.type, p_52959_, p_52960_, blockentity, ContainerLevelAccess.create(pLevel, pPos));
                 }
                 return null;
             }, component);
@@ -80,24 +82,12 @@ public class InfuserBlock extends EnchantmentTableBlock {
     }
 
     @Override
-    public void animateTick(BlockState pState, Level pLevel, BlockPos pPos, Random pRand) {
-        super.animateTick(pState, pLevel, pPos, pRand);
-        for(int i = -2; i <= 2; ++i) {
-            for(int j = -2; j <= 2; ++j) {
-                if (i > -2 && i < 2 && j == -1) {
-                    j = 2;
-                }
-                if (pRand.nextInt(16) == 0) {
-                    for(int k = 0; k <= 1; ++k) {
-                        BlockPos blockpos = pPos.offset(i, k, j);
-                        if (pLevel.getBlockState(blockpos).getEnchantPowerBonus(pLevel, blockpos) > 0) {
-                            if (!InfuserMenu.isBlockEmpty(pLevel, pPos.offset(i / 2, 0, j / 2))) {
-                                break;
-                            }
-                            pLevel.addParticle(ParticleTypes.ENCHANT, (double)pPos.getX() + 0.5D, (double)pPos.getY() + 2.0D, (double)pPos.getZ() + 0.5D, (double)((float)i + pRand.nextFloat()) - 0.5D, (double)((float)k - pRand.nextFloat() - 1.0F), (double)((float)j + pRand.nextFloat()) - 0.5D);
-                        }
-                    }
-                }
+    public void animateTick(BlockState state, Level level, BlockPos pos, Random random) {
+        super.animateTick(state, level, pos, random);
+
+        for(BlockPos blockpos : BOOKSHELF_OFFSETS) {
+            if (random.nextInt(16) == 0 && InfuserMenu.isValidBookShelf(level, pos, blockpos)) {
+                level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D, ((float)blockpos.getX() + random.nextFloat()) - 0.5D, ((float)blockpos.getY() - random.nextFloat() - 1.0F), ((float)blockpos.getZ() + random.nextFloat()) - 0.5D);
             }
         }
     }
@@ -130,8 +120,18 @@ public class InfuserBlock extends EnchantmentTableBlock {
     public enum InfuserType {
         NORMAL, ADVANCED;
 
-        public boolean isAdvanced() {
-            return this == ADVANCED;
+        public MenuType<?> menuType() {
+            return switch (this) {
+                case NORMAL -> ModRegistry.INFUSING_MENU_TYPE.get();
+                case ADVANCED -> ModRegistry.ADVANCED_INFUSING_MENU_TYPE.get();
+            };
+        }
+
+        public ServerConfig.InfuserConfig config() {
+            return switch (this) {
+                case NORMAL -> EnchantingInfuser.CONFIG.server().normalInfuser;
+                case ADVANCED -> EnchantingInfuser.CONFIG.server().advancedInfuser;
+            };
         }
     }
 }
