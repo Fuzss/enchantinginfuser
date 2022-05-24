@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
+import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.network.message.S2CCompatibleEnchantsMessage;
 import fuzs.enchantinginfuser.util.EnchantmentUtil;
@@ -84,6 +85,9 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 return 1;
             }
         });
+        if (EnchantingInfuser.CONFIG.server().limitedEnchantments) {
+            this.addSlot(new EnchantmentKnowledgeSlot(this.player, 1, 196, 161));
+        }
         for (int k = 0; k < 4; ++k) {
             final EquipmentSlot equipmentslot = SLOT_IDS[k];
             this.addSlot(new Slot(inventory, 39 - k, 8 + 188 * (k / 2), 103 + (k % 2) * 18) {
@@ -146,7 +150,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 this.levelAccess.execute((Level level, BlockPos pos) -> {
                     this.setEnchantingPower(level, pos);
                     this.setRepairCost();
-                    final List<Enchantment> availableEnchantments = EnchantmentUtil.getAvailableEnchantments(itemstack, this.config.types.allowTreasure, this.config.types.allowUndiscoverable, this.config.types.allowCurses);
+                    final List<Enchantment> availableEnchantments = EnchantmentUtil.getAvailableEnchantments(this.player, itemstack, this.config.types.allowTreasure, this.config.types.allowUndiscoverable, this.config.types.allowUntradeable, this.config.types.allowCurses);
                     this.setAndSyncEnchantments(EnchantmentUtil.copyEnchantmentsToMap(itemstack, availableEnchantments));
                 });
             } else {
@@ -224,13 +228,13 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 .filter(e -> e.getValue() > 0)
                 .map(Map.Entry::getKey)
                 .filter(e -> e != enchantment)
-                .anyMatch(e -> !e.isCompatibleWith(enchantment));
+                .anyMatch(e -> !EnchantingInfuserAPI.getEnchantStatsProvider().isCompatibleWith(e, enchantment));
         if (incompatible) {
             EnchantingInfuser.LOGGER.warn("trying to add incompatible enchantment");
             return -1;
         }
         int enchantmentLevel = this.enchantmentsToLevel.get(enchantment) + (increase ? 1 : -1);
-        if (enchantmentLevel != Mth.clamp(enchantmentLevel, 0, enchantment.getMaxLevel())) {
+        if (enchantmentLevel != Mth.clamp(enchantmentLevel, 0, EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment))) {
             EnchantingInfuser.LOGGER.warn("trying change enchantment level beyond bounds");
             return -1;
         }
@@ -273,7 +277,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                         itemstack2.setTag(compoundtag.copy());
                     }
                 }
-                itemstack2 = EnchantmentUtil.setNewEnchantments(itemstack2, this.enchantmentsToLevel);
+                itemstack2 = EnchantmentUtil.setNewEnchantments(itemstack2, this.enchantmentsToLevel, this.enchantingBaseCost != 0);
                 this.enchantSlots.setItem(0, itemstack2);
                 player.awardStat(Stats.ENCHANT_ITEM);
                 if (player instanceof ServerPlayer) {
@@ -302,6 +306,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 }
                 ItemStack itemstack2 = itemstack.copy();
                 itemstack2.setDamageValue(0);
+                itemstack2.setRepairCost(AnvilMenu.calculateIncreasedRepairCost(itemstack.getBaseRepairCost()));
                 this.enchantSlots.setItem(0, itemstack2);
                 level.levelEvent(LevelEvent.SOUND_ANVIL_USED, pos, 0);
             });
@@ -325,30 +330,33 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         if (maxLevelSpecial != null) return maxLevelSpecial;
         int minPowerByRarity = this.getMinPowerByRarity(enchantment, maxPower);
         if (currentPower < minPowerByRarity) return Pair.of(Optional.of(minPowerByRarity), 0);
-        final int levelRange = (int) Math.round(maxPower * this.config.power.levelMultiplier);
-        final int totalLevels = enchantment.getMaxLevel() - enchantment.getMinLevel();
+        final int levelRange = (int) Math.round(maxPower * this.config.power.rarityRangeMultiplier);
+        final int totalLevels = EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment) - EnchantingInfuserAPI.getEnchantStatsProvider().getMinLevel(enchantment);
         final int levelPercentile = totalLevels > 0 ? levelRange / totalLevels : 0;
         for (int i = 0; i <= totalLevels; i++) {
             final int nextPower = Math.min(maxPower, minPowerByRarity + i * levelPercentile);
             if (currentPower < nextPower) {
-                return Pair.of(Optional.of(nextPower), enchantment.getMinLevel() + i - 1);
+                return Pair.of(Optional.of(nextPower), EnchantingInfuserAPI.getEnchantStatsProvider().getMinLevel(enchantment) + i - 1);
             }
         }
-        return Pair.of(Optional.empty(), enchantment.getMaxLevel());
+        return Pair.of(Optional.empty(), EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment));
     }
 
     private Pair<Optional<Integer>, Integer> getSpecialMaxLevel(Enchantment enchantment, int currentPower, int maxPower) {
         double multiplier = -1.0;
-        if (enchantment.isCurse()) {
+        // only allow one multiplier at most as enchantments may have multiple of these properties enabled
+        if (EnchantingInfuserAPI.getEnchantStatsProvider().isCurse(enchantment)) {
             multiplier = this.config.power.curseMultiplier;
-        } else if (!enchantment.isDiscoverable()) {
+        } else if (!EnchantingInfuserAPI.getEnchantStatsProvider().isDiscoverable(enchantment)) {
             multiplier = this.config.power.undiscoverableMultiplier;
-        } else if (enchantment.isTreasureOnly()) {
+        } else if (!EnchantingInfuserAPI.getEnchantStatsProvider().isTradeable(enchantment)) {
+            multiplier = this.config.power.untradeableMultiplier;
+        } else if (EnchantingInfuserAPI.getEnchantStatsProvider().isTreasureOnly(enchantment)) {
             multiplier = this.config.power.treasureMultiplier;
         }
         if (multiplier != -1.0) {
             final int nextPower = (int) Math.round(maxPower * multiplier);
-            return currentPower < nextPower ? Pair.of(Optional.of(nextPower), 0) : Pair.of(Optional.empty(), enchantment.getMaxLevel());
+            return currentPower < nextPower ? Pair.of(Optional.of(nextPower), 0) : Pair.of(Optional.empty(), EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment));
         }
         return null;
     }
@@ -356,7 +364,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     private int getMinPowerByRarity(Enchantment enchantment, int maxPower) {
         // get min amount of bookshelves required for this rarity type
         // round instead of int cast to be more expensive when possible
-        return (int) Math.round(maxPower * switch (enchantment.getRarity()) {
+        return (int) Math.round(maxPower * switch (EnchantingInfuserAPI.getEnchantStatsProvider().getRarity(enchantment)) {
                     case COMMON -> this.config.power.commonMultiplier;
                     case UNCOMMON -> this.config.power.uncommonMultiplier;
                     case RARE -> this.config.power.rareMultiplier;
@@ -366,7 +374,9 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     private int calculateEnchantCost() {
         this.markChanged();
-        return this.getScaledCosts(this.enchantmentsToLevel) - this.enchantingBaseCost;
+        int cost = this.getScaledCosts(this.enchantmentsToLevel) - this.enchantingBaseCost;
+        if (cost == 0 && this.enchantmentsChanged) cost++;
+        return cost;
     }
 
     private int calculateExperienceDelta(Map<Enchantment, Integer> current, Map<Enchantment, Integer> base, Random random) {
@@ -379,7 +389,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 int baseLevel = base.get(enchantment);
                 int currentLevel = entry.getValue();
                 if (baseLevel > currentLevel) {
-                    experience += Math.max(0, enchantment.getMinCost(baseLevel) - enchantment.getMinCost(currentLevel));
+                    experience += Math.max(0, EnchantingInfuserAPI.getEnchantStatsProvider().getMinCost(enchantment, baseLevel) - EnchantingInfuserAPI.getEnchantStatsProvider().getMinCost(enchantment, currentLevel));
                 }
             }
         }
@@ -414,9 +424,9 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         Map<Enchantment, Pair<Enchantment.Rarity, Integer>> map = Maps.newHashMap();
         for (Enchantment enchantment : enchantmentsToLevel.keySet()) {
             if (!this.config.costs.scaleCostsByVanillaOnly || ForgeRegistries.ENCHANTMENTS.getKey(enchantment).getNamespace().equals("minecraft")) {
-                final Pair<Enchantment.Rarity, Integer> pair2 = Pair.of(enchantment.getRarity(), enchantment.getMaxLevel());
+                final Pair<Enchantment.Rarity, Integer> pair2 = Pair.of(EnchantingInfuserAPI.getEnchantStatsProvider().getRarity(enchantment), EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment));
                 final Optional<Map.Entry<Enchantment, Pair<Enchantment.Rarity, Integer>>> any = map.entrySet().stream()
-                        .filter(e -> !e.getKey().isCompatibleWith(enchantment))
+                        .filter(e -> !EnchantingInfuserAPI.getEnchantStatsProvider().isCompatibleWith(e.getKey(), enchantment))
                         .findAny();
                 if (any.isPresent()) {
                     final Map.Entry<Enchantment, Pair<Enchantment.Rarity, Integer>> enchantmentData = any.get();
@@ -446,8 +456,8 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     private int getAdjustedRarityCost(Enchantment enchantment) {
-        int cost = this.getRarityCost(enchantment.getRarity());
-        if (this.config.costs.doubleUniques && (enchantment.isTreasureOnly() || !enchantment.isDiscoverable()) && !enchantment.isCurse()) {
+        int cost = this.getRarityCost(EnchantingInfuserAPI.getEnchantStatsProvider().getRarity(enchantment));
+        if (this.config.costs.doubleUniques && (EnchantingInfuserAPI.getEnchantStatsProvider().isTreasureOnly(enchantment) || !EnchantingInfuserAPI.getEnchantStatsProvider().isDiscoverable(enchantment) || !EnchantingInfuserAPI.getEnchantStatsProvider().isTradeable(enchantment)) && !EnchantingInfuserAPI.getEnchantStatsProvider().isCurse(enchantment)) {
             cost *= 2;
         }
         return cost;
@@ -551,7 +561,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     public List<Map.Entry<Enchantment, Integer>> getSortedEntries() {
         return this.enchantmentsToLevel.entrySet().stream()
-                .sorted(Comparator.<Map.Entry<Enchantment, Integer>>comparingInt(e -> e.getKey().getRarity().ordinal()).thenComparing(e -> new TranslatableComponent(e.getKey().getDescriptionId()).getString()))
+                .sorted(Comparator.<Map.Entry<Enchantment, Integer>>comparingInt(e -> EnchantingInfuserAPI.getEnchantStatsProvider().getRarity(e.getKey()).ordinal()).thenComparing(e -> new TranslatableComponent(e.getKey().getDescriptionId()).getString()))
                 .collect(Collectors.toList());
     }
 

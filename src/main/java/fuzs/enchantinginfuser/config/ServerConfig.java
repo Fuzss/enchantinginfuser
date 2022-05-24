@@ -4,6 +4,8 @@ import fuzs.puzzleslib.config.AbstractConfig;
 import fuzs.puzzleslib.config.annotation.Config;
 
 public class ServerConfig extends AbstractConfig {
+    @Config(description = {"To be able to use an enchantment in the infuser a player must first know about it. Learning about enchantments is achieved by sacrificing enchanted items in the dedicated slot inside of the infuser.", "This option is meant as a way to better balance the abilities of enchanting infusers.", "This feature is still WIP!"})
+    public boolean limitedEnchantments = false;
     @Config
     public InfuserConfig normalInfuser = new InfuserConfig("normal_infuser");
     @Config
@@ -11,10 +13,9 @@ public class ServerConfig extends AbstractConfig {
 
     public ServerConfig() {
         super("");
-    }
-
-    public enum AllowedItems {
-        ALL, FULLY_REPAIRED, UNENCHANTED
+        this.advancedInfuser.allowRepairing = true;
+        this.advancedInfuser.allowModifyingEnchantments = true;
+        this.advancedInfuser.costs.maximumCost = 25;
     }
 
     public static class InfuserConfig extends AbstractConfig {
@@ -22,11 +23,11 @@ public class ServerConfig extends AbstractConfig {
         @Config.IntRange(min = 0, max = 127)
         public int maximumPower = 15;
         @Config(description = "Allow enchantments on an already enchanted item to be increased / removed.")
-        public boolean allowModifyingEnchantments = true;
+        public boolean allowModifyingEnchantments = false;
         @Config(description = "Allow (enchanted) books to be enchanted / modified.")
         public boolean allowBooks = false;
         @Config(description = "Can the enchanting infuser repair items using levels in addition to enchanting.")
-        public boolean allowRepairing = true;
+        public boolean allowRepairing = false;
         @Config
         public RepairConfig repair = new RepairConfig();
         @Config
@@ -63,7 +64,7 @@ public class ServerConfig extends AbstractConfig {
         public int rareCostMultiplier = 4;
         @Config(description = "Base cost multiplier for each level for very rare enchantments.")
         public int veryRareCostMultiplier = 5;
-        @Config(description = "Double prices for enchantments normally unobtainable from enchanting tables if they are enabled (e.g. mending, soul speed).")
+        @Config(description = "Double prices for enchantments normally unobtainable from enchanting tables if they are enabled (e.g. mending, soul speed) when they are enabled.")
         public boolean doubleUniques = true;
         @Config(description = {"Cost level to scale prices by. This is not a strict value, meaning it can be exceeded (e.g. when applying treasure enchantments)."})
         public int maximumCost = 35;
@@ -72,7 +73,7 @@ public class ServerConfig extends AbstractConfig {
 
         public CostsConfig() {
             super("costs");
-            this.addComment("The main option in this section is \"maximum_cost\" as it determines how many levels you'll have to pay for fully enchanting an item. Cost multipliers mainly control how this maximum cost will be spread out between enchantments of different rarities.");
+            this.addComment("The main option in this section is \"maximum_cost\" as it determines how many levels you'll have to pay for fully enchanting an item with all possible enchantments it can have. Cost multipliers mainly control how this maximum cost will be spread out between enchantments of different rarities.");
         }
     }
 
@@ -91,29 +92,35 @@ public class ServerConfig extends AbstractConfig {
         public double veryRareMultiplier = 0.6;
         @Config(description = "Multiplier for maximum enchanting power for how much power is required to max out an enchantment.")
         @Config.DoubleRange(min = 0.0, max = 1.0)
-        public double levelMultiplier = 0.4;
+        public double rarityRangeMultiplier = 0.4;
         @Config(description = {"Multiplier for maximum enchanting power for when treasure enchantments become available.", "They also need to be enabled in the \"types\" config."})
         @Config.DoubleRange(min = 0.0, max = 1.0)
         public double treasureMultiplier = 0.95;
         @Config(description = {"Multiplier for maximum enchanting power for when undiscoverable enchantments become available.", "They also need to be enabled in the \"types\" config."})
         @Config.DoubleRange(min = 0.0, max = 1.0)
         public double undiscoverableMultiplier = 0.9;
+        @Config(description = {"Multiplier for maximum enchanting power for when untradeable enchantments become available.", "They also need to be enabled in the \"types\" config."})
+        @Config.DoubleRange(min = 0.0, max = 1.0)
+        public double untradeableMultiplier = 0.9;
         @Config(description = {"Multiplier for maximum enchanting power for when curse enchantments become available.", "They also need to be enabled in the \"types\" config."})
         @Config.DoubleRange(min = 0.0, max = 1.0)
         public double curseMultiplier = 1.0;
 
         public PowerConfig() {
             super("power");
+            this.addComment("This section allows for controlling at what percentage of the total enchanting power certain kinds of enchantments become available.", "With default settings e.g. the first level of a rare enchantment will be available at 40% enchanting power (controlled by \"rare_multiplier\", translates to 40% * 15 = 6 bookshelves), and the maximum level for that enchant will be available at 40% + 40% = 80% enchanting power (controlled by \"rare_multiplier\" and \"rarity_range_multiplier\", translates to 80% * 15 = 12 bookshelves).");
         }
     }
 
     public static class TypesConfig extends AbstractConfig {
+        @Config(description = {"Allow undiscoverable enchantments (e.g. soul speed) to be applied using the enchanting infuser.", "This option takes precedence over other options for treasure, curse and tradeable enchantments."})
+        public boolean allowUndiscoverable = false;
+        @Config(description = {"Allow untradeable enchantments (e.g. soul speed) to be applied using the enchanting infuser.", "This option takes precedence over other options for treasure and curse enchantments."})
+        public boolean allowUntradeable = false;
+        @Config(description = {"Allow curses (e.g. curse of vanishing) to be applied using the enchanting infuser.", "This option takes precedence over option for treasure enchantments (as curses are also treasure enchantments internally)."})
+        public boolean allowCurses = false;
         @Config(description = "Allow treasure enchantments (e.g. mending) to be applied using the enchanting infuser.")
         public boolean allowTreasure = false;
-        @Config(description = {"Allow undiscoverable enchantments (e.g. soul speed) to be applied using the enchanting infuser.", "This option takes precedence over other options for treasure and curse enchantments."})
-        public boolean allowUndiscoverable = false;
-        @Config(description = {"Allow curses (e.g. curse of vanishing) to be applied using the enchanting infuser.", "This option takes precedence over option for treasure enchantments."})
-        public boolean allowCurses = false;
 
         public TypesConfig() {
             super("types");

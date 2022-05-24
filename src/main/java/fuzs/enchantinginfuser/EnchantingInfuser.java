@@ -1,10 +1,12 @@
 package fuzs.enchantinginfuser;
 
+import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.network.client.message.C2SAddEnchantLevelMessage;
 import fuzs.enchantinginfuser.network.message.S2CCompatibleEnchantsMessage;
 import fuzs.enchantinginfuser.network.message.S2CInfuserDataMessage;
 import fuzs.enchantinginfuser.registry.ModRegistry;
+import fuzs.enchantinginfuser.api.world.item.enchantment.DefaultEnchantStatsProvider;
 import fuzs.puzzleslib.config.AbstractConfig;
 import fuzs.puzzleslib.config.ConfigHolder;
 import fuzs.puzzleslib.config.ConfigHolderImpl;
