@@ -24,6 +24,29 @@ public interface EnchantStatsProvider {
     }
 
     /**
+     * Enchanting Infuser scales enchantment level costs to account for various kinds of gear being able to receive a varying number of enchantments,
+     * so that in the end enchanting all items with all their allowed enchantments will roughly end up at the same cost
+     * to prevent enchantment collection mods therefore making individual enchantment costs ludicrously cheap (due to the number of enchantments they add)
+     * only certain namespaces are accounted for when scaling costs
+     * @return namespaces to account for when scaling costs
+     */
+    String[] getScalingNamespaces();
+
+    /**maximum cost determines how many levels you'll have to pay for fully enchanting an item with all possible enchantments it can have
+     * @return general multiplier for maximum cost
+     */
+    default double getMaximumCostMultiplier() {
+        return 1.0;
+    }
+
+    /**
+     * @return multiplier for how many bookshelves you need around the infuser to be able to apply maximum level enchantments
+     */
+    default double getMaximumBookshelvesMultiplier() {
+        return 1.0;
+    }
+
+    /**
      * @param enchantment the enchantment
      * @return rarity of this enchantment, heavily used in Enchanting Infuser for determining cost and availability
      */

@@ -18,6 +18,11 @@ public class DefaultEnchantStatsProvider implements EnchantStatsProvider {
     }
 
     @Override
+    public String[] getScalingNamespaces() {
+        return new String[]{"minecraft"};
+    }
+
+    @Override
     public Enchantment.Rarity getRarity(Enchantment enchantment) {
         return enchantment.getRarity();
     }

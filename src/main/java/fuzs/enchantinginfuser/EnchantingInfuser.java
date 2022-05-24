@@ -1,13 +1,11 @@
 package fuzs.enchantinginfuser;
 
-import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
-import fuzs.enchantinginfuser.api.world.item.enchantment.ApotheosisEnchantStatsProvider;
+import fuzs.enchantinginfuser.compat.ModCompatHandler;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.network.client.message.C2SAddEnchantLevelMessage;
 import fuzs.enchantinginfuser.network.message.S2CCompatibleEnchantsMessage;
 import fuzs.enchantinginfuser.network.message.S2CInfuserDataMessage;
 import fuzs.enchantinginfuser.registry.ModRegistry;
-import fuzs.enchantinginfuser.api.world.item.enchantment.DefaultEnchantStatsProvider;
 import fuzs.puzzleslib.config.AbstractConfig;
 import fuzs.puzzleslib.config.ConfigHolder;
 import fuzs.puzzleslib.config.ConfigHolderImpl;
@@ -15,6 +13,7 @@ import fuzs.puzzleslib.network.MessageDirection;
 import fuzs.puzzleslib.network.NetworkHandler;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +34,17 @@ public class EnchantingInfuser {
         ((ConfigHolderImpl<?, ?>) CONFIG).addConfigs(MOD_ID);
         registerMessages();
         ModRegistry.touch();
-        EnchantingInfuserAPI.setEnchantStatsProvider(new ApotheosisEnchantStatsProvider());
+        ModCompatHandler.init();
     }
 
     private static void registerMessages() {
         NETWORK.register(S2CCompatibleEnchantsMessage.class, S2CCompatibleEnchantsMessage::new, MessageDirection.TO_CLIENT);
         NETWORK.register(S2CInfuserDataMessage.class, S2CInfuserDataMessage::new, MessageDirection.TO_CLIENT);
         NETWORK.register(C2SAddEnchantLevelMessage.class, C2SAddEnchantLevelMessage::new, MessageDirection.TO_SERVER);
+    }
+
+    @SubscribeEvent
+    public static void onCommonSetup(final FMLCommonSetupEvent evt) {
+        ModCompatHandler.setup();
     }
 }

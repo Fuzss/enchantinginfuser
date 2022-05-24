@@ -25,7 +25,6 @@ import net.minecraftforge.items.wrapper.SidedInvWrapper;
 
 import javax.annotation.Nullable;
 
-@SuppressWarnings("NullableProblems")
 public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements WorldlyContainer {
     private final NonNullList<ItemStack> inventory = NonNullList.withSize(1, ItemStack.EMPTY);
     private LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.UP, Direction.DOWN, Direction.NORTH);
@@ -57,7 +56,7 @@ public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements W
     }
 
     @Override
-    @org.jetbrains.annotations.Nullable
+    @Nullable
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
     }

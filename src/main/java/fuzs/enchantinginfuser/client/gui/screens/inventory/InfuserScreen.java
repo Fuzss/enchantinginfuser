@@ -380,22 +380,24 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         List<FormattedText> oldList = Lists.newArrayList();
         List<FormattedText> removedList = Lists.newArrayList();
 
-        for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
-            int oldLevel = oldEnchantments.getOrDefault(entry.getKey(), 0);
-            int newLevel = entry.getValue();
-            if (newLevel > 0 && oldLevel == 0) {
-                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), newLevel);
+        Set<Enchantment> allEnchantments = Sets.newHashSet(enchantments.keySet());
+        allEnchantments.addAll(oldEnchantments.keySet());
+        for (Enchantment enchantment : allEnchantments) {
+            int oldLevel = oldEnchantments.getOrDefault(enchantment, -1);
+            int newLevel = enchantments.getOrDefault(enchantment, -1);
+            if (newLevel > 0 && oldLevel <= 0) {
+                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(enchantment, newLevel);
                 newList.add(component.withStyle(ChatFormatting.GREEN));
             } else if (newLevel == 0 && oldLevel > 0) {
-                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), oldLevel);
+                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(enchantment, oldLevel);
                 removedList.add(component.withStyle(ChatFormatting.RED));
-            } else if (newLevel != oldLevel) {
+            } else if (newLevel > 0 && oldLevel > 0 && newLevel != oldLevel) {
                 // -1 prevents level from being added so we can do it ourselves
-                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), -1);
+                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(enchantment, -1);
                 TranslatableComponent changeComponent = new TranslatableComponent("gui.enchantinginfuser.tooltip.change", new TranslatableComponent("enchantment.level." + oldLevel), new TranslatableComponent("enchantment.level." + newLevel));
                 changedList.add(component.append(" ").append(changeComponent).withStyle(ChatFormatting.YELLOW));
-            } else if (newLevel != 0 && oldLevel != 0) {
-                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(entry.getKey(), newLevel);
+            } else if (newLevel > 0 || oldLevel > 0) {
+                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(enchantment, newLevel != 0 ? newLevel : oldLevel);
                 oldList.add(component.withStyle(ChatFormatting.GRAY));
             }
         }
@@ -429,7 +431,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         int maxPower = this.menu.getMaxPower();
         int textColor;
         if (power >= maxPower) {
-            textColor = ChatFormatting.AQUA.getColor();
+            textColor = ChatFormatting.YELLOW.getColor();
         } else if (this.insufficientPower) {
             textColor = ChatFormatting.RED.getColor();
         } else {
@@ -626,7 +628,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
 
         public EnchantmentListEntry(Enchantment enchantment, int level) {
             this.enchantment = enchantment;
-            final Pair<Optional<Integer>, Integer> maxLevelResult = InfuserScreen.this.menu.getMaxLevel(enchantment);
+            final Pair<OptionalInt, Integer> maxLevelResult = InfuserScreen.this.menu.getMaxLevel(enchantment);
             this.maxLevel = maxLevelResult.getSecond();
             this.requiredPower = maxLevelResult.getFirst().orElse(-1);
             this.level = level;
@@ -790,6 +792,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         private void handleTooltip(Enchantment enchantment) {
             if (this.isObfuscated()) {
                 InfuserScreen.this.setActiveTooltip(this.getLowPowerComponent(UNKNOWN_ENCHANT_COMPONENT));
+                InfuserScreen.this.insufficientPower = true;
             } else if (this.isIncompatible()) {
                 final Component incompatibleComponent = new TranslatableComponent("gui.enchantinginfuser.tooltip.incompatible", this.incompatible.stream()
                         .map(e -> (MutableComponent) new TranslatableComponent(e.getDescriptionId()))

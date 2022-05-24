@@ -14,6 +14,7 @@ public class ServerConfig extends AbstractConfig {
     public ServerConfig() {
         super("");
         this.advancedInfuser.allowRepairing = true;
+        this.advancedInfuser.allowBooks = true;
         this.advancedInfuser.allowModifyingEnchantments = ModifyableItems.ALL;
         this.advancedInfuser.costs.maximumCost = 25;
     }
@@ -25,10 +26,10 @@ public class ServerConfig extends AbstractConfig {
     public static class InfuserConfig extends AbstractConfig {
         @Config(description = {"How many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "Filling in corners is important to reach higher values.", "Setting very high values may require modded bookshelves that provide more than one enchanting power per block (such as Botania's mana pylons)."})
         @Config.IntRange(min = 0, max = 127)
-        public int maximumPower = 15;
+        public int maximumBookshelves = 15;
         @Config(description = "Allow enchantments on an already enchanted item to be increased / removed.")
-        public ModifyableItems allowModifyingEnchantments = ModifyableItems.FULL_DURABILITY;
-        @Config(description = "Allow (enchanted) books to be enchanted / modified.")
+        public ModifyableItems allowModifyingEnchantments = ModifyableItems.UNENCHANTED;
+        @Config(description = "Allow books to be enchanted in an infuser.")
         public boolean allowBooks = false;
         @Config(description = "Can the enchanting infuser repair items using levels in addition to enchanting.")
         public boolean allowRepairing = false;
@@ -96,7 +97,7 @@ public class ServerConfig extends AbstractConfig {
         public double veryRareMultiplier = 0.6;
         @Config(description = "Multiplier for maximum enchanting power for how much power is required to max out an enchantment.")
         @Config.DoubleRange(min = 0.0, max = 1.0)
-        public double rarityRangeMultiplier = 0.4;
+        public double rarityRange = 0.4;
         @Config(description = {"Multiplier for maximum enchanting power for when treasure enchantments become available.", "They also need to be enabled in the \"types\" config."})
         @Config.DoubleRange(min = 0.0, max = 1.0)
         public double treasureMultiplier = 0.95;

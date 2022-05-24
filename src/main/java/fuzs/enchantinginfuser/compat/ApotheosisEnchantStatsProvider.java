@@ -1,5 +1,6 @@
-package fuzs.enchantinginfuser.api.world.item.enchantment;
+package fuzs.enchantinginfuser.compat;
 
+import fuzs.enchantinginfuser.api.world.item.enchantment.EnchantStatsProvider;
 import net.minecraft.world.item.enchantment.Enchantment;
 import shadows.apotheosis.ench.EnchModule;
 
@@ -13,6 +14,16 @@ public class ApotheosisEnchantStatsProvider implements EnchantStatsProvider {
     @Override
     public Enchantment.Rarity getRarity(Enchantment enchantment) {
         return enchantment.getRarity();
+    }
+
+    @Override
+    public String[] getScalingNamespaces() {
+        return new String[]{"minecraft", "apotheosis"};
+    }
+
+    @Override
+    public double getMaximumCostMultiplier() {
+        return 2.5;
     }
 
     @Override
