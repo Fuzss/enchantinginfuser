@@ -9,8 +9,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
+import fuzs.enchantinginfuser.capability.KnownEnchantsCapability;
 import fuzs.enchantinginfuser.client.gui.components.IconButton;
 import fuzs.enchantinginfuser.network.client.message.C2SAddEnchantLevelMessage;
+import fuzs.enchantinginfuser.registry.ModRegistry;
 import fuzs.enchantinginfuser.util.EnchantmentUtil;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import net.minecraft.ChatFormatting;
@@ -40,6 +42,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 
@@ -453,15 +456,22 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         int posY = this.topPos + 161;
         if (mouseX >= posX && mouseY >= posY && mouseX < posX + 16 && mouseY < posY + 16) {
             List<FormattedCharSequence> list = Lists.newArrayList();
-            if (this.menu.getCarried().isEnchanted()) {
-                EnchantmentHelper.getEnchantments(this.menu.getCarried()).entrySet().stream()
-                        .map(e -> e.getKey().getFullname(e.getValue()))
-                        .map(Component::getVisualOrderText)
-                        .forEach(list::add);
+            if (!this.menu.getCarried().isEmpty()) {
+                if (this.menu.getCarried().isEnchanted()) {
+                    LazyOptional<KnownEnchantsCapability> optional = this.minecraft.player.getCapability(ModRegistry.KNOWN_ENCHANTS_CAPABILITY);
+                    EnchantmentHelper.getEnchantments(this.menu.getCarried()).entrySet().stream().filter(entry -> {
+                        if (optional.isPresent()) {
+                            return !optional.orElseThrow(IllegalStateException::new).knowsEnchantment(entry.getKey());
+                        }
+                        return true;
+                    }).map(e -> e.getKey().getFullname(e.getValue())).map(Component::getVisualOrderText).forEach(list::add);
+                }
             } else {
                 list.addAll(InfuserScreen.this.font.split(DESTROY_GEAR_COMPONENT, 175));
             }
-            this.setActiveTooltip(list);
+            if (!list.isEmpty()) {
+                this.setActiveTooltip(list);
+            }
         }
     }
 

@@ -1,8 +1,8 @@
 package fuzs.enchantinginfuser.registry;
 
 import fuzs.enchantinginfuser.EnchantingInfuser;
-import fuzs.enchantinginfuser.capability.EnchantmentKnowledgeCapability;
-import fuzs.enchantinginfuser.capability.EnchantmentKnowledgeCapabilityImpl;
+import fuzs.enchantinginfuser.capability.KnownEnchantsCapability;
+import fuzs.enchantinginfuser.capability.KnownEnchantsCapabilityImpl;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
@@ -29,7 +29,7 @@ public class ModRegistry {
     public static final RegistryObject<MenuType<InfuserMenu>> ADVANCED_INFUSING_MENU_TYPE = REGISTRY.registerRawMenuType("advanced_infusing", () -> (id, inventory) -> InfuserMenu.create(InfuserBlock.InfuserType.ADVANCED, id, inventory));
 
     private static final CapabilityController CAPABILITIES = CapabilityController.of(EnchantingInfuser.MOD_ID);
-    public static final Capability<EnchantmentKnowledgeCapability> ENCHANTMENT_KNOWLEDGE_CAPABILITY = CAPABILITIES.registerPlayerCapability("enchantment_knowledge", EnchantmentKnowledgeCapability.class, player -> new EnchantmentKnowledgeCapabilityImpl(), PlayerRespawnStrategy.ALWAYS_COPY, new CapabilityToken<EnchantmentKnowledgeCapability>() {});
+    public static final Capability<KnownEnchantsCapability> KNOWN_ENCHANTS_CAPABILITY = CAPABILITIES.registerPlayerCapability("enchantment_knowledge", KnownEnchantsCapability.class, player -> new KnownEnchantsCapabilityImpl(), PlayerRespawnStrategy.ALWAYS_COPY, new CapabilityToken<KnownEnchantsCapability>() {});
 
     public static void touch() {
 

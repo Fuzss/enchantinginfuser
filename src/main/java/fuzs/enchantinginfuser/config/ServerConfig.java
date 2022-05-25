@@ -16,7 +16,7 @@ public class ServerConfig extends AbstractConfig {
         this.advancedInfuser.allowRepairing = true;
         this.advancedInfuser.allowBooks = true;
         this.advancedInfuser.allowModifyingEnchantments = ModifyableItems.ALL;
-        this.advancedInfuser.costs.maximumCost = 25;
+        this.advancedInfuser.costs.maximumCost = 30;
     }
 
     public enum ModifyableItems {
@@ -62,17 +62,22 @@ public class ServerConfig extends AbstractConfig {
 
     public static class CostsConfig extends AbstractConfig {
         @Config(description = "Base cost multiplier for each level for common enchantments.")
+        @Config.IntRange(min = 1)
         public int commonCostMultiplier = 2;
         @Config(description = "Base cost multiplier for each level for uncommon enchantments.")
+        @Config.IntRange(min = 1)
         public int uncommonCostMultiplier = 3;
         @Config(description = "Base cost multiplier for each level for rare enchantments.")
+        @Config.IntRange(min = 1)
         public int rareCostMultiplier = 4;
         @Config(description = "Base cost multiplier for each level for very rare enchantments.")
+        @Config.IntRange(min = 1)
         public int veryRareCostMultiplier = 5;
         @Config(description = "Double prices for enchantments normally unobtainable from enchanting tables if they are enabled (e.g. mending, soul speed) when they are enabled.")
         public boolean doubleUniques = true;
         @Config(description = {"Cost level to scale prices by. This is not a strict value, meaning it can be exceeded (e.g. when applying treasure enchantments)."})
-        public int maximumCost = 35;
+        @Config.IntRange(min = 1)
+        public int maximumCost = 40;
         @Config(description = "When scaling costs, only account for vanilla enchantments. Otherwise enchanting costs will become ludicrously cheap with many modded enchantments present.")
         public boolean scaleCostsByVanillaOnly = true;
 

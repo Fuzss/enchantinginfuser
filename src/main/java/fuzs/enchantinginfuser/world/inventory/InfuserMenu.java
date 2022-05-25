@@ -85,6 +85,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 return 1;
             }
         });
+        // having this optional breaks shift-clicking in the menu
         if (EnchantingInfuser.CONFIG.server().limitedEnchantments) {
             this.addSlot(new EnchantmentKnowledgeSlot(this.player, 1, 196, 161));
         }

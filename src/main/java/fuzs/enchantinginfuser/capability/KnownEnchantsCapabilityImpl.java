@@ -12,7 +12,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.Collection;
 import java.util.Set;
 
-public class EnchantmentKnowledgeCapabilityImpl implements EnchantmentKnowledgeCapability {
+public class KnownEnchantsCapabilityImpl implements KnownEnchantsCapability {
     private static final String TAG_KEY = "KnownEnchantments";
 
     private final Set<Enchantment> enchantments = Sets.newHashSet();

@@ -3,7 +3,7 @@ package fuzs.enchantinginfuser.util;
 import com.google.common.collect.Lists;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
-import fuzs.enchantinginfuser.capability.EnchantmentKnowledgeCapability;
+import fuzs.enchantinginfuser.capability.KnownEnchantsCapability;
 import fuzs.enchantinginfuser.registry.ModRegistry;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -46,10 +46,10 @@ public class EnchantmentUtil {
     }
 
     private static Collection<Enchantment> getKnownEnchantments(Player player) {
-        if (player.getAbilities().instabuild || !EnchantingInfuser.CONFIG.server().limitedEnchantments) {
+        if (!EnchantingInfuser.CONFIG.server().limitedEnchantments) {
             return ForgeRegistries.ENCHANTMENTS.getValues();
         }
-        Optional<Collection<Enchantment>> optional = player.getCapability(ModRegistry.ENCHANTMENT_KNOWLEDGE_CAPABILITY).map(EnchantmentKnowledgeCapability::getKnownEnchantments);
+        Optional<Collection<Enchantment>> optional = player.getCapability(ModRegistry.KNOWN_ENCHANTS_CAPABILITY).map(KnownEnchantsCapability::getKnownEnchantments);
         return optional.orElseGet(ForgeRegistries.ENCHANTMENTS::getValues);
     }
 

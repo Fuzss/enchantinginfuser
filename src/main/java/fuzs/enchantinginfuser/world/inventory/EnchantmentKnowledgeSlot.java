@@ -1,7 +1,9 @@
 package fuzs.enchantinginfuser.world.inventory;
 
-import fuzs.enchantinginfuser.capability.EnchantmentKnowledgeCapability;
+import fuzs.enchantinginfuser.capability.KnownEnchantsCapability;
+import fuzs.enchantinginfuser.handler.KnownEnchantsSyncHandler;
 import fuzs.enchantinginfuser.registry.ModRegistry;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -12,6 +14,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class EnchantmentKnowledgeSlot extends Slot {
     private static final Container EMPTY_CONTAINER = new Container() {
@@ -76,14 +79,12 @@ public class EnchantmentKnowledgeSlot extends Slot {
 
     @Override
     public boolean mayPlace(ItemStack stack) {
-        if (stack.isEnchanted()) {
+        if (!stack.isEmpty() && stack.isEnchanted()) {
             Set<Enchantment> enchantments = EnchantmentHelper.getEnchantments(stack).keySet();
-            LazyOptional<EnchantmentKnowledgeCapability> optional = this.player.getCapability(ModRegistry.ENCHANTMENT_KNOWLEDGE_CAPABILITY);
+            LazyOptional<KnownEnchantsCapability> optional = this.player.getCapability(ModRegistry.KNOWN_ENCHANTS_CAPABILITY);
             if (optional.isPresent()) {
-                // idea is to not allow voiding any items where all enchants are already known, requires syncing capability to client though so not yet implemented
-//                EnchantmentKnowledgeCapability capability = optional.orElseThrow(IllegalStateException::new);
-//                return enchantments.stream().anyMatch(Predicate.not(capability::knowsEnchantment));
-                return true;
+                KnownEnchantsCapability capability = optional.orElseThrow(IllegalStateException::new);
+                return enchantments.stream().anyMatch(Predicate.not(capability::knowsEnchantment));
             }
         }
         return false;
@@ -91,17 +92,20 @@ public class EnchantmentKnowledgeSlot extends Slot {
 
     @Override
     public void set(ItemStack stack) {
-        if (!stack.isEnchanted()) return;
+        if (stack.isEmpty() || !stack.isEnchanted()) return;
         Set<Enchantment> enchantments = EnchantmentHelper.getEnchantments(stack).keySet();
-        LazyOptional<EnchantmentKnowledgeCapability> optional = this.player.getCapability(ModRegistry.ENCHANTMENT_KNOWLEDGE_CAPABILITY);
+        LazyOptional<KnownEnchantsCapability> optional = this.player.getCapability(ModRegistry.KNOWN_ENCHANTS_CAPABILITY);
         if (optional.isPresent()) {
-            EnchantmentKnowledgeCapability capability = optional.orElseThrow(IllegalStateException::new);
+            KnownEnchantsCapability capability = optional.orElseThrow(IllegalStateException::new);
             for (Enchantment enchantment : enchantments) {
                 if (!capability.knowsEnchantment(enchantment)) {
                     capability.addKnownEnchantment(enchantment);
                 }
             }
             this.player.playSound(SoundEvents.ENCHANTMENT_TABLE_USE, 1.0F, this.player.getRandom().nextFloat() * 0.1F + 0.9F);
+            if (this.player instanceof ServerPlayer player) {
+                KnownEnchantsSyncHandler.syncCapability(player);
+            }
         }
     }
 }
