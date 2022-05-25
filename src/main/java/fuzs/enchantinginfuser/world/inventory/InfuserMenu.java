@@ -11,7 +11,6 @@ import fuzs.enchantinginfuser.util.EnchantmentUtil;
 import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -30,8 +29,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.BookItem;
 import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -85,10 +84,6 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 return 1;
             }
         });
-        // having this optional breaks shift-clicking in the menu
-        if (EnchantingInfuser.CONFIG.server().limitedEnchantments) {
-            this.addSlot(new EnchantmentKnowledgeSlot(this.player, 1, 196, 161));
-        }
         for (int k = 0; k < 4; ++k) {
             final EquipmentSlot equipmentslot = SLOT_IDS[k];
             this.addSlot(new Slot(inventory, 39 - k, 8 + 188 * (k / 2), 103 + (k % 2) * 18) {
@@ -151,7 +146,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 this.levelAccess.execute((Level level, BlockPos pos) -> {
                     this.setEnchantingPower(level, pos);
                     this.setRepairCost();
-                    final List<Enchantment> availableEnchantments = EnchantmentUtil.getAvailableEnchantments(this.player, itemstack, this.config.types.allowTreasure, this.config.types.allowUndiscoverable, this.config.types.allowUntradeable, this.config.types.allowCurses);
+                    final List<Enchantment> availableEnchantments = EnchantmentUtil.getAvailableEnchantments(itemstack, this.config.types.allowTreasure, this.config.types.allowUndiscoverable, this.config.types.allowUntradeable, this.config.types.allowCurses);
                     this.setAndSyncEnchantments(EnchantmentUtil.copyEnchantmentsToMap(itemstack, availableEnchantments));
                 });
             } else {
@@ -277,13 +272,6 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 } else {
                     // don't use Player::onEnchantmentPerformed as it also reseeds enchantments seed which we have nothing to do with
                     player.giveExperienceLevels(player.getAbilities().instabuild ? 0 : -cost);
-                }
-                if (itemstack.getItem() instanceof BookItem) {
-                    itemstack2 = new ItemStack(Items.ENCHANTED_BOOK);
-                    CompoundTag compoundtag = itemstack.getTag();
-                    if (compoundtag != null) {
-                        itemstack2.setTag(compoundtag.copy());
-                    }
                 }
                 itemstack2 = EnchantmentUtil.setNewEnchantments(itemstack2, this.enchantmentsToLevel, this.enchantingBaseCost != 0);
                 this.enchantSlots.setItem(0, itemstack2);
@@ -416,7 +404,8 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     private int getScaledCosts(Map<Enchantment, Integer> enchantmentsToLevel) {
         final double totalCosts = this.getTotalCosts(enchantmentsToLevel);
         final int maxCost = (int) (this.config.costs.maximumCost * EnchantingInfuserAPI.getEnchantStatsProvider().getMaximumCostMultiplier());
-        if (totalCosts > maxCost && !(this.enchantSlots.getItem(0).getItem() instanceof BookItem)) {
+        Item item = this.enchantSlots.getItem(0).getItem();
+        if (totalCosts > maxCost && !(item instanceof BookItem) && !(item instanceof EnchantedBookItem)) {
             final double ratio = maxCost / totalCosts;
             final int minCosts = enchantmentsToLevel.values().stream()
                     .mapToInt(Integer::intValue)

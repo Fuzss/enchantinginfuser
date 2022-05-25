@@ -9,10 +9,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
-import fuzs.enchantinginfuser.capability.KnownEnchantsCapability;
 import fuzs.enchantinginfuser.client.gui.components.IconButton;
 import fuzs.enchantinginfuser.network.client.message.C2SAddEnchantLevelMessage;
-import fuzs.enchantinginfuser.registry.ModRegistry;
 import fuzs.enchantinginfuser.util.EnchantmentUtil;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import net.minecraft.ChatFormatting;
@@ -36,13 +34,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 
@@ -53,7 +47,6 @@ import java.util.stream.Collectors;
 @SuppressWarnings("ConstantConditions")
 public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     private static final ResourceLocation INFUSER_LOCATION = new ResourceLocation(EnchantingInfuser.MOD_ID, "textures/gui/container/enchanting_infuser.png");
-    private static final Component DESTROY_GEAR_COMPONENT = new TranslatableComponent("gui.enchantinginfuser.tooltip.destroyGear").withStyle(ChatFormatting.GRAY);
     private static final int BUTTONS_OFFSET_X = 7;
     private static final int ENCHANT_BUTTON_OFFSET_Y = 44;
     private static final int ENCHANT_ONLY_BUTTON_OFFSET_Y = 55;
@@ -279,11 +272,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         this.renderBackground(poseStack);
         super.render(poseStack, mouseX, mouseY, partialTick);
         this.scrollingList.render(poseStack, mouseX, mouseY, partialTick);
-        if (EnchantingInfuser.CONFIG.server().limitedEnchantments) {
-            this.renderKnowledgeSlotTooltip(poseStack, mouseX, mouseY);
-        } else {
-            this.renderEnchantingPower(poseStack, mouseX, mouseY);
-        }
+        this.renderEnchantingPower(poseStack, mouseX, mouseY);
         this.renderEnchantButtonCost(poseStack, mouseX, mouseY);
         this.renderRepairButtonCost(poseStack, mouseX, mouseY);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -338,8 +327,10 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             List<FormattedText> list = Lists.newArrayList();
             if (canEnchant) {
                 Map<Enchantment, Integer> enchantments = this.menu.getValidEnchantments();
-                final ItemStack stack = this.menu.getEnchantableStack();
-                MutableComponent nameComponent = (new TextComponent("")).append(stack.getHoverName()).withStyle(this.getItemNameRarity(stack.getItem(), !enchantments.isEmpty()).color);
+                boolean enchanted = enchantments.values().stream().anyMatch(level -> level > 0);
+                ItemStack stack = this.menu.getEnchantableStack();
+                ItemStack displayStack = EnchantmentUtil.getNewEnchantmentStack(stack, enchanted, false);
+                MutableComponent nameComponent = (new TextComponent("")).append(displayStack.getHoverName()).withStyle(this.getItemNameRarity(displayStack, enchanted).color);
                 if (stack.hasCustomHoverName()) {
                     nameComponent.withStyle(ChatFormatting.ITALIC);
                 }
@@ -364,16 +355,15 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         }
     }
 
-    private Rarity getItemNameRarity(Item item, boolean enchanted) {
-        final Rarity rarity = item.getRarity(new ItemStack(item));
-        if (!enchanted) {
+    private Rarity getItemNameRarity(ItemStack stack, boolean enchanted) {
+        final Rarity rarity = stack.getItem().getRarity(stack);
+        if (!enchanted || stack.getItem() instanceof EnchantedBookItem) {
             return rarity;
-        } else {
-            if (rarity == Rarity.RARE || rarity == Rarity.EPIC) {
-                return Rarity.EPIC;
-            }
-            return Rarity.RARE;
         }
+        if (rarity == Rarity.RARE || rarity == Rarity.EPIC) {
+            return Rarity.EPIC;
+        }
+        return Rarity.RARE;
     }
 
     private void addEnchantments(ItemStack stack, Map<Enchantment, Integer> enchantments, List<FormattedText> list) {
@@ -451,30 +441,6 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         }
     }
 
-    private void renderKnowledgeSlotTooltip(PoseStack poseStack, int mouseX, int mouseY) {
-        int posX = this.leftPos + 196;
-        int posY = this.topPos + 161;
-        if (mouseX >= posX && mouseY >= posY && mouseX < posX + 16 && mouseY < posY + 16) {
-            List<FormattedCharSequence> list = Lists.newArrayList();
-            if (!this.menu.getCarried().isEmpty()) {
-                if (this.menu.getCarried().isEnchanted()) {
-                    LazyOptional<KnownEnchantsCapability> optional = this.minecraft.player.getCapability(ModRegistry.KNOWN_ENCHANTS_CAPABILITY);
-                    EnchantmentHelper.getEnchantments(this.menu.getCarried()).entrySet().stream().filter(entry -> {
-                        if (optional.isPresent()) {
-                            return !optional.orElseThrow(IllegalStateException::new).knowsEnchantment(entry.getKey());
-                        }
-                        return true;
-                    }).map(e -> e.getKey().getFullname(e.getValue())).map(Component::getVisualOrderText).forEach(list::add);
-                }
-            } else {
-                list.addAll(InfuserScreen.this.font.split(DESTROY_GEAR_COMPONENT, 175));
-            }
-            if (!list.isEmpty()) {
-                this.setActiveTooltip(list);
-            }
-        }
-    }
-
     @Override
     protected void renderBg(PoseStack pPoseStack, float pPartialTick, int pMouseX, int pMouseY) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -493,9 +459,6 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         this.blit(pPoseStack, sliderX, sliderY + (int)((float)(sliderRange - sliderY - 18) * this.scrollOffs), 220, 54 + (this.scrollingList.canScroll() ? 18 : 0), 18, 18);
         // render slot manually as it is placed further down when repairing is disabled
         this.blit(pPoseStack, this.leftPos + 8 - 1, this.topPos + (this.menu.config.allowRepairing ? 23 : 34) - 1, 162, 185, 18, 18);
-        if (EnchantingInfuser.CONFIG.server().limitedEnchantments) {
-            this.blit(pPoseStack, this.leftPos + 196 - 1, this.topPos + 161 - 1, 162, 203, 18, 18);
-        }
     }
 
     private class ScrollingList extends AbstractContainerEventHandler implements Widget, NarratableEntry {

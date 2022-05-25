@@ -4,8 +4,6 @@ import fuzs.puzzleslib.config.AbstractConfig;
 import fuzs.puzzleslib.config.annotation.Config;
 
 public class ServerConfig extends AbstractConfig {
-    @Config(description = {"To be able to use an enchantment in the infuser a player must first know about it. Learning about enchantments is achieved by sacrificing enchanted items in the dedicated slot inside of the infuser.", "This option is meant as a way to better balance the abilities of enchanting infusers.", "This feature is still WIP!"})
-    public boolean limitedEnchantments = false;
     @Config
     public InfuserConfig normalInfuser = new InfuserConfig("normal_infuser");
     @Config
