@@ -356,7 +356,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     }
 
     private Rarity getItemNameRarity(ItemStack stack, boolean enchanted) {
-        final Rarity rarity = stack.getItem().getRarity(stack);
+        // we want the pure stack, as the one we get might already be enchanted
+        final Rarity rarity = stack.getItem().getRarity(new ItemStack(stack.getItem()));
         if (!enchanted || stack.getItem() instanceof EnchantedBookItem) {
             return rarity;
         }
@@ -779,17 +780,13 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
                 } else if (Language.getInstance().has(enchantment.getDescriptionId() + ".description")) {
                     list.addAll(InfuserScreen.this.font.split(new TranslatableComponent(enchantment.getDescriptionId() + ".description").withStyle(ChatFormatting.GRAY), 175));
                 }
-                // kinda useless for there to just be a name on the tooltip without a description
-                // descriptions may be provided by enchantment descriptions mod, but many mods have them built-in now anyways
-                if (!list.isEmpty()) {
-                    final MutableComponent levelsComponent = new TranslatableComponent("enchantment.level." + EnchantingInfuserAPI.getEnchantStatsProvider().getMinLevel(enchantment));
-                    if (EnchantingInfuserAPI.getEnchantStatsProvider().getMinLevel(enchantment) != EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment)) {
-                        levelsComponent.append("-").append( new TranslatableComponent("enchantment.level." + EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment)));
-                    }
-                    final Component wrappedComponent = new TextComponent("(").append(levelsComponent).append(")").withStyle(ChatFormatting.GRAY);
-                    list.add(0, new TranslatableComponent(enchantment.getDescriptionId()).append(" ").append(wrappedComponent).getVisualOrderText());
-                    InfuserScreen.this.setActiveTooltip(list);
+                final MutableComponent levelsComponent = new TranslatableComponent("enchantment.level." + EnchantingInfuserAPI.getEnchantStatsProvider().getMinLevel(enchantment));
+                if (EnchantingInfuserAPI.getEnchantStatsProvider().getMinLevel(enchantment) != EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment)) {
+                    levelsComponent.append("-").append( new TranslatableComponent("enchantment.level." + EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment)));
                 }
+                final Component wrappedComponent = new TextComponent("(").append(levelsComponent).append(")").withStyle(ChatFormatting.GRAY);
+                list.add(0, new TranslatableComponent(enchantment.getDescriptionId()).append(" ").append(wrappedComponent).getVisualOrderText());
+                InfuserScreen.this.setActiveTooltip(list);
             }
         }
 

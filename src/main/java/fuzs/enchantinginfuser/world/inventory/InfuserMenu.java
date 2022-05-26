@@ -335,7 +335,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 return Pair.of(OptionalInt.of(nextPower), EnchantingInfuserAPI.getEnchantStatsProvider().getMinLevel(enchantment) + i - 1);
             }
         }
-        return Pair.of(OptionalInt.empty(), EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment));
+        return Pair.of(OptionalInt.of(maxPower), EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment));
     }
 
     private Pair<OptionalInt, Integer> getSpecialMaxLevel(Enchantment enchantment, int currentPower, int maxPower) {
