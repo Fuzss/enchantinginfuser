@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 
 public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements WorldlyContainer {
     private final NonNullList<ItemStack> inventory = NonNullList.withSize(1, ItemStack.EMPTY);
-    private LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.UP, Direction.DOWN, Direction.NORTH);
+    private LazyOptional<IItemHandler> infuserHandler = LazyOptional.of(() -> new SidedInvWrapper(this, Direction.UP));
     private LockCode code = LockCode.NO_LOCK;
 
     public InfuserBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
@@ -162,14 +162,8 @@ public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements W
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
-        if (!this.remove && facing != null && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            if (facing == Direction.UP) {
-                return this.handlers[0].cast();
-            } else if (facing == Direction.DOWN) {
-                return this.handlers[1].cast();
-            } else {
-                return this.handlers[2].cast();
-            }
+        if (!this.remove && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            return this.infuserHandler.cast();
         }
         return super.getCapability(capability, facing);
     }
@@ -177,14 +171,13 @@ public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements W
     @Override
     public void invalidateCaps() {
         super.invalidateCaps();
-        for (LazyOptional<? extends IItemHandler> handler : this.handlers) {
-            handler.invalidate();
-        }
+        this.infuserHandler.invalidate();
     }
 
     @Override
     public void reviveCaps() {
         super.reviveCaps();
-        this.handlers = SidedInvWrapper.create(this, Direction.UP, Direction.DOWN, Direction.NORTH);
+        // use SidedInvWrapper instead of InvWrapper as otherwise restrictions for extraction (only enchanted items) are ignored
+        this.infuserHandler = LazyOptional.of(() -> new SidedInvWrapper(this, Direction.UP));
     }
 }
