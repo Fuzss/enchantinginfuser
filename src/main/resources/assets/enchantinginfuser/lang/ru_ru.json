@@ -1,0 +1,9 @@
+{
+  "block.enchantinginfuser.enchanting_infuser": "Зачаровывающий наполнитель",
+  "block.enchantinginfuser.advanced_enchanting_infuser": "Продвинутый зачаровывающий наполнитель",
+  "gui.enchantinginfuser.tooltip.enchanting_power": "Сила %s зачарования",
+  "gui.enchantinginfuser.tooltip.required_enchanting_power": "Текущая сила зачарования: %s / %s",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "Данное зачарование слишком мощное для наполнителя с такой малой силой зачарования.",
+  "gui.enchantinginfuser.tooltip.low_power": "Для дальнейшего увеличения уровня для этого зачарования требуется наполнитель с большей силой зачарования.",
+  "gui.enchantinginfuser.tooltip.incompatible": "Данное зачарование несовместимо: %s"
+}
