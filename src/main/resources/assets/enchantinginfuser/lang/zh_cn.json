@@ -1,0 +1,9 @@
+{
+  "block.enchantinginfuser.enchanting_infuser": "附魔注入台",
+  "block.enchantinginfuser.advanced_enchanting_infuser": "高级附魔注入台",
+  "gui.enchantinginfuser.tooltip.enchanting_power": "%s 附魔能力",
+  "gui.enchantinginfuser.tooltip.required_enchanting_power": "当前附魔能力: %s / %s",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "这个附魔对一个只有这么一点附魔能力的注入者来说太强大了",
+  "gui.enchantinginfuser.tooltip.low_power": "进一步提高此附魔等级需要更大的附魔能力",
+  "gui.enchantinginfuser.tooltip.incompatible": "此附魔与 %s 不兼容"
+}

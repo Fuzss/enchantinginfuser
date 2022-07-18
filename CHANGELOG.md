@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 - Added the ability to change/remove existing enchantments on items (by default only enabled for the advanced infuser)
 - Added a button for repairing items in the infuser for the cost of a few levels (by default only enabled for the advanced infuser)
 - Added support for the Apotheosis mod, now you can finally apply enchantments with their new max level to your gear using an enchanting infuser
+- Added translation for `zh_cn`, thanks [EnterFor]!
 ### Changed
 - All config options are now separate for each infuser, so you can separately customize the normal and advanced variant to your desires
 - Increased amount of required levels for maxed out enchantments to 30 (from 25) for normal infuser, and to 20 (from 15) for advanced infuser
@@ -41,3 +42,4 @@ The format is based on [Keep a Changelog].
 - Ported to Minecraft 1.18
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
+[EnterFor]: https://github.com/EnterFor
