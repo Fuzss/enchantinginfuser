@@ -3,17 +3,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
-## [v3.3.0-1.18.2] - 2022-05-24
+## [v3.3.0-1.18.2] - 2022-07-18
 ### Added
 - Added the ability to change/remove existing enchantments on items (by default only enabled for the advanced infuser)
 - Added a button for repairing items in the infuser for the cost of a few levels (by default only enabled for the advanced infuser)
 - Added support for the Apotheosis mod, now you can finally apply enchantments with their new max level to your gear using an enchanting infuser
 ### Changed
 - All config options are now separate for each infuser, so you can separately customize the normal and advanced variant to your desires
-- Increased amount of required levels for maxed out enchantments to 35 (from 25) for normal infuser, and to 25 (from 15) for advanced infuser
+- Increased amount of required levels for maxed out enchantments to 30 (from 25) for normal infuser, and to 20 (from 15) for advanced infuser
 - Only 15 bookshelves are now required around an infuser, just like vanilla (this can be increased again back to 30 in the config if desired)
 - Overhauled tooltips in the infuser screen, they now contain a lot more information
 - Books can no longer be enchanted using a normal infuser (toggleable in the config)
+- Enchanting infuser items now have a tooltip to explain what they are capable of
 
 ## [v3.2.0-1.18.2] - 2022-03-03
 - Compiled for Minecraft 1.18.2

@@ -14,7 +14,7 @@ public class ServerConfig extends AbstractConfig {
         this.advancedInfuser.allowRepairing = true;
         this.advancedInfuser.allowBooks = true;
         this.advancedInfuser.allowModifyingEnchantments = ModifyableItems.ALL;
-        this.advancedInfuser.costs.maximumCost = 30;
+        this.advancedInfuser.costs.maximumCost = 20;
     }
 
     public enum ModifyableItems {
@@ -75,7 +75,7 @@ public class ServerConfig extends AbstractConfig {
         public boolean doubleUniques = true;
         @Config(description = {"Cost level to scale prices by. This is not a strict value, meaning it can be exceeded (e.g. when applying treasure enchantments)."})
         @Config.IntRange(min = 1)
-        public int maximumCost = 40;
+        public int maximumCost = 30;
         @Config(description = "When scaling costs, only account for vanilla enchantments. Otherwise enchanting costs will become ludicrously cheap with many modded enchantments present.")
         public boolean scaleCostsByVanillaOnly = true;
 
