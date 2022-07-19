@@ -19,7 +19,7 @@ public class FabricAbstractions implements CommonAbstractions {
 
     @Override
     public boolean canApplyAtEnchantingTable(Enchantment enchantment, ItemStack stack) {
-        return enchantment.canEnchant(stack);
+        return enchantment.category.canEnchant(stack.getItem());
     }
 
     @Override

@@ -148,7 +148,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 this.levelAccess.execute((Level level, BlockPos pos) -> {
                     this.setEnchantingPower(level, pos);
                     this.setRepairCost();
-                    final List<Enchantment> availableEnchantments = EnchantmentUtil.getAvailableEnchantments(itemstack, this.config.types.allowTreasure, this.config.types.allowUndiscoverable, this.config.types.allowUntradeable, this.config.types.allowCurses);
+                    final List<Enchantment> availableEnchantments = EnchantmentUtil.getAvailableEnchantments(itemstack, this.config.types.allowAnvilEnchantments, this.config.types.allowTreasureEnchantments, this.config.types.allowUndiscoverableEnchantments, this.config.types.allowUntradeableEnchantments, this.config.types.allowCursesEnchantments);
                     this.setAndSyncEnchantments(EnchantmentUtil.copyEnchantmentsToMap(itemstack, availableEnchantments));
                 });
             } else {

@@ -12,6 +12,6 @@ public class EnchantingInfuserForgeClient {
 
     @SubscribeEvent
     public static void onConstructMod(final FMLConstructModEvent evt) {
-        ClientCoreServices.FACTORIES.clientModConstructor().accept(new EnchantingInfuserClient());
+        ClientCoreServices.FACTORIES.clientModConstructor(EnchantingInfuser.MOD_ID).accept(new EnchantingInfuserClient());
     }
 }

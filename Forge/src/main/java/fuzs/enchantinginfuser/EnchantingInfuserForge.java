@@ -14,7 +14,7 @@ public class EnchantingInfuserForge {
 
     @SubscribeEvent
     public static void onConstructMod(final FMLConstructModEvent evt) {
-        CoreServices.FACTORIES.modConstructor().accept(new EnchantingInfuser());
+        CoreServices.FACTORIES.modConstructor(EnchantingInfuser.MOD_ID).accept(new EnchantingInfuser());
         ForgeModRegistry.touch();
     }
 

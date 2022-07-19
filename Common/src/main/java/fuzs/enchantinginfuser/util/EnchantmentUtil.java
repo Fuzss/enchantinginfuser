@@ -22,11 +22,11 @@ import java.util.stream.Collectors;
 
 public class EnchantmentUtil {
 
-    public static List<Enchantment> getAvailableEnchantments(ItemStack stack, boolean allowTreasure, boolean allowUndiscoverable, boolean allowUntradeable, boolean allowCurse) {
+    public static List<Enchantment> getAvailableEnchantments(ItemStack stack, boolean allowAnvil, boolean allowTreasure, boolean allowUndiscoverable, boolean allowUntradeable, boolean allowCurse) {
         List<Enchantment> list = Lists.newArrayList();
         boolean book = stack.getItem() instanceof BookItem || stack.getItem() instanceof EnchantedBookItem;
         for (Enchantment enchantment : Registry.ENCHANTMENT) {
-            if (ModCoreServices.ABSTRACTIONS.canApplyAtEnchantingTable(enchantment, stack) || (book && ModCoreServices.ABSTRACTIONS.isAllowedOnBooks(enchantment))) {
+            if ((allowAnvil ? enchantment.canEnchant(stack) : ModCoreServices.ABSTRACTIONS.canApplyAtEnchantingTable(enchantment, stack)) || (book && ModCoreServices.ABSTRACTIONS.isAllowedOnBooks(enchantment))) {
                 if (!EnchantingInfuserAPI.getEnchantStatsProvider().isDiscoverable(enchantment)) {
                     if (!allowUndiscoverable) continue;
                 } else if (!EnchantingInfuserAPI.getEnchantStatsProvider().isTradeable(enchantment)) {

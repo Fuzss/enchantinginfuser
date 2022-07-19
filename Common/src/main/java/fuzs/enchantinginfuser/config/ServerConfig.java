@@ -14,6 +14,7 @@ public class ServerConfig extends AbstractConfig {
         this.advancedInfuser.allowBooks = true;
         this.advancedInfuser.allowModifyingEnchantments = ModifyableItems.ALL;
         this.advancedInfuser.costs.maximumCost = 20;
+        this.advancedInfuser.types.allowAnvilEnchantments = true;
     }
 
     public enum ModifyableItems {
@@ -120,14 +121,16 @@ public class ServerConfig extends AbstractConfig {
     }
 
     public static class TypesConfig extends AbstractConfig {
+        @Config(description = "Allow enchantments that can normally not be obtained from an enchanting table, but can be put on the item in an anvil (e.g. sharpness on an axe).")
+        public boolean allowAnvilEnchantments = false;
         @Config(description = {"Allow undiscoverable enchantments (e.g. soul speed) to be applied using the enchanting infuser.", "This option takes precedence over other options for treasure, curse and tradeable enchantments."})
-        public boolean allowUndiscoverable = false;
+        public boolean allowUndiscoverableEnchantments = false;
         @Config(description = {"Allow untradeable enchantments (e.g. soul speed) to be applied using the enchanting infuser.", "This option takes precedence over other options for treasure and curse enchantments."})
-        public boolean allowUntradeable = false;
+        public boolean allowUntradeableEnchantments = false;
         @Config(description = {"Allow curses (e.g. curse of vanishing) to be applied using the enchanting infuser.", "This option takes precedence over option for treasure enchantments (as curses are also treasure enchantments internally)."})
-        public boolean allowCurses = false;
+        public boolean allowCursesEnchantments = false;
         @Config(description = "Allow treasure enchantments (e.g. mending) to be applied using the enchanting infuser.")
-        public boolean allowTreasure = false;
+        public boolean allowTreasureEnchantments = false;
 
         public TypesConfig() {
             super("types");
