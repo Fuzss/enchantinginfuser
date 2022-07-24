@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.0.2-1.19] - 2022-07-24
+### Changed
+- Made repair button more descriptive
+
 ## [v4.0.1-1.19] - 2022-07-19
 ### Added
 - Added a config option to control if anvil exclusive enchantments (e.g. sharpness on axes) are allowed to be applied in the infuser

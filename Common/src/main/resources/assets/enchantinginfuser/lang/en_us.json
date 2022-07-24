@@ -6,6 +6,7 @@
   "block.enchantinginfuser.description.repair": "Also can repair items with levels.",
   "gui.enchantinginfuser.tooltip.enchanting_power": "%s / %s Enchanting Power",
   "gui.enchantinginfuser.tooltip.enchanting_power.hint": "Place bookshelves in a square around the infuser on up to two layers. And don't forget to fill in corners!",
+  "gui.enchantinginfuser.tooltip.durability": "Durability: %s",
   "gui.enchantinginfuser.tooltip.change": "%s -> %s",
   "gui.enchantinginfuser.tooltip.points": "Gain Experience Points",
   "gui.enchantinginfuser.tooltip.required_enchanting_power": "Current Enchanting Power: %s / %s",
