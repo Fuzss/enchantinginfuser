@@ -1,8 +1,12 @@
 //package fuzs.enchantinginfuser.compat;
 //
 //import fuzs.enchantinginfuser.api.world.item.enchantment.EnchantStatsProvider;
+//import net.minecraft.core.BlockPos;
 //import net.minecraft.world.item.enchantment.Enchantment;
+//import net.minecraft.world.level.Level;
+//import net.minecraft.world.level.block.state.BlockState;
 //import shadows.apotheosis.ench.EnchModule;
+//import shadows.apotheosis.ench.table.EnchantingStatManager;
 //
 //public class ForgeApotheosisEnchantStatsProvider implements EnchantStatsProvider {
 //
@@ -22,8 +26,28 @@
 //    }
 //
 //    @Override
-//    public double getMaximumCostMultiplier() {
-//        return 2.5;
+//    public float getMaximumEnchantPower() {
+//        return 50.0F;
+//    }
+//
+//    @Override
+//    public float getEnchantPowerBonus(BlockState state, Level level, BlockPos pos) {
+//        return EnchantingStatManager.getEterna(state, level, pos);
+//    }
+//
+//    @Override
+//    public float getMaximumEnchantPowerScale(BlockState state, Level level, BlockPos pos) {
+//        return EnchantingStatManager.getMaxEterna(state, level, pos) / 15.0F;
+//    }
+//
+//    @Override
+//    public float getMaximumCostMultiplier() {
+//        return 2.5F;
+//    }
+//
+//    @Override
+//    public float getMaximumEnchantingPowerMultiplier() {
+//        return 3.5F;
 //    }
 //
 //    @Override

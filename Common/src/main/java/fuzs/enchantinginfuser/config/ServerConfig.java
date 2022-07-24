@@ -23,7 +23,7 @@ public class ServerConfig extends AbstractConfig {
 
     public static class InfuserConfig extends AbstractConfig {
         @Config(description = {"How many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "Filling in corners is important to reach higher values.", "Setting very high values may require modded bookshelves that provide more than one enchanting power per block (such as Botania's mana pylons)."})
-        @Config.IntRange(min = 0, max = 127)
+        @Config.IntRange(min = 0, max = 50)
         public int maximumBookshelves = 15;
         @Config(description = "Allow enchantments on an already enchanted item to be increased / removed.")
         public ModifyableItems allowModifyingEnchantments = ModifyableItems.UNENCHANTED;

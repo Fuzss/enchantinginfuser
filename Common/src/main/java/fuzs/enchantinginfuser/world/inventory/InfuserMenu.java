@@ -39,6 +39,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EnchantmentTableBlock;
 import net.minecraft.world.level.block.LevelEvent;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -211,17 +212,21 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     private int getAvailablePower(Level level, BlockPos pos) {
-        int power = 0;
+        float power = 0.0F;
+        float maxPowerScale = 1.0F;
         for (BlockPos blockpos : EnchantmentTableBlock.BOOKSHELF_OFFSETS) {
             if (isValidBookShelf(level, pos, blockpos)) {
-                power += ModCoreServices.ABSTRACTIONS.getEnchantPowerBonus(level.getBlockState(pos.offset(blockpos)), level, pos.offset(blockpos));
+                BlockState state = level.getBlockState(pos.offset(blockpos));
+                power += EnchantingInfuserAPI.getEnchantStatsProvider().getEnchantPowerBonus(state, level, pos.offset(blockpos));
+                maxPowerScale = Math.max(maxPowerScale, EnchantingInfuserAPI.getEnchantStatsProvider().getMaximumEnchantPowerScale(state, level, pos.offset(blockpos)));
             }
         }
-        return power;
+        // Apotheosis has bookshelves with negative enchanting power, so make sure this value doesn't go there
+        return (int) Math.min(Math.max(0.0F, power), this.config.maximumBookshelves * maxPowerScale);
     }
 
     public static boolean isValidBookShelf(Level level, BlockPos center, BlockPos offset) {
-        return ModCoreServices.ABSTRACTIONS.getEnchantPowerBonus(level.getBlockState(center.offset(offset)), level, center.offset(offset)) != 0 && blockWithoutCollision(level, center.offset(offset.getX() / 2, offset.getY(), offset.getZ() / 2));
+        return EnchantingInfuserAPI.getEnchantStatsProvider().getEnchantPowerBonus(level.getBlockState(center.offset(offset)), level, center.offset(offset)) != 0 && blockWithoutCollision(level, center.offset(offset.getX() / 2, offset.getY(), offset.getZ() / 2));
     }
 
     public static boolean blockWithoutCollision(Level level, BlockPos pos) {
@@ -533,7 +538,8 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     public int getMaxPower() {
-        return (int) (this.config.maximumBookshelves * EnchantingInfuserAPI.getEnchantStatsProvider().getMaximumBookshelvesMultiplier());
+        float maxPower = this.config.maximumBookshelves * EnchantingInfuserAPI.getEnchantStatsProvider().getMaximumEnchantingPowerMultiplier();
+        return (int) Math.min(maxPower, EnchantingInfuserAPI.getEnchantStatsProvider().getMaximumEnchantPower());
     }
 
     public ItemStack getEnchantableStack() {
