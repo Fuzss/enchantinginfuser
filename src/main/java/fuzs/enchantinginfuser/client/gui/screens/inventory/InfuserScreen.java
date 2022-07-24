@@ -298,6 +298,16 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         if (mouseX >= posX && mouseY >= posY && mouseX < posX + 18 && mouseY < posY + 18) {
             List<FormattedText> list = Lists.newArrayList();
             if (canRepair) {
+                ItemStack stack = this.menu.getEnchantableStack();
+                MutableComponent nameComponent = new TextComponent("").append(stack.getHoverName()).withStyle(stack.getRarity().color);
+                if (stack.hasCustomHoverName()) {
+                    nameComponent.withStyle(ChatFormatting.ITALIC);
+                }
+                list.add(nameComponent);
+                Component changeComponent = new TranslatableComponent("gui.enchantinginfuser.tooltip.change", stack.getMaxDamage() - stack.getDamageValue(), stack.getMaxDamage());
+                Component durabilityComponent = new TranslatableComponent("gui.enchantinginfuser.tooltip.durability", changeComponent).withStyle(ChatFormatting.YELLOW);
+                list.add(durabilityComponent);
+                list.add(TextComponent.EMPTY);
                 MutableComponent levelComponent;
                 if (repairCost == 1) {
                     levelComponent = new TranslatableComponent("container.enchant.level.one");

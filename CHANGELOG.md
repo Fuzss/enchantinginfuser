@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v3.3.1-1.18.2] - 2022-07-24
+### Added
+- Added support for bookshelves from Apotheosis, they will now provide enchanting power (Eterna) to the infuser
+- They will also allow the infuser to reach higher enchanting power values, depending on the type of bookshelf that is used
+### Changed
+- Made repair button more descriptive
+### Fixed
+- Fixed log spam due to server config not being loaded during start-up
+
 ## [v3.3.0-1.18.2] - 2022-07-18
 ### Added
 - Added the ability to change/remove existing enchantments on items (by default only enabled for the advanced infuser)

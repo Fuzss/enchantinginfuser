@@ -1,6 +1,9 @@
 package fuzs.enchantinginfuser.api.world.item.enchantment;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * provider class for enchantment data
@@ -32,18 +35,48 @@ public interface EnchantStatsProvider {
      */
     String[] getScalingNamespaces();
 
-    /**maximum cost determines how many levels you'll have to pay for fully enchanting an item with all possible enchantments it can have
-     * @return general multiplier for maximum cost
-     */
-    default double getMaximumCostMultiplier() {
-        return 1.0;
+    default float getMaximumEnchantPower() {
+        return 15.0F;
     }
 
     /**
+     * @param state     the block state to get enchanting power from
+     * @param level     leve reader instance
+     * @param pos       position of the block
+     * @return          power bonus, 1.0 for bookshelves, otherwise 0.0
+     */
+    float getEnchantPowerBonus(BlockState state, Level level, BlockPos pos);
+
+    /**
+     * provides the maximum enchanting power scale for a block, meaning how much beyond the normal enchanting power this block can provide
+     * example: normal bookshelves return 1.0, meaning they can provide 15 enchanting power (one each), any more beyond 15 will do nothing, even when enchanting power can go higher
+     * most bookshelves from Apotheosis have a higher value here, so it is valid to have more of them
+     *
+     * @param state     the block state to get enchanting power from
+     * @param level     leve reader instance
+     * @param pos       position of the block
+     * @return          power bonus, 1.0 for bookshelves, otherwise 0.0
+     */
+    default float getMaximumEnchantPowerScale(BlockState state, Level level, BlockPos pos) {
+        return 1.0F;
+    }
+
+    /**
+     * maximum cost determines how many levels you'll have to pay for fully enchanting an item with all possible enchantments it can have
+     *
+     * @return general multiplier for maximum cost
+     */
+    default float getMaximumCostMultiplier() {
+        return 1.0F;
+    }
+
+    /**
+     * works together with {@link #getMaximumEnchantPowerScale} to allow certain bookshelves to only provide up to some amount of enchanting power
+     *
      * @return multiplier for how many bookshelves you need around the infuser to be able to apply maximum level enchantments
      */
-    default double getMaximumBookshelvesMultiplier() {
-        return 1.0;
+    default float getMaximumEnchantingPowerMultiplier() {
+        return 1.0F;
     }
 
     /**
