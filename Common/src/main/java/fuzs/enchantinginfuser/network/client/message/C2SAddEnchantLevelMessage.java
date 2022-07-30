@@ -7,7 +7,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.Enchantment;
 
-public class C2SAddEnchantLevelMessage implements Message {
+public class C2SAddEnchantLevelMessage implements Message<C2SAddEnchantLevelMessage> {
     private int containerId;
     private Enchantment enchantment;
     private boolean increase;
@@ -37,11 +37,12 @@ public class C2SAddEnchantLevelMessage implements Message {
     }
 
     @Override
-    public EnchantmentLevelHandler makeHandler() {
+    public PacketHandler<C2SAddEnchantLevelMessage> makeHandler() {
         return new EnchantmentLevelHandler();
     }
 
     private static class EnchantmentLevelHandler extends PacketHandler<C2SAddEnchantLevelMessage> {
+
         @Override
         public void handle(C2SAddEnchantLevelMessage packet, Player player, Object gameInstance) {
             if (player.containerMenu.containerId == packet.containerId && player.containerMenu instanceof InfuserMenu menu) {

@@ -4,9 +4,9 @@ import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.world.level.block.entity.ForgeInfuserBlockEntity;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import fuzs.puzzleslib.core.CoreServices;
-import fuzs.puzzleslib.registry.RegistryManager;
-import fuzs.puzzleslib.registry.RegistryReference;
-import fuzs.puzzleslib.registry.builder.ModBlockEntityTypeBuilder;
+import fuzs.puzzleslib.init.RegistryManager;
+import fuzs.puzzleslib.init.RegistryReference;
+import fuzs.puzzleslib.init.builder.ModBlockEntityTypeBuilder;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class ForgeModRegistry {

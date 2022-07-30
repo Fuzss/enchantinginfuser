@@ -6,7 +6,7 @@ import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.enchantinginfuser.network.client.message.C2SAddEnchantLevelMessage;
 import fuzs.enchantinginfuser.network.message.S2CCompatibleEnchantsMessage;
 import fuzs.enchantinginfuser.network.message.S2CInfuserDataMessage;
-import fuzs.puzzleslib.config.ConfigHolderV2;
+import fuzs.puzzleslib.config.ConfigHolder;
 import fuzs.puzzleslib.core.CoreServices;
 import fuzs.puzzleslib.core.ModConstructor;
 import fuzs.puzzleslib.network.MessageDirection;
@@ -20,9 +20,9 @@ public class EnchantingInfuser implements ModConstructor {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
     @SuppressWarnings("Convert2MethodRef")
-    public static final ConfigHolderV2 CONFIG = CoreServices.FACTORIES
-            .server(ServerConfig.class, () -> new ServerConfig())
-            .common(CommonConfig.class, () -> new CommonConfig());
+    public static final ConfigHolder CONFIG = CoreServices.FACTORIES
+            .serverConfig(ServerConfig.class, () -> new ServerConfig())
+            .commonConfig(CommonConfig.class, () -> new CommonConfig());
     public static final NetworkHandler NETWORK = CoreServices.FACTORIES.network(MOD_ID);
 
     @Override

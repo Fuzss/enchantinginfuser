@@ -12,7 +12,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.Map;
 
-public class S2CCompatibleEnchantsMessage implements Message {
+public class S2CCompatibleEnchantsMessage implements Message<S2CCompatibleEnchantsMessage> {
     private int containerId;
     private Map<Enchantment, Integer> enchantmentsToLevel;
 
@@ -47,11 +47,12 @@ public class S2CCompatibleEnchantsMessage implements Message {
     }
 
     @Override
-    public CompatibleEnchantsHandler makeHandler() {
+    public PacketHandler<S2CCompatibleEnchantsMessage> makeHandler() {
         return new CompatibleEnchantsHandler();
     }
 
     private static class CompatibleEnchantsHandler extends PacketHandler<S2CCompatibleEnchantsMessage> {
+
         @Override
         public void handle(S2CCompatibleEnchantsMessage packet, Player player, Object gameInstance) {
             if (player.containerMenu.containerId == packet.containerId && player.containerMenu instanceof InfuserMenu menu) {

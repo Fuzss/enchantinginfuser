@@ -7,7 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 
-public class S2CInfuserDataMessage implements Message {
+public class S2CInfuserDataMessage implements Message<S2CInfuserDataMessage> {
     private int containerId;
     private int enchantingPower;
     private int repairCost;
@@ -37,11 +37,12 @@ public class S2CInfuserDataMessage implements Message {
     }
 
     @Override
-    public InfuserDataHandler makeHandler() {
+    public PacketHandler<S2CInfuserDataMessage> makeHandler() {
         return new InfuserDataHandler();
     }
 
     private static class InfuserDataHandler extends PacketHandler<S2CInfuserDataMessage> {
+
         @Override
         public void handle(S2CInfuserDataMessage packet, Player player, Object gameInstance) {
             if (player.containerMenu.containerId == packet.containerId && player.containerMenu instanceof InfuserMenu menu) {

@@ -9,7 +9,7 @@ public class EnchantingInfuserFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        CoreServices.FACTORIES.modConstructor().accept(new EnchantingInfuser());
+        CoreServices.FACTORIES.modConstructor(EnchantingInfuser.MOD_ID).accept(new EnchantingInfuser());
         FabricModRegistry.touch();
         FabricModCompatHandler.setup();
     }
