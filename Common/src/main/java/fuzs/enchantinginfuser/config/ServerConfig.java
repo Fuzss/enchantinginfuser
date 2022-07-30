@@ -22,8 +22,8 @@ public class ServerConfig implements ConfigCore {
     }
 
     public static class InfuserConfig implements ConfigCore {
-        @Config(description = {"How many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "Filling in corners is important to reach higher values.", "Setting very high values may require modded bookshelves that provide more than one enchanting power per block (such as Botania's mana pylons)."})
-        @Config.IntRange(min = 0, max = 50)
+        @Config(description = {"How many bookshelves you need around the infuser to be able to apply maximum level enchantments.", "Filling in corners is important to reach higher values.", "Setting very high values may require modded bookshelves that provide more than one enchanting power per block (such as Apotheosis' bookshelves).", "This value will be fixed at 50 when Apotheosis is installed."})
+        @Config.IntRange(min = 0)
         public int maximumBookshelves = 15;
         @Config(description = "Allow enchantments on an already enchanted item to be increased / removed.")
         public ModifyableItems allowModifyingEnchantments = ModifyableItems.UNENCHANTED;

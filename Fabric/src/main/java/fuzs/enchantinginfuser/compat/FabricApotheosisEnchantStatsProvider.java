@@ -26,8 +26,8 @@
 //    }
 //
 //    @Override
-//    public float getMaximumEnchantPower() {
-//        return 50.0F;
+//    public int getMaximumEnchantPower() {
+//        return 50;
 //    }
 //
 //    @Override
@@ -43,11 +43,6 @@
 //    @Override
 //    public float getMaximumCostMultiplier() {
 //        return 2.5F;
-//    }
-//
-//    @Override
-//    public float getMaximumEnchantingPowerMultiplier() {
-//        return 3.5F;
 //    }
 //
 //    @Override
