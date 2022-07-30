@@ -536,8 +536,9 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     public int getMaxPower() {
-        float maxPower = this.config.maximumBookshelves * EnchantingInfuserAPI.getEnchantStatsProvider().getMaximumEnchantingPowerMultiplier();
-        return (int) Math.min(maxPower, EnchantingInfuserAPI.getEnchantStatsProvider().getMaximumEnchantPower());
+        int maximumEnchantPower = EnchantingInfuserAPI.getEnchantStatsProvider().getMaximumEnchantPower();
+        if (maximumEnchantPower != -1) return maximumEnchantPower;
+        return this.config.maximumBookshelves;
     }
 
     public ItemStack getEnchantableStack() {

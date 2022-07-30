@@ -35,8 +35,13 @@ public interface EnchantStatsProvider {
      */
     String[] getScalingNamespaces();
 
-    default float getMaximumEnchantPower() {
-        return 15.0F;
+    /**
+     * this is the same as the config option, when the returned value is not -1 the config option will be overridden
+     *
+     * @return the maximum enchanting power required for performing high level enchantments
+     */
+    default int getMaximumEnchantPower() {
+        return -1;
     }
 
     /**
@@ -67,15 +72,6 @@ public interface EnchantStatsProvider {
      * @return general multiplier for maximum cost
      */
     default float getMaximumCostMultiplier() {
-        return 1.0F;
-    }
-
-    /**
-     * works together with {@link #getMaximumEnchantPowerScale} to allow certain bookshelves to only provide up to some amount of enchanting power
-     *
-     * @return multiplier for how many bookshelves you need around the infuser to be able to apply maximum level enchantments
-     */
-    default float getMaximumEnchantingPowerMultiplier() {
         return 1.0F;
     }
 
