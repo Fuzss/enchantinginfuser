@@ -4,8 +4,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
 
@@ -20,7 +20,7 @@ public class ForgeInfuserBlockEntity extends InfuserBlockEntity {
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
-        if (!this.remove && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+        if (!this.remove && capability == ForgeCapabilities.ITEM_HANDLER) {
             return this.infuserHandler.cast();
         }
         return super.getCapability(capability, facing);

@@ -1,8 +1,8 @@
-package fuzs.enchantinginfuser.network.message;
+package fuzs.enchantinginfuser.network;
 
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
-import fuzs.puzzleslib.network.message.Message;
+import fuzs.puzzleslib.network.Message;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
@@ -37,19 +37,17 @@ public class S2CInfuserDataMessage implements Message<S2CInfuserDataMessage> {
     }
 
     @Override
-    public PacketHandler<S2CInfuserDataMessage> makeHandler() {
-        return new InfuserDataHandler();
-    }
+    public MessageHandler<S2CInfuserDataMessage> makeHandler() {
+        return new MessageHandler<>() {
 
-    private static class InfuserDataHandler extends PacketHandler<S2CInfuserDataMessage> {
-
-        @Override
-        public void handle(S2CInfuserDataMessage packet, Player player, Object gameInstance) {
-            if (player.containerMenu.containerId == packet.containerId && player.containerMenu instanceof InfuserMenu menu) {
-                menu.setEnchantingPower(packet.enchantingPower);
-                menu.setRepairCost(packet.repairCost);
-                if (((Minecraft) gameInstance).screen instanceof InfuserScreen screen) screen.refreshSearchResults();
+            @Override
+            public void handle(S2CInfuserDataMessage packet, Player player, Object gameInstance) {
+                if (player.containerMenu.containerId == packet.containerId && player.containerMenu instanceof InfuserMenu menu) {
+                    menu.setEnchantingPower(packet.enchantingPower);
+                    menu.setRepairCost(packet.repairCost);
+                    if (((Minecraft) gameInstance).screen instanceof InfuserScreen screen) screen.refreshSearchResults();
+                }
             }
-        }
+        };
     }
 }

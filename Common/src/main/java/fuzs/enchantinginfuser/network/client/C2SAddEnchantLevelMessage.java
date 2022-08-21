@@ -1,7 +1,7 @@
-package fuzs.enchantinginfuser.network.client.message;
+package fuzs.enchantinginfuser.network.client;
 
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
-import fuzs.puzzleslib.network.message.Message;
+import fuzs.puzzleslib.network.Message;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
@@ -37,17 +37,15 @@ public class C2SAddEnchantLevelMessage implements Message<C2SAddEnchantLevelMess
     }
 
     @Override
-    public PacketHandler<C2SAddEnchantLevelMessage> makeHandler() {
-        return new EnchantmentLevelHandler();
-    }
+    public MessageHandler<C2SAddEnchantLevelMessage> makeHandler() {
+        return new MessageHandler<>() {
 
-    private static class EnchantmentLevelHandler extends PacketHandler<C2SAddEnchantLevelMessage> {
-
-        @Override
-        public void handle(C2SAddEnchantLevelMessage packet, Player player, Object gameInstance) {
-            if (player.containerMenu.containerId == packet.containerId && player.containerMenu instanceof InfuserMenu menu) {
-                menu.clickEnchantmentLevelButton(player, packet.enchantment, packet.increase);
+            @Override
+            public void handle(C2SAddEnchantLevelMessage message, Player player, Object gameInstance) {
+                if (player.containerMenu.containerId == message.containerId && player.containerMenu instanceof InfuserMenu menu) {
+                    menu.clickEnchantmentLevelButton(player, message.enchantment, message.increase);
+                }
             }
-        }
+        };
     }
 }

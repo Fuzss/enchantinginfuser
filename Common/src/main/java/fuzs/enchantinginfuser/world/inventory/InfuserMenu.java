@@ -6,8 +6,8 @@ import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
 import fuzs.enchantinginfuser.config.ServerConfig;
-import fuzs.enchantinginfuser.core.ModCoreServices;
-import fuzs.enchantinginfuser.network.message.S2CCompatibleEnchantsMessage;
+import fuzs.enchantinginfuser.core.ModServices;
+import fuzs.enchantinginfuser.network.S2CCompatibleEnchantsMessage;
 import fuzs.enchantinginfuser.util.EnchantmentUtil;
 import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -98,7 +98,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
                 @Override
                 public boolean mayPlace(ItemStack p_39746_) {
-                    return ModCoreServices.ABSTRACTIONS.canEquip(p_39746_, equipmentslot, inventory.player);
+                    return ModServices.ABSTRACTIONS.canEquip(p_39746_, equipmentslot, inventory.player);
                 }
 
                 @Override

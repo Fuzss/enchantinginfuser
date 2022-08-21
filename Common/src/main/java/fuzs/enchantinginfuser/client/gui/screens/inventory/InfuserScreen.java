@@ -10,7 +10,7 @@ import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
 import fuzs.enchantinginfuser.client.gui.components.IconButton;
-import fuzs.enchantinginfuser.network.client.message.C2SAddEnchantLevelMessage;
+import fuzs.enchantinginfuser.network.client.C2SAddEnchantLevelMessage;
 import fuzs.enchantinginfuser.util.EnchantmentUtil;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import net.minecraft.ChatFormatting;

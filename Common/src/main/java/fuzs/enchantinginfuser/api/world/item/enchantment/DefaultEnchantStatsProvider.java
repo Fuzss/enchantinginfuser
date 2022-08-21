@@ -1,6 +1,6 @@
 package fuzs.enchantinginfuser.api.world.item.enchantment;
 
-import fuzs.enchantinginfuser.core.ModCoreServices;
+import fuzs.enchantinginfuser.core.ModServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
@@ -28,7 +28,7 @@ public class DefaultEnchantStatsProvider implements EnchantStatsProvider {
 
     @Override
     public float getEnchantPowerBonus(BlockState state, Level level, BlockPos pos) {
-        return ModCoreServices.ABSTRACTIONS.getEnchantPowerBonus(state, level, pos);
+        return ModServices.ABSTRACTIONS.getEnchantPowerBonus(state, level, pos);
     }
 
     @Override

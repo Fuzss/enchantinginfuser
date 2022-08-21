@@ -1,9 +1,9 @@
-package fuzs.enchantinginfuser.network.message;
+package fuzs.enchantinginfuser.network;
 
 import com.google.common.collect.Maps;
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
-import fuzs.puzzleslib.network.message.Message;
+import fuzs.puzzleslib.network.Message;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
@@ -47,18 +47,16 @@ public class S2CCompatibleEnchantsMessage implements Message<S2CCompatibleEnchan
     }
 
     @Override
-    public PacketHandler<S2CCompatibleEnchantsMessage> makeHandler() {
-        return new CompatibleEnchantsHandler();
-    }
+    public MessageHandler<S2CCompatibleEnchantsMessage> makeHandler() {
+        return new MessageHandler<>() {
 
-    private static class CompatibleEnchantsHandler extends PacketHandler<S2CCompatibleEnchantsMessage> {
-
-        @Override
-        public void handle(S2CCompatibleEnchantsMessage packet, Player player, Object gameInstance) {
-            if (player.containerMenu.containerId == packet.containerId && player.containerMenu instanceof InfuserMenu menu) {
-                menu.setAndSyncEnchantments(packet.enchantmentsToLevel);
-                if (((Minecraft) gameInstance).screen instanceof InfuserScreen screen) screen.refreshSearchResults();
+            @Override
+            public void handle(S2CCompatibleEnchantsMessage message, Player player, Object gameInstance) {
+                if (player.containerMenu.containerId == message.containerId && player.containerMenu instanceof InfuserMenu menu) {
+                    menu.setAndSyncEnchantments(message.enchantmentsToLevel);
+                    if (((Minecraft) gameInstance).screen instanceof InfuserScreen screen) screen.refreshSearchResults();
+                }
             }
-        }
+        };
     }
 }

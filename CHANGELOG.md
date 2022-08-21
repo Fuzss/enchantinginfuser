@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.2.0-1.19.2] - 2022-08-21
+- Compiled for Minecraft 1.19.2
+- Updated to Puzzles Lib v4.2.0
+
 ## [v4.1.1-1.19.1] - 2022-07-30
 ### Fixed
 - Fixed enchanting power not increasing above 15 bookshelves when a higher value is set in the config
