@@ -10,7 +10,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class FabricAbstractions implements CommonAbstractions {
+public final class FabricAbstractions implements CommonAbstractions {
 
     @Override
     public float getEnchantPowerBonus(BlockState state, Level level, BlockPos pos) {
