@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v3.3.3-1.18.2] - 2022-09-23
+### Fixed
+- Fixed no enchantment levels being taken when repairing items in an advanced infuser
+
 ## [v3.3.2-1.18.2] - 2022-07-30
 ### Fixed
 - Fixed enchanting power not increasing above 15 bookshelves when a higher value is set in the config

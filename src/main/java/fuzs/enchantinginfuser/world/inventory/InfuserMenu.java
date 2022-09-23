@@ -274,9 +274,9 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 ItemStack itemstack2 = itemstack;
                 if (cost < 0) {
                     ExperienceOrb.award((ServerLevel) level, Vec3.atCenterOf(pos), this.calculateExperienceDelta(this.enchantmentsToLevel, this.enchantmentsToLevelBase, level.random));
-                } else {
+                } else if (!player.getAbilities().instabuild) {
                     // don't use Player::onEnchantmentPerformed as it also reseeds enchantments seed which we have nothing to do with
-                    player.giveExperienceLevels(player.getAbilities().instabuild ? 0 : -cost);
+                    player.giveExperienceLevels(-cost);
                 }
                 itemstack2 = EnchantmentUtil.setNewEnchantments(itemstack2, this.enchantmentsToLevel, this.enchantingBaseCost != 0);
                 this.enchantSlots.setItem(0, itemstack2);
@@ -302,7 +302,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         int repairCost = (int) Math.ceil(Math.ceil(itemstack.getDamageValue() / repairStep) * this.config.repair.repairStepMultiplier);
         if (player.experienceLevel >= repairCost || player.getAbilities().instabuild) {
             this.levelAccess.execute((level, pos) -> {
-                if (player.getAbilities().instabuild) {
+                if (!player.getAbilities().instabuild) {
                     player.giveExperienceLevels(-repairCost);
                 }
                 ItemStack itemstack2 = itemstack.copy();
