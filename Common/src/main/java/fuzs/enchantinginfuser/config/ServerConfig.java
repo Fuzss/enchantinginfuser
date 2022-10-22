@@ -1,23 +1,36 @@
 package fuzs.enchantinginfuser.config;
 
 import fuzs.puzzleslib.config.ConfigCore;
+import fuzs.puzzleslib.config.ValueCallback;
 import fuzs.puzzleslib.config.annotation.Config;
+import fuzs.puzzleslib.config.core.AbstractConfigBuilder;
+import fuzs.puzzleslib.core.ModLoaderEnvironment;
 
 public class ServerConfig implements ConfigCore {
     @Config
     public InfuserConfig normalInfuser = new InfuserConfig();
     @Config
     public InfuserConfig advancedInfuser = new InfuserConfig();
+    public boolean apotheosisIntegration = true;
 
     public ServerConfig() {
         this.advancedInfuser.allowRepairing = true;
         this.advancedInfuser.allowBooks = true;
-        this.advancedInfuser.allowModifyingEnchantments = ModifyableItems.ALL;
+        this.advancedInfuser.allowModifyingEnchantments = ModifiableItems.ALL;
         this.advancedInfuser.costs.maximumCost = 20;
         this.advancedInfuser.types.allowAnvilEnchantments = true;
     }
 
-    public enum ModifyableItems {
+    @Override
+    public void addToBuilder(AbstractConfigBuilder builder, ValueCallback callback) {
+        if (ModLoaderEnvironment.INSTANCE.getModLoader().isForge()) {
+            builder.push("integration");
+            callback.accept(builder.comment("Enable compat for Apotheosis if it is installed. Allows for using the full range of changes Apotheosis applies to vanilla enchantments.", "Should only really be disabled if compat breaks due to internal changes.").define("apotheosis", true), v -> this.apotheosisIntegration = v);
+            builder.pop();
+        }
+    }
+
+    public enum ModifiableItems {
         ALL, FULL_DURABILITY, UNENCHANTED
     }
 
@@ -26,7 +39,7 @@ public class ServerConfig implements ConfigCore {
         @Config.IntRange(min = 0)
         public int maximumBookshelves = 15;
         @Config(description = "Allow enchantments on an already enchanted item to be increased / removed.")
-        public ModifyableItems allowModifyingEnchantments = ModifyableItems.UNENCHANTED;
+        public ModifiableItems allowModifyingEnchantments = ModifiableItems.UNENCHANTED;
         @Config(description = "Allow books to be enchanted in an infuser.")
         public boolean allowBooks = false;
         @Config(description = "Can the enchanting infuser repair items using levels in addition to enchanting.")

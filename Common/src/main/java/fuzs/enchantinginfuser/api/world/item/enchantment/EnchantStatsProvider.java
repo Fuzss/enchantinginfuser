@@ -11,6 +11,10 @@ import net.minecraft.world.level.block.state.BlockState;
  * set your own provider in {@link fuzs.enchantinginfuser.api.EnchantingInfuserAPI#setEnchantStatsProvider}
  */
 public interface EnchantStatsProvider {
+    /**
+     * default implementation used when no mod specific provider is supplied
+     */
+    EnchantStatsProvider INSTANCE = new EnchantStatsProviderImpl();
 
     /**
      * @return namespace of source mod for identifying provider

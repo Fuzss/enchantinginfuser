@@ -116,11 +116,14 @@ dependencies {
     // Quality of Life Mods
     runtimeOnly fg.deobf("curse.maven:catalogue-459701:3873264")
     runtimeOnly fg.deobf("fuzs.bettermodsbutton:bettermodsbutton-forge:4.2.0")
-//    runtimeOnly fg.deobf("curse.maven:configmenusforge-544048:3822820")
-//    runtimeOnly fg.deobf("curse.maven:configured-457570:3903908")
+    runtimeOnly fg.deobf("curse.maven:configured-457570:4011355")
 
     // Puzzles Lib
     implementation fg.deobf("fuzs.puzzleslib:puzzleslib-forge:${puzzlesVersion}")
+
+    // Apotheosis
+    implementation fg.deobf("curse.maven:placebo-283644:4036338")
+    implementation fg.deobf("curse.maven:apotheosis-313970:4036357")
 }
 
 mixin {

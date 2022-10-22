@@ -1,6 +1,5 @@
 package fuzs.enchantinginfuser.api;
 
-import fuzs.enchantinginfuser.api.world.item.enchantment.DefaultEnchantStatsProvider;
 import fuzs.enchantinginfuser.api.world.item.enchantment.EnchantStatsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +13,7 @@ public class EnchantingInfuserAPI {
     /**
      * the {@link EnchantStatsProvider} that will be used for retrieving certain information from enchantments
      */
-    private static EnchantStatsProvider enchantStatsProvider = new DefaultEnchantStatsProvider();
+    private static EnchantStatsProvider enchantStatsProvider = EnchantStatsProvider.INSTANCE;
 
     /**
      * @param provider the new provider
@@ -23,12 +22,12 @@ public class EnchantingInfuserAPI {
     public static synchronized boolean setEnchantStatsProvider(EnchantStatsProvider provider) {
         if (provider == null) throw new IllegalStateException();
         if (enchantStatsProvider != null) {
-            if (provider.getPriority() <= enchantStatsProvider.getPriority()) {
+            if (provider != EnchantStatsProvider.INSTANCE && provider.getPriority() <= enchantStatsProvider.getPriority()) {
                 return false;
             }
         }
         enchantStatsProvider = provider;
-        LOGGER.info("Set new EnchantStatsProvider from mod {}", provider.getSourceNamespace());
+        LOGGER.info("Set new EnchantStatsProvider for mod {}", provider.getSourceNamespace());
         return true;
     }
 

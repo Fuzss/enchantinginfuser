@@ -2,7 +2,7 @@ package fuzs.enchantinginfuser.util;
 
 import com.google.common.collect.Lists;
 import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
-import fuzs.enchantinginfuser.core.ModServices;
+import fuzs.enchantinginfuser.core.CommonAbstractions;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -26,7 +26,7 @@ public class EnchantmentUtil {
         List<Enchantment> list = Lists.newArrayList();
         boolean book = stack.getItem() instanceof BookItem || stack.getItem() instanceof EnchantedBookItem;
         for (Enchantment enchantment : Registry.ENCHANTMENT) {
-            if ((allowAnvil ? enchantment.canEnchant(stack) : ModServices.ABSTRACTIONS.canApplyAtEnchantingTable(enchantment, stack)) || (book && ModServices.ABSTRACTIONS.isAllowedOnBooks(enchantment))) {
+            if ((allowAnvil ? enchantment.canEnchant(stack) : CommonAbstractions.INSTANCE.canApplyAtEnchantingTable(enchantment, stack)) || (book && CommonAbstractions.INSTANCE.isAllowedOnBooks(enchantment))) {
                 if (!EnchantingInfuserAPI.getEnchantStatsProvider().isDiscoverable(enchantment)) {
                     if (!allowUndiscoverable) continue;
                 } else if (!EnchantingInfuserAPI.getEnchantStatsProvider().isTradeable(enchantment)) {

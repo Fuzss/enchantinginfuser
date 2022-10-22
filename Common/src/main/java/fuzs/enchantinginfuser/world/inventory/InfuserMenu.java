@@ -6,7 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
 import fuzs.enchantinginfuser.config.ServerConfig;
-import fuzs.enchantinginfuser.core.ModServices;
+import fuzs.enchantinginfuser.core.CommonAbstractions;
 import fuzs.enchantinginfuser.network.S2CCompatibleEnchantsMessage;
 import fuzs.enchantinginfuser.util.EnchantmentUtil;
 import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
@@ -97,14 +97,14 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 }
 
                 @Override
-                public boolean mayPlace(ItemStack p_39746_) {
-                    return ModServices.ABSTRACTIONS.canEquip(p_39746_, equipmentslot, inventory.player);
+                public boolean mayPlace(ItemStack stack) {
+                    return CommonAbstractions.INSTANCE.canEquip(stack, equipmentslot, inventory.player);
                 }
 
                 @Override
-                public boolean mayPickup(Player p_39744_) {
+                public boolean mayPickup(Player player) {
                     ItemStack itemstack = this.getItem();
-                    return (itemstack.isEmpty() || p_39744_.isCreative() || !EnchantmentHelper.hasBindingCurse(itemstack)) && super.mayPickup(p_39744_);
+                    return (itemstack.isEmpty() || player.isCreative() || !EnchantmentHelper.hasBindingCurse(itemstack)) && super.mayPickup(player);
                 }
 
                 @Override
@@ -163,7 +163,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
             if (stack.getItem() instanceof BookItem) {
                 return true;
             } else if (stack.getItem() instanceof EnchantedBookItem) {
-                return this.config.allowModifyingEnchantments != ServerConfig.ModifyableItems.UNENCHANTED;
+                return this.config.allowModifyingEnchantments != ServerConfig.ModifiableItems.UNENCHANTED;
             }
         } else if (stack.getItem() instanceof BookItem || stack.getItem() instanceof EnchantedBookItem) {
             return false;

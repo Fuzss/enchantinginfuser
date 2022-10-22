@@ -1,6 +1,6 @@
 package fuzs.enchantinginfuser.api.world.item.enchantment;
 
-import fuzs.enchantinginfuser.core.ModServices;
+import fuzs.enchantinginfuser.core.CommonAbstractions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * implementation for {@link EnchantStatsProvider} for vanilla values
  */
-public class DefaultEnchantStatsProvider implements EnchantStatsProvider {
+class EnchantStatsProviderImpl implements EnchantStatsProvider {
 
     @Override
     public String getSourceNamespace() {
@@ -28,7 +28,7 @@ public class DefaultEnchantStatsProvider implements EnchantStatsProvider {
 
     @Override
     public float getEnchantPowerBonus(BlockState state, Level level, BlockPos pos) {
-        return ModServices.ABSTRACTIONS.getEnchantPowerBonus(state, level, pos);
+        return CommonAbstractions.INSTANCE.getEnchantPowerBonus(state, level, pos);
     }
 
     @Override

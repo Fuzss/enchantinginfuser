@@ -118,7 +118,7 @@ public class InfuserBlock extends EnchantmentTableBlock {
         // don't let this go through when initially gathering tooltip data during start-up, configs do not exist then and it's ok if this is not searchable
         if (!EnchantingInfuser.CONFIG.getHolder(ServerConfig.class).isAvailable()) return;
         Component component;
-        if (this.type.config().allowModifyingEnchantments == ServerConfig.ModifyableItems.UNENCHANTED) {
+        if (this.type.config().allowModifyingEnchantments == ServerConfig.ModifiableItems.UNENCHANTED) {
             component = CHOOSE_TOOLTIP;
         } else {
             component = CHOOSE_AND_MODIFY_TOOLTIP;

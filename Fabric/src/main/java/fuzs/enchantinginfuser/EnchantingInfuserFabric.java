@@ -1,16 +1,12 @@
 package fuzs.enchantinginfuser;
 
-import fuzs.enchantinginfuser.compat.FabricModCompatHandler;
-import fuzs.enchantinginfuser.init.FabricModRegistry;
-import fuzs.puzzleslib.core.CoreServices;
+import fuzs.puzzleslib.core.CommonFactories;
 import net.fabricmc.api.ModInitializer;
 
 public class EnchantingInfuserFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        CoreServices.FACTORIES.modConstructor(EnchantingInfuser.MOD_ID).accept(new EnchantingInfuser());
-        FabricModRegistry.touch();
-        FabricModCompatHandler.setup();
+        CommonFactories.INSTANCE.modConstructor(EnchantingInfuser.MOD_ID).accept(new EnchantingInfuser());
     }
 }
