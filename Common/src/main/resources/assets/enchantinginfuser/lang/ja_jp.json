@@ -1,0 +1,17 @@
+{
+  "block.enchantinginfuser.enchanting_infuser": "エンチャントインフューザー",
+  "block.enchantinginfuser.advanced_enchanting_infuser": "上級エンチャントインフューザー",
+  "block.enchantinginfuser.description.choose": "選択式のエンチャント付与台です。",
+  "block.enchantinginfuser.description.chooseAndModify": "選択式のエンチャントの付与と、既存のエンチャントの変更と削除ができます。",
+  "block.enchantinginfuser.description.repair": "また、レベルに応じてアイテムの修理も可能です。",
+  "gui.enchantinginfuser.tooltip.enchanting_power": "%s / %s エンチャントパワー",
+  "gui.enchantinginfuser.tooltip.enchanting_power.hint": "インフューザーを中心に本棚を正方形に2段まで配置しましょう。角を埋めるのも忘れずに!",
+  "gui.enchantinginfuser.tooltip.durability": "耐久値: %s",
+  "gui.enchantinginfuser.tooltip.change": "%s -> %s",
+  "gui.enchantinginfuser.tooltip.points": "経験値の回収",ｃ
+  "gui.enchantinginfuser.tooltip.required_enchanting_power": "現在のエンチャントパワー: %s / %s",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "このエンチャントは、エンチャント能力の弱いインフューザーには強すぎます。",
+  "gui.enchantinginfuser.tooltip.lowPower1": "このエンチャントのレベルをさらに上げるには、より高いエンチャントパワーが必要です。",
+  "gui.enchantinginfuser.tooltip.lowPower2": "このエンチャントのレベルを変更するには、より高いエンチャントパワーが必要です。",
+  "gui.enchantinginfuser.tooltip.incompatible": "このエンチャントは、以下のものと互換性がありません。: %s"
+}
