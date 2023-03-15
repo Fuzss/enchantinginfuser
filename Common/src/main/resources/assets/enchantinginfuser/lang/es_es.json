@@ -1,0 +1,17 @@
+{
+  "block.enchantinginfuser.enchanting_infuser": "Infusor de encantamientos",
+  "block.enchantinginfuser.advanced_enchanting_infuser": "Infusor de encantamientos avanzado",
+  "block.enchantinginfuser.description.choose": "Permite elegir encantamientos.",
+  "block.enchantinginfuser.description.chooseAndModify": "Permite elegir encantamientos, así como modificar y eliminar los existentes.",
+  "block.enchantinginfuser.description.repair": "También puede reparar ítems con niveles de xp.",
+  "gui.enchantinginfuser.tooltip.enchanting_power": "%s / %s Poder de encamiento",
+  "gui.enchantinginfuser.tooltip.enchanting_power.hint": "Coloca librerías en un cuadrado alrededor del infusor. ¡Y olvides rellenar las esquinas!",
+  "gui.enchantinginfuser.tooltip.durability": "Durabilidad: %s",
+  "gui.enchantinginfuser.tooltip.change": "%s -> %s",
+  "gui.enchantinginfuser.tooltip.points": "Obtén puntos de experiencia",
+  "gui.enchantinginfuser.tooltip.required_enchanting_power": "Poder de encantamiento actual: %s / %s",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "Este encantamiento es demasiado poderoso para un infusor con tan poco poder.",
+  "gui.enchantinginfuser.tooltip.lowPower1": "Aumentar más el nivel de este encantamiento requiere un infusor con más poder.",
+  "gui.enchantinginfuser.tooltip.lowPower2": "Modificar el nivel de este encantamiento requiere un infusor con más poder.",
+  "gui.enchantinginfuser.tooltip.incompatible": "Este encantamiento es incompatible con: %s"
+}
