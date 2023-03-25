@@ -1,5 +1,8 @@
 package fuzs.enchantinginfuser;
 
+import fuzs.enchantinginfuser.data.ModBlockLootProvider;
+import fuzs.enchantinginfuser.data.ModBlockTagsProvider;
+import fuzs.enchantinginfuser.data.ModRecipeProvider;
 import fuzs.enchantinginfuser.data.ModSpriteSourceProvider;
 import fuzs.enchantinginfuser.init.ForgeModRegistry;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;
@@ -41,6 +44,9 @@ public class EnchantingInfuserForge {
         final PackOutput packOutput = dataGenerator.getPackOutput();
         final CompletableFuture<HolderLookup.Provider> lookupProvider = evt.getLookupProvider();
         final ExistingFileHelper fileHelper = evt.getExistingFileHelper();
+        dataGenerator.addProvider(true, new ModBlockLootProvider(packOutput, EnchantingInfuser.MOD_ID));
+        dataGenerator.addProvider(true, new ModBlockTagsProvider(packOutput, lookupProvider, EnchantingInfuser.MOD_ID, fileHelper));
+        dataGenerator.addProvider(true, new ModRecipeProvider(packOutput));
         dataGenerator.addProvider(true, new ModSpriteSourceProvider(packOutput, EnchantingInfuser.MOD_ID, fileHelper));
     }
 }
