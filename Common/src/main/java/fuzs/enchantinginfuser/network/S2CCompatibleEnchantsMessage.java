@@ -3,16 +3,16 @@ package fuzs.enchantinginfuser.network;
 import com.google.common.collect.Maps;
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
-import fuzs.puzzleslib.network.Message;
+import fuzs.puzzleslib.api.network.v2.MessageV2;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.Map;
 
-public class S2CCompatibleEnchantsMessage implements Message<S2CCompatibleEnchantsMessage> {
+public class S2CCompatibleEnchantsMessage implements MessageV2<S2CCompatibleEnchantsMessage> {
     private int containerId;
     private Map<Enchantment, Integer> enchantmentsToLevel;
 
@@ -30,7 +30,7 @@ public class S2CCompatibleEnchantsMessage implements Message<S2CCompatibleEnchan
         buf.writeByte(this.containerId);
         buf.writeInt(this.enchantmentsToLevel.size());
         for (Map.Entry<Enchantment, Integer> entry : this.enchantmentsToLevel.entrySet()) {
-            buf.writeInt(Registry.ENCHANTMENT.getId(entry.getKey()));
+            buf.writeInt(BuiltInRegistries.ENCHANTMENT.getId(entry.getKey()));
             buf.writeInt(entry.getValue());
         }
     }
@@ -41,7 +41,7 @@ public class S2CCompatibleEnchantsMessage implements Message<S2CCompatibleEnchan
         final int size = buf.readInt();
         Map<Enchantment, Integer> enchantmentsToLevel = Maps.newHashMap();
         for (int i = 0; i < size; i++) {
-            enchantmentsToLevel.put(Registry.ENCHANTMENT.byId(buf.readInt()), buf.readInt());
+            enchantmentsToLevel.put(BuiltInRegistries.ENCHANTMENT.byId(buf.readInt()), buf.readInt());
         }
         this.enchantmentsToLevel = enchantmentsToLevel;
     }

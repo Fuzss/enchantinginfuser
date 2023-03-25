@@ -1,10 +1,10 @@
 package fuzs.enchantinginfuser.config;
 
-import fuzs.puzzleslib.config.ConfigCore;
-import fuzs.puzzleslib.config.ValueCallback;
-import fuzs.puzzleslib.config.annotation.Config;
-import fuzs.puzzleslib.config.core.AbstractConfigBuilder;
-import fuzs.puzzleslib.core.ModLoaderEnvironment;
+import fuzs.puzzleslib.api.config.v3.Config;
+import fuzs.puzzleslib.api.config.v3.ConfigCore;
+import fuzs.puzzleslib.api.config.v3.ValueCallback;
+import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 public class ServerConfig implements ConfigCore {
     @Config
@@ -22,7 +22,7 @@ public class ServerConfig implements ConfigCore {
     }
 
     @Override
-    public void addToBuilder(AbstractConfigBuilder builder, ValueCallback callback) {
+    public void addToBuilder(ForgeConfigSpec.Builder builder, ValueCallback callback) {
         if (ModLoaderEnvironment.INSTANCE.getModLoader().isForge()) {
             builder.push("integration");
             callback.accept(builder.comment("Enable compat for Apotheosis if it is installed. Allows for using the full range of changes Apotheosis applies to vanilla enchantments.", "Should only really be disabled if compat breaks due to internal changes.").define("apotheosis", true), v -> this.apotheosisIntegration = v);

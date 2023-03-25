@@ -2,8 +2,10 @@ package fuzs.enchantinginfuser.world.level.block;
 
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.config.ServerConfig;
+import fuzs.enchantinginfuser.core.CommonAbstractions;
 import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.enchantinginfuser.network.S2CInfuserDataMessage;
+import fuzs.enchantinginfuser.util.ChiseledBookshelfHelper;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import net.minecraft.ChatFormatting;
@@ -28,6 +30,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.EnchantmentTableBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.Shapes;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -43,6 +46,16 @@ public class InfuserBlock extends EnchantmentTableBlock {
     public InfuserBlock(InfuserType type, Properties p_52953_) {
         super(p_52953_);
         this.type = type;
+    }
+
+    public static boolean isValidBookShelf(Level level, BlockPos pos, BlockPos offset) {
+        if (CommonAbstractions.INSTANCE.getEnchantPowerBonus(level.getBlockState(pos.offset(offset)), level, pos.offset(offset)) == 0.0F) {
+            if (ChiseledBookshelfHelper.findValidBooks(level, pos, offset) == 0) {
+                return false;
+            }
+        }
+        BlockPos inBetweenPos = pos.offset(offset.getX() / 2, offset.getY(), offset.getZ() / 2);
+        return level.getBlockState(inBetweenPos).getCollisionShape(level, inBetweenPos) != Shapes.block();
     }
 
     @Override
@@ -97,7 +110,7 @@ public class InfuserBlock extends EnchantmentTableBlock {
         super.animateTick(state, level, pos, random);
 
         for(BlockPos blockpos : BOOKSHELF_OFFSETS) {
-            if (random.nextInt(16) == 0 && InfuserMenu.isValidBookShelf(level, pos, blockpos)) {
+            if (random.nextInt(16) == 0 && isValidBookShelf(level, pos, blockpos)) {
                 level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D, ((float)blockpos.getX() + random.nextFloat()) - 0.5D, ((float)blockpos.getY() - random.nextFloat() - 1.0F), ((float)blockpos.getZ() + random.nextFloat()) - 0.5D);
             }
         }

@@ -2,7 +2,7 @@ package fuzs.enchantinginfuser.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import net.minecraft.client.model.BookModel;
@@ -17,11 +17,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
 
 /**
- * copied from enchanting table renderer so we can replace book texture
- * also book texture needs to be stitched on atlas
+ * Copied from enchanting table renderer, so we can replace book texture, which also needs to be stitched on atlas.
  */
 public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> {
-   /** The texture for the book above the enchantment table. */
    public static final Material BOOK_LOCATION = new Material(InventoryMenu.BLOCK_ATLAS, new ResourceLocation(EnchantingInfuser.MOD_ID, "entity/enchanting_infuser_book"));
    private final BookModel bookModel;
 
@@ -30,30 +28,30 @@ public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> 
    }
 
    @Override
-   public void render(InfuserBlockEntity pBlockEntity, float pPartialTick, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pPackedOverlay) {
-      pPoseStack.pushPose();
-      pPoseStack.translate(0.5D, 0.75D, 0.5D);
-      float f = (float)pBlockEntity.time + pPartialTick;
-      pPoseStack.translate(0.0D, (double)(0.1F + Mth.sin(f * 0.1F) * 0.01F), 0.0D);
+   public void render(InfuserBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, int packedOverlay) {
+      poseStack.pushPose();
+      poseStack.translate(0.5D, 0.75D, 0.5D);
+      float f = (float)blockEntity.time + partialTick;
+      poseStack.translate(0.0D, (double)(0.1F + Mth.sin(f * 0.1F) * 0.01F), 0.0D);
 
       float f1;
-      for(f1 = pBlockEntity.rot - pBlockEntity.oRot; f1 >= (float)Math.PI; f1 -= ((float)Math.PI * 2F)) {
+      for(f1 = blockEntity.rot - blockEntity.oRot; f1 >= (float)Math.PI; f1 -= ((float)Math.PI * 2F)) {
       }
 
       while(f1 < -(float)Math.PI) {
          f1 += ((float)Math.PI * 2F);
       }
 
-      float f2 = pBlockEntity.oRot + f1 * pPartialTick;
-      pPoseStack.mulPose(Vector3f.YP.rotation(-f2));
-      pPoseStack.mulPose(Vector3f.ZP.rotationDegrees(80.0F));
-      float f3 = Mth.lerp(pPartialTick, pBlockEntity.oFlip, pBlockEntity.flip);
+      float f2 = blockEntity.oRot + f1 * partialTick;
+      poseStack.mulPose(Axis.YP.rotation(-f2));
+      poseStack.mulPose(Axis.ZP.rotationDegrees(80.0F));
+      float f3 = Mth.lerp(partialTick, blockEntity.oFlip, blockEntity.flip);
       float f4 = Mth.frac(f3 + 0.25F) * 1.6F - 0.3F;
       float f5 = Mth.frac(f3 + 0.75F) * 1.6F - 0.3F;
-      float f6 = Mth.lerp(pPartialTick, pBlockEntity.oOpen, pBlockEntity.open);
+      float f6 = Mth.lerp(partialTick, blockEntity.oOpen, blockEntity.open);
       this.bookModel.setupAnim(f, Mth.clamp(f4, 0.0F, 1.0F), Mth.clamp(f5, 0.0F, 1.0F), f6);
-      VertexConsumer vertexconsumer = BOOK_LOCATION.buffer(pBufferSource, RenderType::entitySolid);
-      this.bookModel.render(pPoseStack, vertexconsumer, pPackedLight, pPackedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
-      pPoseStack.popPose();
+      VertexConsumer vertexconsumer = BOOK_LOCATION.buffer(multiBufferSource, RenderType::entitySolid);
+      this.bookModel.render(poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
+      poseStack.popPose();
    }
 }

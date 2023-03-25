@@ -12,5 +12,8 @@
   "gui.enchantinginfuser.tooltip.unknown_enchantment": "이 마법을 주입하기엔 주입기에 쌓인 마법의 힘으론 부족합니다.",
   "gui.enchantinginfuser.tooltip.lowPower1": "이 마법의 더 수준 높은 마법을 주입하려면 주입기에 더 많은 마법의 힘이 필요합니다.",
   "gui.enchantinginfuser.tooltip.lowPower2": "이 마법의 등급을 수정하려면 더 많은 마법의 힘이 쌓인 주입기가 필요합니다.",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment.apotheosis": "이 마법을 주입하기엔 주입기에 쌓인 마법의 힘으론 부족합니다.",
+  "gui.enchantinginfuser.tooltip.lowPower1.apotheosis": "이 마법의 더 수준 높은 마법을 주입하려면 주입기에 더 많은 마법의 힘이 필요합니다.",
+  "gui.enchantinginfuser.tooltip.lowPower2.apotheosis": "이 마법의 등급을 수정하려면 더 많은 마법의 힘이 쌓인 주입기가 필요합니다.",
   "gui.enchantinginfuser.tooltip.incompatible": "이 마법은 다음의 마법과 호환되지 않습니다: %s"
 }

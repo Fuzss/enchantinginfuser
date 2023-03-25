@@ -8,11 +8,12 @@ import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.core.CommonAbstractions;
 import fuzs.enchantinginfuser.network.S2CCompatibleEnchantsMessage;
+import fuzs.enchantinginfuser.util.ChiseledBookshelfHelper;
 import fuzs.enchantinginfuser.util.EnchantmentUtil;
 import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -212,25 +213,23 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     private int getAvailablePower(Level level, BlockPos pos) {
-        float power = 0.0F;
+        float enchantingPower = 0.0F;
+        int allChiseledBookshelfBooks = 0;
         float maxPowerScale = 1.0F;
-        for (BlockPos blockpos : EnchantmentTableBlock.BOOKSHELF_OFFSETS) {
-            if (isValidBookShelf(level, pos, blockpos)) {
-                BlockState state = level.getBlockState(pos.offset(blockpos));
-                power += EnchantingInfuserAPI.getEnchantStatsProvider().getEnchantPowerBonus(state, level, pos.offset(blockpos));
-                maxPowerScale = Math.max(maxPowerScale, EnchantingInfuserAPI.getEnchantStatsProvider().getMaximumEnchantPowerScale(state, level, pos.offset(blockpos)));
+        for (BlockPos offset : EnchantmentTableBlock.BOOKSHELF_OFFSETS) {
+            if (InfuserBlock.isValidBookShelf(level, pos, offset)) {
+                BlockState state = level.getBlockState(pos.offset(offset));
+                int chiseledBookshelfBooks = ChiseledBookshelfHelper.findValidBooks(level, pos, offset);
+                if (chiseledBookshelfBooks > 0) {
+                    allChiseledBookshelfBooks += chiseledBookshelfBooks;
+                } else {
+                    enchantingPower += EnchantingInfuserAPI.getEnchantStatsProvider().getEnchantPowerBonus(state, level, pos.offset(offset));
+                }
+                maxPowerScale = Math.max(maxPowerScale, EnchantingInfuserAPI.getEnchantStatsProvider().getMaximumEnchantPowerScale(state, level, pos.offset(offset)));
             }
         }
         // Apotheosis has bookshelves with negative enchanting power, so make sure this value doesn't go there
-        return (int) Math.min(Math.max(0.0F, power), this.config.maximumBookshelves * maxPowerScale);
-    }
-
-    public static boolean isValidBookShelf(Level level, BlockPos center, BlockPos offset) {
-        return EnchantingInfuserAPI.getEnchantStatsProvider().getEnchantPowerBonus(level.getBlockState(center.offset(offset)), level, center.offset(offset)) != 0 && blockWithoutCollision(level, center.offset(offset.getX() / 2, offset.getY(), offset.getZ() / 2));
-    }
-
-    public static boolean blockWithoutCollision(Level level, BlockPos pos) {
-        return level.getBlockState(pos).getCollisionShape(level, pos).isEmpty();
+        return (int) Math.min(Math.max(0.0F, enchantingPower + allChiseledBookshelfBooks / 3), this.config.maximumBookshelves * maxPowerScale);
     }
 
     public int clickEnchantmentLevelButton(Player player, Enchantment enchantment, boolean increase) {
@@ -429,7 +428,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         for (Enchantment enchantment : enchantmentsToLevel.keySet()) {
             boolean scaleCosts = !this.config.costs.scaleCostsByVanillaOnly;
             if (!scaleCosts) {
-                String namespace = Registry.ENCHANTMENT.getKey(enchantment).getNamespace();
+                String namespace = BuiltInRegistries.ENCHANTMENT.getKey(enchantment).getNamespace();
                 for (String scalingNamespace : EnchantingInfuserAPI.getEnchantStatsProvider().getScalingNamespaces()) {
                     if (namespace.equals(scalingNamespace)) {
                         scaleCosts = true;

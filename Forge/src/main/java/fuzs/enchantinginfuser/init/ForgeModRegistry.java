@@ -1,17 +1,12 @@
 package fuzs.enchantinginfuser.init;
 
-import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.world.level.block.entity.ForgeInfuserBlockEntity;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
-import fuzs.puzzleslib.core.CommonFactories;
-import fuzs.puzzleslib.init.RegistryManager;
-import fuzs.puzzleslib.init.RegistryReference;
-import fuzs.puzzleslib.init.builder.ModBlockEntityTypeBuilder;
+import fuzs.puzzleslib.api.init.v2.RegistryReference;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class ForgeModRegistry {
-    private static final RegistryManager REGISTRY = CommonFactories.INSTANCE.registration(EnchantingInfuser.MOD_ID);
-    public static final RegistryReference<BlockEntityType<InfuserBlockEntity>> INFUSER_BLOCK_ENTITY_TYPE = REGISTRY.registerBlockEntityTypeBuilder("enchanting_infuser", () -> ModBlockEntityTypeBuilder.of(ForgeInfuserBlockEntity::new, ModRegistry.INFUSER_BLOCK.get(), ModRegistry.ADVANCED_INFUSER_BLOCK.get()));
+    public static final RegistryReference<BlockEntityType<InfuserBlockEntity>> INFUSER_BLOCK_ENTITY_TYPE = ModRegistry.REGISTRY.registerBlockEntityType("enchanting_infuser", () -> BlockEntityType.Builder.of(ForgeInfuserBlockEntity::new, ModRegistry.INFUSER_BLOCK.get(), ModRegistry.ADVANCED_INFUSER_BLOCK.get()));
 
     public static void touch() {
 

@@ -3,7 +3,7 @@ package fuzs.enchantinginfuser.util;
 import com.google.common.collect.Lists;
 import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
 import fuzs.enchantinginfuser.core.CommonAbstractions;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -25,7 +25,7 @@ public class EnchantmentUtil {
     public static List<Enchantment> getAvailableEnchantments(ItemStack stack, boolean allowAnvil, boolean allowTreasure, boolean allowUndiscoverable, boolean allowUntradeable, boolean allowCurse) {
         List<Enchantment> list = Lists.newArrayList();
         boolean book = stack.getItem() instanceof BookItem || stack.getItem() instanceof EnchantedBookItem;
-        for (Enchantment enchantment : Registry.ENCHANTMENT) {
+        for (Enchantment enchantment : BuiltInRegistries.ENCHANTMENT) {
             if ((allowAnvil ? enchantment.canEnchant(stack) : CommonAbstractions.INSTANCE.canApplyAtEnchantingTable(enchantment, stack)) || (book && CommonAbstractions.INSTANCE.isAllowedOnBooks(enchantment))) {
                 if (!EnchantingInfuserAPI.getEnchantStatsProvider().isDiscoverable(enchantment)) {
                     if (!allowUndiscoverable) continue;
@@ -94,10 +94,8 @@ public class EnchantmentUtil {
         return newStack;
     }
 
-    /**
-     * set <code>level</code> to -1 to skip adding
-     */
     public static MutableComponent getPlainEnchantmentName(Enchantment enchantment, int level) {
+        // set level to -1 to skip adding
         // copied from Enchantment, but without curses being colored red
         MutableComponent mutablecomponent = Component.translatable(enchantment.getDescriptionId());
         if (level != -1 && (level != 1 || EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment) != 1)) {

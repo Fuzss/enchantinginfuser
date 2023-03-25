@@ -13,5 +13,8 @@
   "gui.enchantinginfuser.tooltip.unknown_enchantment": "Este encantamiento es demasiado poderoso para un infusor con tan poco poder.",
   "gui.enchantinginfuser.tooltip.lowPower1": "Aumentar más el nivel de este encantamiento requiere un infusor con más poder.",
   "gui.enchantinginfuser.tooltip.lowPower2": "Modificar el nivel de este encantamiento requiere un infusor con más poder.",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment.apotheosis": "Este encantamiento es demasiado poderoso para un infusor con tan poco poder.",
+  "gui.enchantinginfuser.tooltip.lowPower1.apotheosis": "Aumentar más el nivel de este encantamiento requiere un infusor con más poder.",
+  "gui.enchantinginfuser.tooltip.lowPower2.apotheosis": "Modificar el nivel de este encantamiento requiere un infusor con más poder.",
   "gui.enchantinginfuser.tooltip.incompatible": "Este encantamiento es incompatible con: %s"
 }

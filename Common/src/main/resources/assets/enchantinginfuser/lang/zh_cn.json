@@ -13,5 +13,8 @@
   "gui.enchantinginfuser.tooltip.unknown_enchantment": "你需要更多的书架才能附魔",
   "gui.enchantinginfuser.tooltip.lowPower1": "提升这个附魔的等级需要一个更多书架的附魔台。",
   "gui.enchantinginfuser.tooltip.lowPower2": "修改这个附魔的等级需要一个更多书架的附魔台。",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment.apotheosis": "你需要更多的书架才能附魔",
+  "gui.enchantinginfuser.tooltip.lowPower1.apotheosis": "提升这个附魔的等级需要一个更多书架的附魔台。",
+  "gui.enchantinginfuser.tooltip.lowPower2.apotheosis": "修改这个附魔的等级需要一个更多书架的附魔台。",
   "gui.enchantinginfuser.tooltip.incompatible": "该魔咒与%s不兼容"
 }

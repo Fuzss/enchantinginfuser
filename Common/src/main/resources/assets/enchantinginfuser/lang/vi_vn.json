@@ -13,5 +13,8 @@
   "gui.enchantinginfuser.tooltip.unknown_enchantment": "Phù phép này quá mạnh đối với một Infuser với sức mạnh phù phép như vậy.",
   "gui.enchantinginfuser.tooltip.lowPower1": "Việc tăng thêm mức độ cho sự Phù phép này đòi hỏi một Infuser với sức mạnh Phù phép hơn.",
   "gui.enchantinginfuser.tooltip.lowPower2": "Việc sửa đổi mức độ cho sự Phù phép này đòi hỏi một Infuser có sức mạnh Phù phép hơn.",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment.apotheosis": "Phù phép này quá mạnh đối với một Infuser với sức mạnh phù phép như vậy.",
+  "gui.enchantinginfuser.tooltip.lowPower1.apotheosis": "Việc tăng thêm mức độ cho sự Phù phép này đòi hỏi một Infuser với sức mạnh Phù phép hơn.",
+  "gui.enchantinginfuser.tooltip.lowPower2.apotheosis": "Việc sửa đổi mức độ cho sự Phù phép này đòi hỏi một Infuser có sức mạnh Phù phép hơn.",
   "gui.enchantinginfuser.tooltip.incompatible": "Phép thuật này không tương thích với: %s"
 }

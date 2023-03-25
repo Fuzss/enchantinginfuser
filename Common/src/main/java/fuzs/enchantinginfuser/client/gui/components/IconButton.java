@@ -31,26 +31,13 @@ public class IconButton extends Button {
     }
 
     public IconButton(int x, int y, int width, int height, int xTexStart, int yTexStart, int yDiffTex, ResourceLocation resourceLocation, int textureWidth, int textureHeight, OnPress onPress, Component component) {
-        this(x, y, width, height, xTexStart, yTexStart, yDiffTex, resourceLocation, textureWidth, textureHeight, onPress, NO_TOOLTIP, component);
-    }
-
-    public IconButton(int x, int y, int width, int height, int xTexStart, int yTexStart, ResourceLocation resourceLocation, OnPress onPress, OnTooltip onTooltip) {
-        this(x, y, width, height, xTexStart, yTexStart, height, resourceLocation, 256, 256, onPress, onTooltip, Component.empty());
-    }
-
-    public IconButton(int x, int y, int width, int height, int xTexStart, int yTexStart, int yDiffTex, ResourceLocation resourceLocation, int textureWidth, int textureHeight, OnPress onPress, OnTooltip onTooltip, Component component) {
-        super(x, y, width, height, component, onPress, onTooltip);
+        super(x, y, width, height, component, onPress, Button.DEFAULT_NARRATION);
         this.textureWidth = textureWidth;
         this.textureHeight = textureHeight;
         this.xTexStart = xTexStart;
         this.yTexStart = yTexStart;
         this.yDiffTex = yDiffTex;
         this.resourceLocation = resourceLocation;
-    }
-
-    public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
     }
 
     public void setTexture(int textureX, int textureY) {
@@ -65,9 +52,6 @@ public class IconButton extends Button {
         RenderSystem.setShaderTexture(0, this.resourceLocation);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
         int index = this.getYImage(this.isHoveredOrFocused());
-        blit(poseStack, this.x, this.y, this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
-        if (this.isHoveredOrFocused()) {
-            this.renderToolTip(poseStack, mouseX, mouseY);
-        }
+        blit(poseStack, this.getX(), this.getY(), this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
     }
 }

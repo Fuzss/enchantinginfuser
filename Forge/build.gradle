@@ -18,17 +18,17 @@ plugins {
 }
 
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'eclipse'
 apply plugin: 'org.spongepowered.mixin'
-apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 archivesBaseName = rootProject.name
 version = "v${modVersion}-${minecraftVersion}-Forge"
 group = modMavenGroup
 
 minecraft {
-//    mappings channel: 'parchment', version: "${parchmentMappingsVersion}-${minecraftVersion}"
-    mappings channel: 'official', version: "${minecraftVersion}"
+    mappings channel: 'parchment', version: "${parchmentMappingsVersion}-${parchmentMinecraftVersion}"
+//    mappings channel: 'official', version: "${minecraftVersion}"
 
     runs {
         client {
@@ -106,24 +106,22 @@ minecraft {
 }
 
 dependencies {
-    // Include Common Project
-    compileOnly project(":Common")
+    // Common Project
+    compileOnly(project(":Common")) {
+        transitive = false
+    }
 
     // Minecraft
     minecraft "net.minecraftforge:forge:${forgeVersion}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     // Quality of Life Mods
-    runtimeOnly fg.deobf("curse.maven:catalogue-459701:3873264")
-    runtimeOnly fg.deobf("fuzs.bettermodsbutton:bettermodsbutton-forge:4.2.0")
-    runtimeOnly fg.deobf("curse.maven:configured-457570:4011355")
+    runtimeOnly fg.deobf("fuzs.bettermodsbutton:bettermodsbutton-forge:5.0.0")
+    runtimeOnly fg.deobf("curse.maven:catalogue-459701:4171025")
+    runtimeOnly fg.deobf("curse.maven:configured-457570:4441589")
 
     // Puzzles Lib
-    implementation fg.deobf("fuzs.puzzleslib:puzzleslib-forge:${puzzlesVersion}")
-
-    // Apotheosis
-    implementation fg.deobf("curse.maven:placebo-283644:4036338")
-    implementation fg.deobf("curse.maven:apotheosis-313970:4036357")
+    api fg.deobf("fuzs.puzzleslib:puzzleslib-forge:${puzzlesVersion}")
 }
 
 mixin {
@@ -139,31 +137,32 @@ mixin {
 }
 
 processResources {
-    from project(":Common").sourceSets.main.resources
-    // we need to have this in common so that in a non-production environment the common jar is correctly deobfuscated
-    exclude("**/quilt.mod.json")
+    from(project(":Common").sourceSets.main.resources)
+    from(file('src/generated/resources')) {
+        exclude('.cache/')
+    }
 
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 
     // this will ensure that this task is redone when a value changes
-    inputs.property "modId", "${modId}"
-    inputs.property "modName", "${modName}"
-    inputs.property "modVersion", "${modVersion}"
-    inputs.property "modDescription", "${modDescription}"
-    inputs.property "modGroup", project.group
-    inputs.property "modPageUrl", "${modSourceUrl}"
-    inputs.property "modUpdateUrl", "${modUpdateUrl}"
-    inputs.property "modIssueUrl", "${modIssueUrl}"
-    inputs.property "modAuthor", "${modAuthor}"
-    inputs.property "minFMLVersion", "${minForgeVersion}".replaceAll("\\..*", "")
-    inputs.property "minForgeVersion", "${minForgeVersion}"
-    inputs.property "minMinecraftVersion", "${minMinecraftVersion}"
-    inputs.property "nextMinecraftVersion", rootProject.getNextVersion("${minMinecraftVersion}")
-    inputs.property "minPuzzlesVersion", "${minPuzzlesVersion}"
-    inputs.property "packFormat", "${packFormat}"
-    inputs.property "modForgeDisplayTest", "${modForgeDisplayTest}"
+    inputs.property "modId",                    "${modId}"
+    inputs.property "modName",                  "${modName}"
+    inputs.property "modVersion",               "${modVersion}"
+    inputs.property "modDescription",           "${modDescription}"
+    inputs.property "modGroup",                 project.group
+    inputs.property "modPageUrl",               "${modSourceUrl}"
+    inputs.property "modUpdateUrl",             "${modUpdateUrl}"
+    inputs.property "modIssueUrl",              "${modIssueUrl}"
+    inputs.property "modAuthor",                "${modAuthor}"
+    inputs.property "minFMLVersion",            "${minForgeVersion}".replaceAll("\\..*", "")
+    inputs.property "minForgeVersion",          "${minForgeVersion}"
+    inputs.property "minecraftVersion",         "${minecraftVersion}"
+    inputs.property "minPuzzlesVersion",        "${minPuzzlesVersion}"
+    inputs.property "resourcePackFormat",       "${resourcePackFormat}"
+    inputs.property "dataPackFormat", 			"${dataPackFormat}"
+    inputs.property "modForgeDisplayTest",      "${modForgeDisplayTest}"
 
-    // replace stuff in mods.toml and pack.mcmeta
+    // replace stuff in mods.toml
     filesMatching ('META-INF/mods.toml') {
         expand (
                 'modId':                "${modId}",
@@ -177,17 +176,18 @@ processResources {
                 'modAuthor':            "${modAuthor}",
                 'minFMLVersion':        "${minForgeVersion}".replaceAll("\\..*", ""),
                 'minForgeVersion':      "${minForgeVersion}",
-                'minMinecraftVersion':  "${minMinecraftVersion}",
-                'nextMinecraftVersion': rootProject.getNextVersion("${minMinecraftVersion}"),
+                'minecraftVersion':     "${minecraftVersion}",
                 'minPuzzlesVersion':    "${minPuzzlesVersion}",
                 'modForgeDisplayTest':  "${modForgeDisplayTest}"
         )
     }
 
+    // replace stuff in pack.mcmeta
     filesMatching ('pack.mcmeta') {
         expand (
                 'modDescription':       "${modDescription}",
-                "packFormat":           "${packFormat}"
+                "resourcePackFormat":   "${resourcePackFormat}",
+                "dataPackFormat":       "${dataPackFormat}"
         )
     }
 }
@@ -204,6 +204,8 @@ javadoc {
     source project(":Common").sourceSets.main.allJava
 }
 
+// important: the task may not run before 'compileJava', otherwise overridden/shadowed fields and methods in mixin classes will not be reobfuscated
+jar.finalizedBy("configureReobfTaskForReobfJar")
 jar.finalizedBy('reobfJar')
 
 publishing {
@@ -245,9 +247,8 @@ publishing {
                 // from https://stackoverflow.com/a/50121790
                 pom.withXml {
                     asNode().dependencies.dependency.each { dep ->
-                        // Forge is weird as a dependency, so skip it along with quality of life mods
                         // use this approach to make excluding dependencies from Curse Maven more convenient
-                        if (["curse.maven:catalogue", "curse.maven:configured", "curse.maven:configmenusforge", "fuzs.bettermodsbutton:bettermodsbutton-forge"].stream().anyMatch(mod -> "${dep.groupId.last().value().last()}:${dep.artifactId.last().value().last()}".startsWith(mod))) {
+                        if (["curse.maven:", "fuzs.bettermodsbutton:bettermodsbutton-forge"].stream().anyMatch(mod -> "${dep.groupId.last().value().last()}:${dep.artifactId.last().value().last()}".startsWith(mod))) {
                             assert dep.parent().remove(dep)
                         }
                     }
@@ -297,7 +298,7 @@ curseforge {
                 requiredDependency 'puzzles-lib'
             }
         }
-        addArtifact sourcesJar
+//        addArtifact sourcesJar
     }
     options {
 //        debug = true
@@ -319,7 +320,7 @@ modrinth {
         gameVersions.add it.trim()
     }
     loaders.add 'forge'
-    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
+//    additionalFiles.add file("${project.buildDir}/libs/${project.archivesBaseName}-${project.version}-sources.jar")
     dependencies {
         required.project 'puzzles-lib'
     }

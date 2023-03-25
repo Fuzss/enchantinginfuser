@@ -2,12 +2,12 @@ package fuzs.enchantinginfuser.network;
 
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
-import fuzs.puzzleslib.network.Message;
+import fuzs.puzzleslib.api.network.v2.MessageV2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 
-public class S2CInfuserDataMessage implements Message<S2CInfuserDataMessage> {
+public class S2CInfuserDataMessage implements MessageV2<S2CInfuserDataMessage> {
     private int containerId;
     private int enchantingPower;
     private int repairCost;
