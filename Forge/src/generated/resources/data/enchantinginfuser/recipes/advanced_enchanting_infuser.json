@@ -22,5 +22,6 @@
   ],
   "result": {
     "item": "enchantinginfuser:advanced_enchanting_infuser"
-  }
+  },
+  "show_notification": true
 }

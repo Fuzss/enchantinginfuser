@@ -25,7 +25,7 @@ public class EnchantingInfuserClient implements ClientModConstructor {
 
     @Override
     public void onBuildCreativeModeTabContents(BuildCreativeModeTabContentsContext context) {
-        context.registerBuildListener(CreativeModeTabs.FUNCTIONAL_BLOCKS, (featureFlagSet, output, bl) -> {
+        context.registerBuildListener(CreativeModeTabs.FUNCTIONAL_BLOCKS, (itemDisplayParameters, output) -> {
             output.accept(ModRegistry.INFUSER_ITEM.get());
             output.accept(ModRegistry.ADVANCED_INFUSER_ITEM.get());
         });

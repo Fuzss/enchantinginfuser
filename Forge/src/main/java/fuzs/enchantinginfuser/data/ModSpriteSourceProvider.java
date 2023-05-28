@@ -12,8 +12,8 @@ import java.util.Optional;
 
 public class ModSpriteSourceProvider extends AbstractSpriteSourceProvider {
 
-    public ModSpriteSourceProvider(PackOutput packOutput, String modId, ExistingFileHelper fileHelper) {
-        super(packOutput, modId, fileHelper);
+    public ModSpriteSourceProvider(PackOutput packOutput, ExistingFileHelper fileHelper) {
+        super(packOutput, fileHelper);
     }
 
     @Override

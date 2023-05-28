@@ -47,6 +47,6 @@ public class EnchantingInfuserForge {
         dataGenerator.addProvider(true, new ModBlockLootProvider(packOutput, EnchantingInfuser.MOD_ID));
         dataGenerator.addProvider(true, new ModBlockTagsProvider(packOutput, lookupProvider, EnchantingInfuser.MOD_ID, fileHelper));
         dataGenerator.addProvider(true, new ModRecipeProvider(packOutput));
-        dataGenerator.addProvider(true, new ModSpriteSourceProvider(packOutput, EnchantingInfuser.MOD_ID, fileHelper));
+        dataGenerator.addProvider(true, new ModSpriteSourceProvider(packOutput, fileHelper));
     }
 }

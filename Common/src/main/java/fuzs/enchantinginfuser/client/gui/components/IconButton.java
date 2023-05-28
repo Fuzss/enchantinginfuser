@@ -2,42 +2,29 @@ package fuzs.enchantinginfuser.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.resources.ResourceLocation;
 
-/**
- * a copy of {@link net.minecraft.client.gui.components.ImageButton} with mutable texture coordinates
- */
-public class IconButton extends Button {
-    protected final ResourceLocation resourceLocation;
+public class IconButton extends ImageButton {
     protected int xTexStart;
     protected int yTexStart;
-    protected final int yDiffTex;
-    protected final int textureWidth;
-    protected final int textureHeight;
 
     public IconButton(int x, int y, int width, int height, int xTexStart, int yTexStart, ResourceLocation resourceLocation, OnPress onPress) {
-        this(x, y, width, height, xTexStart, yTexStart, height, resourceLocation, 256, 256, onPress);
+        super(x, y, width, height, xTexStart, yTexStart, resourceLocation, onPress);
+        this.xTexStart = xTexStart;
+        this.yTexStart = yTexStart;
     }
 
     public IconButton(int x, int y, int width, int height, int xTexStart, int yTexStart, int yDiffTex, ResourceLocation resourceLocation, OnPress onPress) {
-        this(x, y, width, height, xTexStart, yTexStart, yDiffTex, resourceLocation, 256, 256, onPress);
+        super(x, y, width, height, xTexStart, yTexStart, yDiffTex, resourceLocation, onPress);
+        this.xTexStart = xTexStart;
+        this.yTexStart = yTexStart;
     }
 
     public IconButton(int x, int y, int width, int height, int xTexStart, int yTexStart, int yDiffTex, ResourceLocation resourceLocation, int textureWidth, int textureHeight, OnPress onPress) {
-        this(x, y, width, height, xTexStart, yTexStart, yDiffTex, resourceLocation, textureWidth, textureHeight, onPress, Component.empty());
-    }
-
-    public IconButton(int x, int y, int width, int height, int xTexStart, int yTexStart, int yDiffTex, ResourceLocation resourceLocation, int textureWidth, int textureHeight, OnPress onPress, Component component) {
-        super(x, y, width, height, component, onPress, Button.DEFAULT_NARRATION);
-        this.textureWidth = textureWidth;
-        this.textureHeight = textureHeight;
+        super(x, y, width, height, xTexStart, yTexStart, yDiffTex, resourceLocation, textureWidth, textureHeight, onPress);
         this.xTexStart = xTexStart;
         this.yTexStart = yTexStart;
-        this.yDiffTex = yDiffTex;
-        this.resourceLocation = resourceLocation;
     }
 
     public void setTexture(int textureX, int textureY) {
@@ -46,12 +33,31 @@ public class IconButton extends Button {
     }
 
     @Override
-    public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+        this.renderTexture(poseStack, this.resourceLocation, this.getX(), this.getY(), this.xTexStart, this.yTexStart, this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
+    }
+
+    @Override
+    public void renderTexture(PoseStack poseStack, ResourceLocation resourceLocation, int i, int j, int k, int l, int m, int n, int o, int p, int q) {
+        RenderSystem.setShaderTexture(0, resourceLocation);
+        int r = l + m;
+        if (!this.isActive()) {
+            r = l;
+        } else if (this.isHoveredOrFocused()) {
+            r = l + m * 2;
+        }
+
         RenderSystem.enableDepthTest();
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, this.resourceLocation);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        int index = this.getYImage(this.isHoveredOrFocused());
-        blit(poseStack, this.getX(), this.getY(), this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
+        blit(poseStack, i, j, (float)k, (float)r, n, o, p, q);
+    }
+
+    protected int getTextureY() {
+        int i = 1;
+        if (!this.active) {
+            i = 0;
+        } else if (this.isHoveredOrFocused()) {
+            i = 2;
+        }
+        return 46 + i * 20;
     }
 }
