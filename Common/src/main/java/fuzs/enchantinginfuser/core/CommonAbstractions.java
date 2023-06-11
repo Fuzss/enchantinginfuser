@@ -12,11 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public interface CommonAbstractions {
     CommonAbstractions INSTANCE = ServiceProviderHelper.load(CommonAbstractions.class);
 
-    float getEnchantPowerBonus(BlockState state, Level level, BlockPos pos);
-
     boolean canApplyAtEnchantingTable(Enchantment enchantment, ItemStack stack);
 
     boolean isAllowedOnBooks(Enchantment enchantment);
-
-    boolean canEquip(ItemStack stack, EquipmentSlot slot, Entity entity);
 }

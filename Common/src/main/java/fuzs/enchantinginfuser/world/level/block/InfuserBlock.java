@@ -2,12 +2,12 @@ package fuzs.enchantinginfuser.world.level.block;
 
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.config.ServerConfig;
-import fuzs.enchantinginfuser.core.CommonAbstractions;
 import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.enchantinginfuser.network.S2CInfuserDataMessage;
 import fuzs.enchantinginfuser.util.ChiseledBookshelfHelper;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
+import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;

@@ -1,7 +1,7 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.resources.ResourceLocation;
 
@@ -33,13 +33,12 @@ public class IconButton extends ImageButton {
     }
 
     @Override
-    public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-        this.renderTexture(poseStack, this.resourceLocation, this.getX(), this.getY(), this.xTexStart, this.yTexStart, this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
+    public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        this.renderTexture(guiGraphics, this.resourceLocation, this.getX(), this.getY(), this.xTexStart, this.yTexStart, this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
     }
 
     @Override
-    public void renderTexture(PoseStack poseStack, ResourceLocation resourceLocation, int i, int j, int k, int l, int m, int n, int o, int p, int q) {
-        RenderSystem.setShaderTexture(0, resourceLocation);
+    public void renderTexture(GuiGraphics guiGraphics, ResourceLocation resourceLocation, int i, int j, int k, int l, int m, int n, int o, int p, int q) {
         int r = l + m;
         if (!this.isActive()) {
             r = l;
@@ -48,7 +47,7 @@ public class IconButton extends ImageButton {
         }
 
         RenderSystem.enableDepthTest();
-        blit(poseStack, i, j, (float)k, (float)r, n, o, p, q);
+        guiGraphics.blit(resourceLocation, i, j, (float)k, (float)r, n, o, p, q);
     }
 
     protected int getTextureY() {

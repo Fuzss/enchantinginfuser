@@ -1,6 +1,6 @@
 package fuzs.enchantinginfuser.api.world.item.enchantment;
 
-import fuzs.enchantinginfuser.core.CommonAbstractions;
+import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;

@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
@@ -16,7 +15,7 @@ import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
@@ -259,19 +258,19 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     }
 
     @Override
-    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         this.insufficientPower = false;
-        this.renderBackground(poseStack);
-        super.render(poseStack, mouseX, mouseY, partialTick);
-        this.scrollingList.render(poseStack, mouseX, mouseY, partialTick);
-        this.renderEnchantingPower(poseStack, mouseX, mouseY);
-        this.renderEnchantButtonCost(poseStack, mouseX, mouseY);
-        this.renderRepairButtonCost(poseStack, mouseX, mouseY);
+        this.renderBackground(guiGraphics);
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        this.scrollingList.render(guiGraphics, mouseX, mouseY, partialTick);
+        this.renderEnchantingPower(guiGraphics, mouseX, mouseY);
+        this.renderEnchantButtonCost(guiGraphics, mouseX, mouseY);
+        this.renderRepairButtonCost(guiGraphics, mouseX, mouseY);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        this.renderTooltip(poseStack, mouseX, mouseY);
+        this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
 
-    private void renderRepairButtonCost(PoseStack poseStack, int mouseX, int mouseY) {
+    private void renderRepairButtonCost(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         if (this.repairButton == null) return;
         final int repairCost = this.menu.getRepairCost();
         boolean canRepair = this.menu.canRepair(this.minecraft.player);
@@ -280,7 +279,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         final int posY = this.repairButton.getY();
         if (repairCost != 0) {
             final int costColor = canRepair ? ChatFormatting.GREEN.getColor() : ChatFormatting.RED.getColor();
-            this.renderReadableText(poseStack, posX + 1, posY + 1, String.valueOf(repairCost), costColor);
+            this.renderReadableText(guiGraphics, posX + 1, posY + 1, String.valueOf(repairCost), costColor);
         }
         // cannot use hovered check on button as it does not work when the button is not active
         if (mouseX >= posX && mouseY >= posY && mouseX < posX + 18 && mouseY < posY + 18) {
@@ -310,7 +309,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         }
     }
 
-    private void renderEnchantButtonCost(PoseStack poseStack, int mouseX, int mouseY) {
+    private void renderEnchantButtonCost(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         final int enchantCost = this.menu.getEnchantCost();
         final boolean canEnchant = this.menu.canEnchant(this.minecraft.player);
         if (!canEnchant && enchantCost == 0) return;
@@ -318,7 +317,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         final int posY = this.enchantButton.getY();
         if (enchantCost != 0) {
             final int costColor = enchantCost < 0 ? ChatFormatting.YELLOW.getColor() : (canEnchant ? ChatFormatting.GREEN.getColor() : ChatFormatting.RED.getColor());
-            this.renderReadableText(poseStack, posX + 1, posY + 1, enchantCost < 0 ? "+" : String.valueOf(enchantCost), costColor);
+            this.renderReadableText(guiGraphics, posX + 1, posY + 1, enchantCost < 0 ? "+" : String.valueOf(enchantCost), costColor);
         }
         // cannot use hovered check on button as it does not work when the button is not active
         if (mouseX >= posX && mouseY >= posY && mouseX < posX + 18 && mouseY < posY + 18) {
@@ -400,24 +399,24 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         list.addAll(removedList);
     }
 
-    private void renderReadableText(PoseStack poseStack, int posX, int posY, String text, int color) {
+    private void renderReadableText(GuiGraphics guiGraphics, int posX, int posY, String text, int color) {
         posX += 19 - 2 - this.font.width(text);
         posY += 6 + 3;
         // render shadow on every side to avoid readability issues with colorful background
-        this.font.draw(poseStack, text, posX - 1, posY, 0);
-        this.font.draw(poseStack, text, posX + 1, posY, 0);
-        this.font.draw(poseStack, text, posX, posY - 1, 0);
-        this.font.draw(poseStack, text, posX, posY + 1, 0);
-        this.font.draw(poseStack, text, posX, posY, color);
+        guiGraphics.drawString(this.font, text, posX - 1, posY, 0, false);
+        guiGraphics.drawString(this.font, text, posX + 1, posY, 0, false);
+        guiGraphics.drawString(this.font, text, posX, posY - 1, 0, false);
+        guiGraphics.drawString(this.font, text, posX, posY + 1, 0, false);
+        guiGraphics.drawString(this.font, text, posX, posY, color, false);
     }
 
-    private void renderEnchantingPower(PoseStack poseStack, int mouseX, int mouseY) {
+    private void renderEnchantingPower(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         ItemStack stack = new ItemStack(Items.BOOKSHELF);
         int posX = this.leftPos + 196;
         int posY = this.topPos + 161;
-        this.itemRenderer.renderAndDecorateFakeItem(poseStack, stack, posX, posY);
-        poseStack.pushPose();
-        poseStack.translate(0.0, 0.0, 300.0);
+        guiGraphics.renderItem(stack, posX, posY);
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(0.0, 0.0, 300.0);
         int power = this.menu.getCurrentPower();
         int maxPower = this.menu.getMaxPower();
         int textColor;
@@ -428,8 +427,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         } else {
             textColor = ChatFormatting.WHITE.getColor();
         }
-        this.font.drawShadow(poseStack, String.valueOf(power), posX + 19 - 2 - this.font.width(String.valueOf(power)), posY + 6 + 3, textColor);
-        poseStack.popPose();
+        guiGraphics.drawString(this.font, String.valueOf(power), posX + 19 - 2 - this.font.width(String.valueOf(power)), posY + 6 + 3, textColor);
+        guiGraphics.pose().popPose();
         if (mouseX >= posX && mouseY >= posY && mouseX < posX + 16 && mouseY < posY + 16) {
             final ArrayList<FormattedCharSequence> list = Lists.newArrayList();
             String translationKey = "gui.enchantinginfuser.tooltip.enchanting_power" + (ModLoaderEnvironment.INSTANCE.isModLoaded("apotheosis") ? ".apotheosis" : "");
@@ -442,23 +441,19 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     }
 
     @Override
-    protected void renderBg(PoseStack pPoseStack, float pPartialTick, int pMouseX, int pMouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, INFUSER_LOCATION);
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
-        blit(pPoseStack, i, j, 0, 0, this.imageWidth, this.imageHeight);
-        this.searchBox.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        guiGraphics.blit(INFUSER_LOCATION, i, j, 0, 0, this.imageWidth, this.imageHeight);
+        this.searchBox.render(guiGraphics, mouseX, mouseY, partialTick);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, INFUSER_LOCATION);
         int sliderX = this.leftPos + 197 - 2;
         int sliderY = this.topPos + 17 - 2;
         int sliderRange = sliderY + 72 + 2 + 2;
-        blit(pPoseStack, sliderX, sliderY + (int)((float)(sliderRange - sliderY - 18) * this.scrollOffs), 220, 54 + (this.scrollingList.canScroll() ? 18 : 0), 18, 18);
+        guiGraphics.blit(INFUSER_LOCATION, sliderX, sliderY + (int)((float)(sliderRange - sliderY - 18) * this.scrollOffs), 220, 54 + (this.scrollingList.canScroll() ? 18 : 0), 18, 18);
         // render slot manually as it is placed further down when repairing is disabled
-        blit(pPoseStack, this.leftPos + 8 - 1, this.topPos + (this.menu.config.allowRepairing ? 23 : 34) - 1, 162, 185, 18, 18);
+        guiGraphics.blit(INFUSER_LOCATION, this.leftPos + 8 - 1, this.topPos + (this.menu.config.allowRepairing ? 23 : 34) - 1, 162, 185, 18, 18);
     }
 
     private class ScrollingList extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
@@ -564,9 +559,9 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         }
 
         @Override
-        public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             for (int i = 0; i < Math.min(this.length, this.getItemCount()); i++) {
-                this.children.get(this.scrollPosition + i).render(poseStack, this.posX, this.posY + this.itemHeight * i, this.itemWidth, this.itemHeight, mouseX, mouseY, partialTick);
+                this.children.get(this.scrollPosition + i).render(guiGraphics, this.posX, this.posY + this.itemHeight * i, this.itemWidth, this.itemHeight, mouseX, mouseY, partialTick);
             }
         }
 
@@ -617,18 +612,16 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             }) {
 
                 @Override
-                public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+                public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
                     if (this.active && Screen.hasShiftDown()) {
                         RenderSystem.enableDepthTest();
-                        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-                        RenderSystem.setShaderTexture(0, this.resourceLocation);
                         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
                         int index = !this.active ? 0 : this.isHoveredOrFocused() ? 2 : 1;
-                        blit(poseStack, this.getX() + 2, this.getY(), this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
-                        blit(poseStack, this.getX() - 4, this.getY(), this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
+                        guiGraphics.blit(this.resourceLocation, this.getX() + 2, this.getY(), this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
+                        guiGraphics.blit(this.resourceLocation, this.getX() - 4, this.getY(), this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
                         this.renderTooltip();
                     } else {
-                        super.renderWidget(poseStack, mouseX, mouseY, partialTicks);
+                        super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
                         this.renderTooltip();
                     }
                 }
@@ -654,18 +647,16 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             }) {
 
                 @Override
-                public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+                public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
                     if (this.active && Screen.hasShiftDown()) {
                         RenderSystem.enableDepthTest();
-                        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-                        RenderSystem.setShaderTexture(0, this.resourceLocation);
                         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
                         int index = !this.active ? 0 : this.isHoveredOrFocused() ? 2 : 1;
-                        blit(poseStack, this.getX() - 2, this.getY(), this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
-                        blit(poseStack, this.getX() + 4, this.getY(), this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
+                        guiGraphics.blit(this.resourceLocation, this.getX() - 2, this.getY(), this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
+                        guiGraphics.blit(this.resourceLocation, this.getX() + 4, this.getY(), this.xTexStart, this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
                         this.renderTooltip();
                     } else {
-                        super.renderWidget(poseStack, mouseX, mouseY, partialTicks);
+                        super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
                         this.renderTooltip();
                     }
                 }
@@ -734,22 +725,22 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             return (this.isActive() || other.isActive()) && !EnchantingInfuserAPI.getEnchantStatsProvider().isCompatibleWith(this.enchantment, other.enchantment);
         }
 
-        public void render(PoseStack poseStack, int leftPos, int topPos, int width, int height, int mouseX, int mouseY, float partialTicks) {
+        public void render(GuiGraphics guiGraphics, int leftPos, int topPos, int width, int height, int mouseX, int mouseY, float partialTicks) {
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderTexture(0, INFUSER_LOCATION);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            blit(poseStack, leftPos + 18, topPos, 0, 185 + this.getYImage() * 18, 126, 18);
+            guiGraphics.blit(INFUSER_LOCATION, leftPos + 18, topPos, 0, 185 + this.getYImage() * 18, 126, 18);
             FormattedCharSequence formattedCharSequence = this.getRenderingName(this.enchantment, width);
-            GuiComponent.drawCenteredString(poseStack, InfuserScreen.this.font, formattedCharSequence, leftPos + width / 2, topPos + 5, this.isIncompatible() || this.isObfuscated() ? 6839882 : -1);
+            guiGraphics.drawCenteredString(InfuserScreen.this.font, formattedCharSequence, leftPos + width / 2, topPos + 5, this.isIncompatible() || this.isObfuscated() ? 6839882 : -1);
             if (mouseX >= leftPos + 18 && mouseX < leftPos + 18 + 126 && mouseY >= topPos && mouseY < topPos + 18) {
                 this.handleTooltip(this.enchantment);
             }
             this.decrButton.setX(leftPos);
             this.decrButton.setY(topPos);
-            this.decrButton.render(poseStack, mouseX, mouseY, partialTicks);
+            this.decrButton.render(guiGraphics, mouseX, mouseY, partialTicks);
             this.incrButton.setX(leftPos + width - 18);
             this.incrButton.setY(topPos);
-            this.incrButton.render(poseStack, mouseX, mouseY, partialTicks);
+            this.incrButton.render(guiGraphics, mouseX, mouseY, partialTicks);
         }
 
         private FormattedCharSequence getRenderingName(Enchantment enchantment, int maxWidth) {
