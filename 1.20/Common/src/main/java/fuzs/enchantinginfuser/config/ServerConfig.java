@@ -4,6 +4,10 @@ import fuzs.puzzleslib.api.config.v3.Config;
 import fuzs.puzzleslib.api.config.v3.ConfigCore;
 import fuzs.puzzleslib.api.config.v3.ValueCallback;
 import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TieredItem;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public class ServerConfig implements ConfigCore {
@@ -14,7 +18,7 @@ public class ServerConfig implements ConfigCore {
     public boolean apotheosisIntegration = true;
 
     public ServerConfig() {
-        this.advancedInfuser.allowRepairing = true;
+        this.advancedInfuser.allowRepairing = AllowedRepairItems.TOOLS_AND_ARMOR;
         this.advancedInfuser.allowBooks = true;
         this.advancedInfuser.allowModifyingEnchantments = ModifiableItems.ALL;
         this.advancedInfuser.costs.maximumCost = 20;
@@ -43,7 +47,7 @@ public class ServerConfig implements ConfigCore {
         @Config(description = "Allow books to be enchanted in an infuser.")
         public boolean allowBooks = false;
         @Config(description = "Can the enchanting infuser repair items using levels in addition to enchanting.")
-        public boolean allowRepairing = false;
+        public AllowedRepairItems allowRepairing = AllowedRepairItems.NOTHING;
         @Config
         public RepairConfig repair = new RepairConfig();
         @Config(description = {"The main option in this section is \"maximum_cost\" as it determines how many levels you'll have to pay for fully enchanting an item with all possible enchantments it can have.", "Cost multipliers mainly control how this maximum cost will be spread out between enchantments of different rarities."})
@@ -52,6 +56,20 @@ public class ServerConfig implements ConfigCore {
         public PowerConfig power = new PowerConfig();
         @Config
         public TypesConfig types = new TypesConfig();
+    }
+
+    public enum AllowedRepairItems {
+        EVERYTHING, TOOLS_AND_ARMOR, NOTHING;
+
+        public boolean isAllowedToRepair(ItemStack itemStack) {
+            if (itemStack.isEmpty() || !itemStack.isDamaged()) return false;
+            if (this == TOOLS_AND_ARMOR) return itemStack.getItem() instanceof TieredItem || itemStack.getItem() instanceof ArmorItem;
+            return this == EVERYTHING;
+        }
+
+        public boolean isActive() {
+            return this != NOTHING;
+        }
     }
 
     public static class RepairConfig implements ConfigCore {

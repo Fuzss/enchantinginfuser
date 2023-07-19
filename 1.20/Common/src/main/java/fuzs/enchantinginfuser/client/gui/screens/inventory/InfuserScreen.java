@@ -101,13 +101,13 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         this.addWidget(this.searchBox);
         this.scrollingList = new ScrollingList(this.leftPos + 29, this.topPos + 17, 162, 18, 4);
         this.addWidget(this.scrollingList);
-        this.enchantButton = this.addRenderableWidget(new IconButton(this.leftPos + BUTTONS_OFFSET_X, this.topPos + (this.menu.config.allowRepairing ? ENCHANT_BUTTON_OFFSET_Y : ENCHANT_ONLY_BUTTON_OFFSET_Y), 18, 18, 126, 185, INFUSER_LOCATION, button -> {
+        this.enchantButton = this.addRenderableWidget(new IconButton(this.leftPos + BUTTONS_OFFSET_X, this.topPos + (this.menu.config.allowRepairing.isActive() ? ENCHANT_BUTTON_OFFSET_Y : ENCHANT_ONLY_BUTTON_OFFSET_Y), 18, 18, 126, 185, INFUSER_LOCATION, button -> {
             if (this.menu.clickMenuButton(this.minecraft.player, 0)) {
                 this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, 0);
             }
             this.searchBox.setValue("");
         }));
-        if (this.menu.config.allowRepairing) {
+        if (this.menu.config.allowRepairing.isActive()) {
             this.repairButton = this.addRenderableWidget(new IconButton(this.leftPos + BUTTONS_OFFSET_X, this.topPos + REPAIR_BUTTON_OFFSET_Y, 18, 18, 144, 185, INFUSER_LOCATION, button -> {
                 if (this.menu.clickMenuButton(this.minecraft.player, 1)) {
                     this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, 1);
@@ -453,7 +453,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         int sliderRange = sliderY + 72 + 2 + 2;
         guiGraphics.blit(INFUSER_LOCATION, sliderX, sliderY + (int)((float)(sliderRange - sliderY - 18) * this.scrollOffs), 220, 54 + (this.scrollingList.canScroll() ? 18 : 0), 18, 18);
         // render slot manually as it is placed further down when repairing is disabled
-        guiGraphics.blit(INFUSER_LOCATION, this.leftPos + 8 - 1, this.topPos + (this.menu.config.allowRepairing ? 23 : 34) - 1, 162, 185, 18, 18);
+        guiGraphics.blit(INFUSER_LOCATION, this.leftPos + 8 - 1, this.topPos + (this.menu.config.allowRepairing.isActive() ? 23 : 34) - 1, 162, 185, 18, 18);
     }
 
     private class ScrollingList extends AbstractContainerEventHandler implements Renderable, NarratableEntry {

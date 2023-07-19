@@ -81,7 +81,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         this.levelAccess = levelAccess;
         this.player = inventory.player;
         this.config = config;
-        this.addSlot(new Slot(container, 0, 8, config.allowRepairing ? 23 : 34) {
+        this.addSlot(new Slot(container, 0, 8, config.allowRepairing.isActive() ? 23 : 34) {
 
             @Override
             public int getMaxStackSize() {
@@ -294,11 +294,9 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     private boolean clickRepairButton(Player player) {
-        if (!this.config.allowRepairing) return false;
+        if (!this.config.allowRepairing.isActive()) return false;
         ItemStack itemstack = this.enchantSlots.getItem(0);
-        if (itemstack.isEmpty() || !itemstack.isDamaged()) {
-            return false;
-        }
+        if (!this.config.allowRepairing.isAllowedToRepair(itemstack)) return false;
         final double repairStep = itemstack.getMaxDamage() * this.config.repair.repairPercentageStep;
         int repairCost = (int) Math.ceil(Math.ceil(itemstack.getDamageValue() / repairStep) * this.config.repair.repairStepMultiplier);
         if (player.experienceLevel >= repairCost || player.getAbilities().instabuild) {
@@ -318,9 +316,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     public int calculateRepairCost() {
         ItemStack itemstack = this.enchantSlots.getItem(0);
-        if (itemstack.isEmpty() || !itemstack.isDamaged()) {
-            return 0;
-        }
+        if (!this.config.allowRepairing.isAllowedToRepair(itemstack)) return 0;
         final double repairStep = itemstack.getMaxDamage() * this.config.repair.repairPercentageStep;
         return (int) Math.ceil(Math.ceil(itemstack.getDamageValue() / repairStep) * this.config.repair.repairStepMultiplier);
     }
@@ -562,7 +558,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     public boolean canRepair(Player player) {
-        if (!this.enchantSlots.getItem(0).isEmpty() && this.enchantSlots.getItem(0).isDamaged()) {
+        if (this.config.allowRepairing.isAllowedToRepair(this.enchantSlots.getItem(0))) {
             return player.experienceLevel >= this.getRepairCost() || player.getAbilities().instabuild;
         }
         return false;

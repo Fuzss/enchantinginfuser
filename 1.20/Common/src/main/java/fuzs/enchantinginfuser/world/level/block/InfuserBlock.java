@@ -137,7 +137,7 @@ public class InfuserBlock extends EnchantmentTableBlock {
             component = CHOOSE_AND_MODIFY_TOOLTIP;
         }
         MutableComponent mutableComponent = Component.empty().append(component).withStyle(ChatFormatting.GRAY);
-        if (this.type.config().allowRepairing) {
+        if (this.type.config().allowRepairing.isActive()) {
             mutableComponent = mutableComponent.append(" ").append(REPAIR_TOOLTIP);
         }
         list.add(mutableComponent);
