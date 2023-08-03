@@ -39,5 +39,9 @@
     "puzzleslib": ">=${minPuzzlesVersion}",
     "minecraft": "${minecraftVersion}",
     "java": ">=17"
+  },
+
+  "breaks": {
+    "amethyst_imbuement": "*"
   }
 }
