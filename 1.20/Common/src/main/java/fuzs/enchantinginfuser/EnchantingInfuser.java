@@ -3,7 +3,6 @@ package fuzs.enchantinginfuser;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.enchantinginfuser.network.S2CCompatibleEnchantsMessage;
-import fuzs.enchantinginfuser.network.S2CInfuserDataMessage;
 import fuzs.enchantinginfuser.network.client.C2SAddEnchantLevelMessage;
 import fuzs.puzzleslib.api.config.v3.ConfigHolder;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;
@@ -31,7 +30,6 @@ public class EnchantingInfuser implements ModConstructor {
 
     private static void registerMessages() {
         NETWORK.register(S2CCompatibleEnchantsMessage.class, S2CCompatibleEnchantsMessage::new, MessageDirection.TO_CLIENT);
-        NETWORK.register(S2CInfuserDataMessage.class, S2CInfuserDataMessage::new, MessageDirection.TO_CLIENT);
         NETWORK.register(C2SAddEnchantLevelMessage.class, C2SAddEnchantLevelMessage::new, MessageDirection.TO_SERVER);
     }
 

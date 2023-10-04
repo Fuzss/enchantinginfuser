@@ -1,19 +1,17 @@
 package fuzs.enchantinginfuser.world.level.block;
 
 import fuzs.enchantinginfuser.EnchantingInfuser;
+import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.init.ModRegistry;
-import fuzs.enchantinginfuser.network.S2CInfuserDataMessage;
 import fuzs.enchantinginfuser.util.ChiseledBookshelfHelper;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
-import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
@@ -49,7 +47,7 @@ public class InfuserBlock extends EnchantmentTableBlock {
     }
 
     public static boolean isValidBookShelf(Level level, BlockPos pos, BlockPos offset) {
-        if (CommonAbstractions.INSTANCE.getEnchantPowerBonus(level.getBlockState(pos.offset(offset)), level, pos.offset(offset)) == 0.0F) {
+        if (EnchantingInfuserAPI.getEnchantStatsProvider().getEnchantPowerBonus(level.getBlockState(pos.offset(offset)), level, pos.offset(offset)) == 0.0F) {
             if (ChiseledBookshelfHelper.findValidBooks(level, pos, offset) == 0) {
                 return false;
             }
@@ -71,20 +69,14 @@ public class InfuserBlock extends EnchantmentTableBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        if (pLevel.getBlockEntity(pPos) instanceof InfuserBlockEntity blockEntity) {
-            if (pLevel.isClientSide) {
-                return InteractionResult.SUCCESS;
-            }
-            pPlayer.openMenu(pState.getMenuProvider(pLevel, pPos));
-            if (pPlayer.containerMenu instanceof InfuserMenu menu) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult hitResult) {
+        if (level.getBlockEntity(pos) instanceof InfuserBlockEntity blockEntity) {
+            if (!level.isClientSide) {
+                player.openMenu(state.getMenuProvider(level, pos));
                 // items might still be in inventory slots, so this needs to update so that enchantment buttons are shown
-                menu.slotsChanged(blockEntity);
-                final int power = menu.setEnchantingPower(pLevel, pPos);
-                final int repairCost = menu.setRepairCost();
-                EnchantingInfuser.NETWORK.sendTo(new S2CInfuserDataMessage(pPlayer.containerMenu.containerId, power, repairCost), (ServerPlayer) pPlayer);
+                player.containerMenu.slotsChanged(blockEntity);
             }
-            return InteractionResult.CONSUME;
+            return InteractionResult.sidedSuccess(level.isClientSide);
         }
         return InteractionResult.PASS;
     }
@@ -108,7 +100,6 @@ public class InfuserBlock extends EnchantmentTableBlock {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         super.animateTick(state, level, pos, random);
-
         for(BlockPos blockpos : BOOKSHELF_OFFSETS) {
             if (random.nextInt(16) == 0 && isValidBookShelf(level, pos, blockpos)) {
                 level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D, ((float)blockpos.getX() + random.nextFloat()) - 0.5D, ((float)blockpos.getY() - random.nextFloat() - 1.0F), ((float)blockpos.getZ() + random.nextFloat()) - 0.5D);

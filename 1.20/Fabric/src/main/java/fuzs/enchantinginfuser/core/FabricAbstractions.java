@@ -14,5 +14,4 @@ public final class FabricAbstractions implements CommonAbstractions {
     public boolean isAllowedOnBooks(Enchantment enchantment) {
         return true;
     }
-
 }

@@ -1,11 +1,16 @@
 package fuzs.enchantinginfuser;
 
+import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
+import fuzs.enchantinginfuser.api.world.item.enchantment.EnchantStatsProvider;
+import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.data.ModBlockLootProvider;
 import fuzs.enchantinginfuser.data.ModBlockTagsProvider;
 import fuzs.enchantinginfuser.data.ModRecipeProvider;
 import fuzs.enchantinginfuser.data.ModSpriteSourceProvider;
 import fuzs.enchantinginfuser.init.ForgeModRegistry;
+import fuzs.enchantinginfuser.integration.ApotheosisEnchantStatsProvider;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;
+import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
@@ -29,13 +34,13 @@ public class EnchantingInfuserForge {
     }
 
     private static void registerIntegration() {
-//        EnchantingInfuser.CONFIG.getHolder(ServerConfig.class).accept(() -> {
-//            if (!EnchantingInfuser.CONFIG.get(ServerConfig.class).apotheosisIntegration) {
-//                EnchantingInfuserAPI.setEnchantStatsProvider(EnchantStatsProvider.INSTANCE);
-//            } else if (ModLoaderEnvironment.INSTANCE.isModLoaded("apotheosis")) {
-//                EnchantingInfuserAPI.setEnchantStatsProvider(ApotheosisEnchantStatsProvider.INSTANCE);
-//            }
-//        });
+        EnchantingInfuser.CONFIG.getHolder(ServerConfig.class).accept(() -> {
+            if (!EnchantingInfuser.CONFIG.get(ServerConfig.class).apotheosisIntegration) {
+                EnchantingInfuserAPI.setEnchantStatsProvider(EnchantStatsProvider.INSTANCE);
+            } else if (ModLoaderEnvironment.INSTANCE.isModLoaded("apotheosis")) {
+                EnchantingInfuserAPI.setEnchantStatsProvider(ApotheosisEnchantStatsProvider.INSTANCE);
+            }
+        });
     }
 
     @SubscribeEvent

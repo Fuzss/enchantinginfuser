@@ -5,10 +5,11 @@ import fuzs.puzzleslib.api.config.v3.ConfigCore;
 import fuzs.puzzleslib.api.config.v3.ValueCallback;
 import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TieredItem;
 import net.minecraftforge.common.ForgeConfigSpec;
+
+import java.util.function.Predicate;
 
 public class ServerConfig implements ConfigCore {
     @Config
@@ -35,7 +36,15 @@ public class ServerConfig implements ConfigCore {
     }
 
     public enum ModifiableItems {
-        ALL, FULL_DURABILITY, UNENCHANTED
+        UNENCHANTED(ItemStack::isEnchantable),
+        ALL(itemStack -> UNENCHANTED.predicate.test(itemStack) || itemStack.getItem().isEnchantable(itemStack) && itemStack.isEnchanted()),
+        FULL_DURABILITY(itemStack -> !itemStack.isDamaged() && ALL.predicate.test(itemStack));
+
+        public final Predicate<ItemStack> predicate;
+
+        ModifiableItems(Predicate<ItemStack> predicate) {
+            this.predicate = predicate;
+        }
     }
 
     public static class InfuserConfig implements ConfigCore {
@@ -48,6 +57,8 @@ public class ServerConfig implements ConfigCore {
         public boolean allowBooks = false;
         @Config(description = "Can the enchanting infuser repair items using levels in addition to enchanting.")
         public AllowedRepairItems allowRepairing = AllowedRepairItems.NOTHING;
+        @Config(description = "Working an item in an infuser increases the prior work penalty stat used by anvils for that item, meaning future anvil repairs will become more expensive, possibly even too expensive.")
+        public boolean increaseAnvilRepairCost = false;
         @Config
         public RepairConfig repair = new RepairConfig();
         @Config(description = {"The main option in this section is \"maximum_cost\" as it determines how many levels you'll have to pay for fully enchanting an item with all possible enchantments it can have.", "Cost multipliers mainly control how this maximum cost will be spread out between enchantments of different rarities."})
