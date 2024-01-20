@@ -3,7 +3,7 @@ package fuzs.enchantinginfuser.network;
 import com.google.common.collect.Maps;
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
-import fuzs.puzzleslib.api.network.v2.MessageV2;
+import fuzs.puzzleslib.api.network.v2.WritableMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
@@ -12,16 +12,22 @@ import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.Map;
 
-public class S2CCompatibleEnchantsMessage implements MessageV2<S2CCompatibleEnchantsMessage> {
-    private int containerId;
-    private Map<Enchantment, Integer> enchantmentsToLevel;
-
-    public S2CCompatibleEnchantsMessage() {
-
-    }
+public class S2CCompatibleEnchantsMessage implements WritableMessage<S2CCompatibleEnchantsMessage> {
+    private final int containerId;
+    private final Map<Enchantment, Integer> enchantmentsToLevel;
 
     public S2CCompatibleEnchantsMessage(int containerId, Map<Enchantment, Integer> enchantmentsToLevel) {
         this.containerId = containerId;
+        this.enchantmentsToLevel = enchantmentsToLevel;
+    }
+
+    public S2CCompatibleEnchantsMessage(FriendlyByteBuf buf) {
+        this.containerId = buf.readByte();
+        final int size = buf.readInt();
+        Map<Enchantment, Integer> enchantmentsToLevel = Maps.newHashMap();
+        for (int i = 0; i < size; i++) {
+            enchantmentsToLevel.put(BuiltInRegistries.ENCHANTMENT.byId(buf.readInt()), buf.readInt());
+        }
         this.enchantmentsToLevel = enchantmentsToLevel;
     }
 
@@ -36,17 +42,6 @@ public class S2CCompatibleEnchantsMessage implements MessageV2<S2CCompatibleEnch
     }
 
     @Override
-    public void read(FriendlyByteBuf buf) {
-        this.containerId = buf.readByte();
-        final int size = buf.readInt();
-        Map<Enchantment, Integer> enchantmentsToLevel = Maps.newHashMap();
-        for (int i = 0; i < size; i++) {
-            enchantmentsToLevel.put(BuiltInRegistries.ENCHANTMENT.byId(buf.readInt()), buf.readInt());
-        }
-        this.enchantmentsToLevel = enchantmentsToLevel;
-    }
-
-    @Override
     public MessageHandler<S2CCompatibleEnchantsMessage> makeHandler() {
         return new MessageHandler<>() {
 
@@ -54,7 +49,8 @@ public class S2CCompatibleEnchantsMessage implements MessageV2<S2CCompatibleEnch
             public void handle(S2CCompatibleEnchantsMessage message, Player player, Object gameInstance) {
                 if (player.containerMenu.containerId == message.containerId && player.containerMenu instanceof InfuserMenu menu) {
                     menu.setAndSyncEnchantments(message.enchantmentsToLevel);
-                    if (((Minecraft) gameInstance).screen instanceof InfuserScreen screen) screen.refreshSearchResults();
+                    if (((Minecraft) gameInstance).screen instanceof InfuserScreen screen)
+                        screen.refreshSearchResults();
                 }
             }
         };

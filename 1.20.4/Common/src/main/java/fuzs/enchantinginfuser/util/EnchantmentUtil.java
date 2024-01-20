@@ -1,8 +1,8 @@
 package fuzs.enchantinginfuser.util;
 
 import com.google.common.collect.Lists;
-import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
-import fuzs.enchantinginfuser.core.CommonAbstractions;
+import fuzs.enchantinginfuser.api.v2.EnchantingInfuserApi;
+import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -27,13 +27,13 @@ public class EnchantmentUtil {
         boolean book = stack.getItem() instanceof BookItem || stack.getItem() instanceof EnchantedBookItem;
         for (Enchantment enchantment : BuiltInRegistries.ENCHANTMENT) {
             if ((allowAnvil ? enchantment.canEnchant(stack) : CommonAbstractions.INSTANCE.canApplyAtEnchantingTable(enchantment, stack)) || (book && CommonAbstractions.INSTANCE.isAllowedOnBooks(enchantment))) {
-                if (!EnchantingInfuserAPI.getEnchantStatsProvider().isDiscoverable(enchantment)) {
+                if (!EnchantingInfuserApi.getEnchantStatsProvider().isDiscoverable(enchantment)) {
                     if (!allowUndiscoverable) continue;
-                } else if (!EnchantingInfuserAPI.getEnchantStatsProvider().isTradeable(enchantment)) {
+                } else if (!EnchantingInfuserApi.getEnchantStatsProvider().isTradeable(enchantment)) {
                     if (!allowUntradeable) continue;
-                } else if (EnchantingInfuserAPI.getEnchantStatsProvider().isCurse(enchantment)) {
+                } else if (EnchantingInfuserApi.getEnchantStatsProvider().isCurse(enchantment)) {
                     if (!allowCurse) continue;
-                } else if (EnchantingInfuserAPI.getEnchantStatsProvider().isTreasureOnly(enchantment)) {
+                } else if (EnchantingInfuserApi.getEnchantStatsProvider().isTreasureOnly(enchantment)) {
                     if (!allowTreasure) continue;
                 }
                 list.add(enchantment);
@@ -98,7 +98,7 @@ public class EnchantmentUtil {
         // set level to -1 to skip adding
         // copied from Enchantment, but without curses being colored red
         MutableComponent mutablecomponent = Component.translatable(enchantment.getDescriptionId());
-        if (level != -1 && (level != 1 || EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment) != 1)) {
+        if (level != -1 && (level != 1 || EnchantingInfuserApi.getEnchantStatsProvider().getMaxLevel(enchantment) != 1)) {
             mutablecomponent.append(" ").append(Component.translatable("enchantment.level." + level));
         }
         return mutablecomponent;

@@ -7,7 +7,7 @@ import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TieredItem;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.function.Predicate;
 
@@ -27,8 +27,8 @@ public class ServerConfig implements ConfigCore {
     }
 
     @Override
-    public void addToBuilder(ForgeConfigSpec.Builder builder, ValueCallback callback) {
-        if (ModLoaderEnvironment.INSTANCE.getModLoader().isForge()) {
+    public void addToBuilder(ModConfigSpec.Builder builder, ValueCallback callback) {
+        if (ModLoaderEnvironment.INSTANCE.getModLoader().isNeoForge()) {
             builder.push("integration");
             callback.accept(builder.comment("Enable compat for Apotheosis if it is installed. Allows for using the full range of changes Apotheosis applies to vanilla enchantments.", "Should only really be disabled if compat breaks due to internal changes.").define("apotheosis", true), v -> this.apotheosisIntegration = v);
             builder.pop();

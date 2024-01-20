@@ -1,6 +1,7 @@
 package fuzs.enchantinginfuser.world.level.block.entity;
 
 import fuzs.enchantinginfuser.init.ModRegistry;
+import fuzs.puzzleslib.api.block.v1.entity.TickingBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -19,33 +20,33 @@ import net.minecraft.world.level.block.entity.EnchantmentTableBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements WorldlyContainer {
+public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements WorldlyContainer, TickingBlockEntity {
     private final NonNullList<ItemStack> inventory = NonNullList.withSize(1, ItemStack.EMPTY);
     private LockCode code = LockCode.NO_LOCK;
 
-    public InfuserBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
-        super(pWorldPosition, pBlockState);
+    public InfuserBlockEntity(BlockPos blockPos, BlockState blockState) {
+        super(blockPos, blockState);
     }
 
     @Override
     public BlockEntityType<?> getType() {
         // set in super constructor, so just override the whole method
-        return ModRegistry.INFUSER_BLOCK_ENTITY_TYPE.get();
+        return ModRegistry.INFUSER_BLOCK_ENTITY_TYPE.value();
     }
 
     @Override
-    public void load(CompoundTag nbt) {
-        super.load(nbt);
-        this.code = LockCode.fromTag(nbt);
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        this.code = LockCode.fromTag(tag);
         this.inventory.clear();
-        ContainerHelper.loadAllItems(nbt, this.inventory);
+        ContainerHelper.loadAllItems(tag, this.inventory);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compoundTag) {
-        super.saveAdditional(compoundTag);
-        this.code.addToTag(compoundTag);
-        ContainerHelper.saveAllItems(compoundTag, this.inventory, true);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        this.code.addToTag(tag);
+        ContainerHelper.saveAllItems(tag, this.inventory, true);
     }
 
     @Override
@@ -149,7 +150,12 @@ public class InfuserBlockEntity extends EnchantmentTableBlockEntity implements W
         return this.getName();
     }
 
-    public boolean canOpen(Player p_213904_1_) {
-        return BaseContainerBlockEntity.canUnlock(p_213904_1_, this.code, this.getDisplayName());
+    public boolean canOpen(Player player) {
+        return BaseContainerBlockEntity.canUnlock(player, this.code, this.getDisplayName());
+    }
+
+    @Override
+    public void clientTick() {
+        bookAnimationTick(this.level, this.worldPosition, this.getBlockState(), this);
     }
 }

@@ -1,20 +1,16 @@
 package fuzs.enchantinginfuser.network.client;
 
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
-import fuzs.puzzleslib.api.network.v2.MessageV2;
+import fuzs.puzzleslib.api.network.v2.WritableMessage;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.Enchantment;
 
-public class C2SAddEnchantLevelMessage implements MessageV2<C2SAddEnchantLevelMessage> {
-    private int containerId;
-    private Enchantment enchantment;
-    private boolean increase;
-
-    public C2SAddEnchantLevelMessage() {
-
-    }
+public class C2SAddEnchantLevelMessage implements WritableMessage<C2SAddEnchantLevelMessage> {
+    private final int containerId;
+    private final Enchantment enchantment;
+    private final boolean increase;
 
     public C2SAddEnchantLevelMessage(int containerId, Enchantment enchantment, boolean increase) {
         this.containerId = containerId;
@@ -22,18 +18,17 @@ public class C2SAddEnchantLevelMessage implements MessageV2<C2SAddEnchantLevelMe
         this.increase = increase;
     }
 
+    public C2SAddEnchantLevelMessage(FriendlyByteBuf buf) {
+        this.containerId = buf.readByte();
+        this.enchantment = BuiltInRegistries.ENCHANTMENT.byId(buf.readInt());
+        this.increase = buf.readBoolean();
+    }
+
     @Override
     public void write(FriendlyByteBuf buf) {
         buf.writeByte(this.containerId);
         buf.writeInt(BuiltInRegistries.ENCHANTMENT.getId(this.enchantment));
         buf.writeBoolean(this.increase);
-    }
-
-    @Override
-    public void read(FriendlyByteBuf buf) {
-        this.containerId = buf.readByte();
-        this.enchantment = BuiltInRegistries.ENCHANTMENT.byId(buf.readInt());
-        this.increase = buf.readBoolean();
     }
 
     @Override

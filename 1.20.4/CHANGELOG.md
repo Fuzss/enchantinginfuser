@@ -1,21 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog].
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v8.0.2-1.20.1] - 2023-10-04
-### Changed
-- Re-enabled integration for Apotheosis on Forge
-### Fixed
-- Fixed disenchanting sometimes giving back more experience than was required for the enchantment in the first place
-- Fixed being able to change enchantments on some unenchantable items
-
-## [v8.0.1-1.20.1] - 2023-07-19
-### Changed
-- The advanced infuser can now only repair tools and armor items to prevent exploits with items from other mods that have durability
-- The config allows for reverting to the previous behavior where any damaged item can be repaired
-
-## [v8.0.0-1.20.1] - 2023-06-27
-- Ported to Minecraft 1.20.1
-
-[Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
+## [v20.4.0-1.20.4] - 2024-01-20
+- Ported to Minecraft 1.20.4
+- Ported to NeoForge
+### Added
+- Add `enchantinginfuser:not_obtainable_from_advanced_infuser` and `enchantinginfuser:not_obtainable_from_normal_infuser` enchantment tags

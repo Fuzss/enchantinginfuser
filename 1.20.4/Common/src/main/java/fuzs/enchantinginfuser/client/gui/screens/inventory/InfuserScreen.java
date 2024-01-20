@@ -7,11 +7,11 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
-import fuzs.enchantinginfuser.api.EnchantingInfuserAPI;
-import fuzs.enchantinginfuser.client.gui.components.IconButton;
+import fuzs.enchantinginfuser.api.v2.EnchantingInfuserApi;
 import fuzs.enchantinginfuser.network.client.C2SAddEnchantLevelMessage;
 import fuzs.enchantinginfuser.util.EnchantmentUtil;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
+import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
 import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -79,7 +79,6 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     @Override
     public void containerTick() {
         super.containerTick();
-        this.searchBox.tick();
         this.updateButtons();
     }
 
@@ -103,18 +102,18 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         this.addWidget(this.searchBox);
         this.scrollingList = new ScrollingList(this.leftPos + 29, this.topPos + 17, 162, 18, 4);
         this.addWidget(this.scrollingList);
-        this.enchantButton = this.addRenderableWidget(new IconButton(this.leftPos + BUTTONS_OFFSET_X, this.topPos + (this.menu.config.allowRepairing.isActive() ? ENCHANT_BUTTON_OFFSET_Y : ENCHANT_ONLY_BUTTON_OFFSET_Y), 18, 18, 126, 185, INFUSER_LOCATION, button -> {
+        this.enchantButton = this.addRenderableWidget(new SpritelessImageButton(this.leftPos + BUTTONS_OFFSET_X, this.topPos + (this.menu.config.allowRepairing.isActive() ? ENCHANT_BUTTON_OFFSET_Y : ENCHANT_ONLY_BUTTON_OFFSET_Y), 18, 18, 126, 185, INFUSER_LOCATION, button -> {
             if (this.menu.clickMenuButton(this.minecraft.player, 0)) {
                 this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, 0);
             }
             this.searchBox.setValue("");
-        }));
+        }).setTextureLayout(SpritelessImageButton.LEGACY_TEXTURE_LAYOUT));
         if (this.menu.config.allowRepairing.isActive()) {
-            this.repairButton = this.addRenderableWidget(new IconButton(this.leftPos + BUTTONS_OFFSET_X, this.topPos + REPAIR_BUTTON_OFFSET_Y, 18, 18, 144, 185, INFUSER_LOCATION, button -> {
+            this.repairButton = this.addRenderableWidget(new SpritelessImageButton(this.leftPos + BUTTONS_OFFSET_X, this.topPos + REPAIR_BUTTON_OFFSET_Y, 18, 18, 144, 185, INFUSER_LOCATION, button -> {
                 if (this.menu.clickMenuButton(this.minecraft.player, 1)) {
                     this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, 1);
                 }
-            }));
+            }).setTextureLayout(SpritelessImageButton.LEGACY_TEXTURE_LAYOUT));
         }
         this.updateButtons();
     }
@@ -234,11 +233,11 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     }
 
     @Override
-    public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (!this.scrollingList.canScroll()) {
             return false;
         } else {
-            this.scrollOffs = (float)((double)this.scrollOffs - pDelta / (this.scrollingList.getItemCount() - 4));
+            this.scrollOffs = (float)((double)this.scrollOffs - scrollY / (this.scrollingList.getItemCount() - 4));
             this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
             this.scrollingList.scrollTo(this.scrollOffs);
             return true;
@@ -246,23 +245,22 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     }
 
     @Override
-    public boolean mouseDragged(double pMouseX, double pMouseY, int pButton, double pDragX, double pDragY) {
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (this.scrolling) {
             int i = this.topPos + 17;
             int j = i + 72;
-            this.scrollOffs = ((float) pMouseY - (float)i - 7.5F) / ((float)(j - i) - 15.0F);
+            this.scrollOffs = ((float) mouseY - (float)i - 7.5F) / ((float)(j - i) - 15.0F);
             this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
             this.scrollingList.scrollTo(this.scrollOffs);
             return true;
         } else {
-            return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY);
+            return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
         }
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         this.insufficientPower = false;
-        this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         this.scrollingList.render(guiGraphics, mouseX, mouseY, partialTick);
         this.renderEnchantingPower(guiGraphics, mouseX, mouseY);
@@ -385,12 +383,12 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
                 MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(enchantment, oldLevel);
                 removedList.add(component.withStyle(ChatFormatting.RED));
             } else if (newLevel > 0 && oldLevel > 0 && newLevel != oldLevel) {
-                // -1 prevents level from being added so we can do it ourselves
+                // -1 prevents level from being added, so we can do it ourselves
                 MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(enchantment, -1);
                 MutableComponent changeComponent = Component.translatable("gui.enchantinginfuser.tooltip.change", Component.translatable("enchantment.level." + oldLevel), Component.translatable("enchantment.level." + newLevel));
                 changedList.add(component.append(" ").append(changeComponent).withStyle(ChatFormatting.YELLOW));
             } else if (newLevel > 0 || oldLevel > 0) {
-                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(enchantment, newLevel != 0 ? newLevel : oldLevel);
+                MutableComponent component = EnchantmentUtil.getPlainEnchantmentName(enchantment, newLevel > 0 ? newLevel : oldLevel);
                 oldList.add(component.withStyle(ChatFormatting.GRAY));
             }
         }
@@ -601,7 +599,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             this.maxLevel = maxLevelResult.getSecond();
             this.requiredPower = maxLevelResult.getFirst().orElse(-1);
             this.level = level;
-            this.decrButton = new IconButton(0, 0, 18, 18, 220, 0, INFUSER_LOCATION, button -> {
+            this.decrButton = new SpritelessImageButton(0, 0, 18, 18, 220, 0, INFUSER_LOCATION, button -> {
                 do {
                     final int newLevel = InfuserScreen.this.menu.clickEnchantmentLevelButton(InfuserScreen.this.minecraft.player, this.enchantment, false);
                     if (newLevel == -1) return;
@@ -635,8 +633,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
                         }
                     }
                 }
-            };
-            this.incrButton = new IconButton(0, 0, 18, 18, 238, 0, INFUSER_LOCATION, button -> {
+            }.setTextureLayout(SpritelessImageButton.LEGACY_TEXTURE_LAYOUT);
+            this.incrButton = new SpritelessImageButton(0, 0, 18, 18, 238, 0, INFUSER_LOCATION, button -> {
                 do {
                     final int newLevel = InfuserScreen.this.menu.clickEnchantmentLevelButton(InfuserScreen.this.minecraft.player, this.enchantment, true);
                     if (newLevel == -1) return;
@@ -670,7 +668,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
                         }
                     }
                 }
-            };
+            }.setTextureLayout(SpritelessImageButton.LEGACY_TEXTURE_LAYOUT);
             this.updateButtons();
         }
 
@@ -700,7 +698,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
 
         private void updateButtons() {
             this.decrButton.visible = this.level > 0;
-            this.incrButton.visible = this.level < EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(this.enchantment);
+            this.incrButton.visible = this.level < EnchantingInfuserApi.getEnchantStatsProvider().getMaxLevel(this.enchantment);
             this.decrButton.active = this.level - 1 < this.maxLevel;
             this.incrButton.active = this.level < this.maxLevel;
         }
@@ -723,7 +721,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
 
         public boolean isIncompatibleWith(EnchantmentListEntry other) {
             if (other == this) return false;
-            return (this.isActive() || other.isActive()) && !EnchantingInfuserAPI.getEnchantStatsProvider().isCompatibleWith(this.enchantment, other.enchantment);
+            return (this.isActive() || other.isActive()) && !EnchantingInfuserApi.getEnchantStatsProvider().isCompatibleWith(this.enchantment, other.enchantment);
         }
 
         public void render(GuiGraphics guiGraphics, int leftPos, int topPos, int width, int height, int mouseX, int mouseY, float partialTicks) {
@@ -781,9 +779,9 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
                 } else if (Language.getInstance().has(enchantment.getDescriptionId() + ".description")) {
                     list.addAll(InfuserScreen.this.font.split(Component.translatable(enchantment.getDescriptionId() + ".description").withStyle(ChatFormatting.GRAY), 175));
                 }
-                final MutableComponent levelsComponent = Component.translatable("enchantment.level." + EnchantingInfuserAPI.getEnchantStatsProvider().getMinLevel(enchantment));
-                if (EnchantingInfuserAPI.getEnchantStatsProvider().getMinLevel(enchantment) != EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment)) {
-                    levelsComponent.append("-").append( Component.translatable("enchantment.level." + EnchantingInfuserAPI.getEnchantStatsProvider().getMaxLevel(enchantment)));
+                final MutableComponent levelsComponent = Component.translatable("enchantment.level." + EnchantingInfuserApi.getEnchantStatsProvider().getMinLevel(enchantment));
+                if (EnchantingInfuserApi.getEnchantStatsProvider().getMinLevel(enchantment) != EnchantingInfuserApi.getEnchantStatsProvider().getMaxLevel(enchantment)) {
+                    levelsComponent.append("-").append( Component.translatable("enchantment.level." + EnchantingInfuserApi.getEnchantStatsProvider().getMaxLevel(enchantment)));
                 }
                 final Component wrappedComponent = Component.literal("(").append(levelsComponent).append(")").withStyle(ChatFormatting.GRAY);
                 list.add(0, Component.translatable(enchantment.getDescriptionId()).append(" ").append(wrappedComponent).getVisualOrderText());

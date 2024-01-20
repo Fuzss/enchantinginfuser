@@ -15,8 +15,8 @@ import net.minecraft.world.item.ItemStack;
 
 public class InfuserItemRenderer extends InfuserRenderer {
 
-    public InfuserItemRenderer(BlockEntityRendererProvider.Context pContext) {
-        super(pContext);
+    public InfuserItemRenderer(BlockEntityRendererProvider.Context context) {
+        super(context);
     }
 
     @Override

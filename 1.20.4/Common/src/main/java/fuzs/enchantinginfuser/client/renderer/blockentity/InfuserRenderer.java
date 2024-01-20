@@ -23,8 +23,8 @@ public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> 
    public static final Material BOOK_LOCATION = new Material(InventoryMenu.BLOCK_ATLAS, new ResourceLocation(EnchantingInfuser.MOD_ID, "entity/enchanting_infuser_book"));
    private final BookModel bookModel;
 
-   public InfuserRenderer(BlockEntityRendererProvider.Context pContext) {
-      this.bookModel = new BookModel(pContext.bakeLayer(ModelLayers.BOOK));
+   public InfuserRenderer(BlockEntityRendererProvider.Context context) {
+      this.bookModel = new BookModel(context.bakeLayer(ModelLayers.BOOK));
    }
 
    @Override
