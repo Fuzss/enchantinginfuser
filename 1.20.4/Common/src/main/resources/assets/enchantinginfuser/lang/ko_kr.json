@@ -1,0 +1,19 @@
+{
+  "block.enchantinginfuser.enchanting_infuser": "마법 주입기",
+  "block.enchantinginfuser.advanced_enchanting_infuser": "고급 마법 주입기",
+  "block.enchantinginfuser.description.choose": "부여하고 싶은 마법을 선택 가능해집니다.",
+  "block.enchantinginfuser.description.chooseAndModify": "부여하고 싶은 마법을 선택 가능해지며, 기존에 부여된 마법을 수정 및 삭제할 수 있습니다.",
+  "block.enchantinginfuser.description.repair": "또한, 레벨을 이용해 아이템을 수리할 수 있습니다.",
+  "gui.enchantinginfuser.tooltip.enchanting_power": "마법의 힘 %s / %s",
+  "gui.enchantinginfuser.tooltip.enchanting_power.hint": "주입기 주변에 정사각형으로 책장을 최대 2층으로 배치하세요. 모서리 부분에도 배치하는 것 잊지 마세요!",
+  "gui.enchantinginfuser.tooltip.change": "%s -> %s",
+  "gui.enchantinginfuser.tooltip.points": "경험치를 획득합니다.",
+  "gui.enchantinginfuser.tooltip.required_enchanting_power": "현재 마법의 힘: %s / %s",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "이 마법을 주입하기엔 주입기에 쌓인 마법의 힘으론 부족합니다.",
+  "gui.enchantinginfuser.tooltip.lowPower1": "이 마법의 더 수준 높은 마법을 주입하려면 주입기에 더 많은 마법의 힘이 필요합니다.",
+  "gui.enchantinginfuser.tooltip.lowPower2": "이 마법의 등급을 수정하려면 더 많은 마법의 힘이 쌓인 주입기가 필요합니다.",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment.apotheosis": "이 마법을 주입하기엔 주입기에 쌓인 마법의 힘으론 부족합니다.",
+  "gui.enchantinginfuser.tooltip.lowPower1.apotheosis": "이 마법의 더 수준 높은 마법을 주입하려면 주입기에 더 많은 마법의 힘이 필요합니다.",
+  "gui.enchantinginfuser.tooltip.lowPower2.apotheosis": "이 마법의 등급을 수정하려면 더 많은 마법의 힘이 쌓인 주입기가 필요합니다.",
+  "gui.enchantinginfuser.tooltip.incompatible": "이 마법은 다음의 마법과 호환되지 않습니다: %s"
+}
