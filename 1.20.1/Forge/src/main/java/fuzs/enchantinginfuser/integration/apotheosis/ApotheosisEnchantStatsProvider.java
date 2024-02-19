@@ -1,19 +1,18 @@
-package fuzs.enchantinginfuser.integration;
+package fuzs.enchantinginfuser.integration.apotheosis;
 
 import dev.shadowsoffire.apotheosis.ench.EnchModule;
 import dev.shadowsoffire.apotheosis.ench.table.EnchantingStatRegistry;
 import fuzs.enchantinginfuser.api.world.item.enchantment.EnchantStatsProvider;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class ApotheosisEnchantStatsProvider implements EnchantStatsProvider {
+public final class ApotheosisEnchantStatsProvider implements EnchantStatsProvider {
     public static final EnchantStatsProvider INSTANCE = new ApotheosisEnchantStatsProvider();
 
     private ApotheosisEnchantStatsProvider() {
-
+        // NO-OP
     }
 
     @Override
@@ -38,17 +37,11 @@ public class ApotheosisEnchantStatsProvider implements EnchantStatsProvider {
 
     @Override
     public float getEnchantPowerBonus(BlockState state, Level level, BlockPos pos) {
-        if (BuiltInRegistries.BLOCK.getKey(state.getBlock()).getNamespace().equals("apotheosis")) {
-            System.out.println();
-        }
         return EnchantingStatRegistry.getEterna(state, level, pos);
     }
 
     @Override
     public float getMaximumEnchantPowerScale(BlockState state, Level level, BlockPos pos) {
-        if (BuiltInRegistries.BLOCK.getKey(state.getBlock()).getNamespace().equals("apotheosis")) {
-            System.out.println();
-        }
         return EnchantingStatRegistry.getMaxEterna(state, level, pos) / 15.0F;
     }
 

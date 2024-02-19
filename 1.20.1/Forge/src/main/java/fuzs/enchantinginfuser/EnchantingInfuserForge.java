@@ -8,7 +8,7 @@ import fuzs.enchantinginfuser.data.ModBlockTagsProvider;
 import fuzs.enchantinginfuser.data.ModRecipeProvider;
 import fuzs.enchantinginfuser.data.ModSpriteSourceProvider;
 import fuzs.enchantinginfuser.init.ForgeModRegistry;
-import fuzs.enchantinginfuser.integration.ApotheosisEnchantStatsProvider;
+import fuzs.enchantinginfuser.integration.apotheosis.ApotheosisEnchantStatsProvider;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;
 import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
 import net.minecraft.core.HolderLookup;
@@ -28,8 +28,8 @@ public class EnchantingInfuserForge {
 
     @SubscribeEvent
     public static void onConstructMod(final FMLConstructModEvent evt) {
-        ModConstructor.construct(EnchantingInfuser.MOD_ID, EnchantingInfuser::new);
         ForgeModRegistry.touch();
+        ModConstructor.construct(EnchantingInfuser.MOD_ID, EnchantingInfuser::new);
         registerIntegration();
     }
 

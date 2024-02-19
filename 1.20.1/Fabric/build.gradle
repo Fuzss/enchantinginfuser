@@ -1,4 +1,4 @@
-apply from: 'https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/fabric.gradle'
+apply from: 'https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/v1/fabric.gradle'
 
 def versionCatalog = extensions.getByType(VersionCatalogsExtension).named("libs")
 
@@ -18,6 +18,11 @@ dependencies {
 
     // Extensible Enums
 //    modApi(include(libs.extensibleenums.fabric.get()))
+
+    // Apotheosis
+//    modImplementation libs.fakerlib.fabric
+//    modImplementation libs.zenithattributes.fabric
+//    modImplementation libs.zenith.fabric
 
     // Quality of Life Mods
     versionCatalog.findLibrary("modmenu.fabric").ifPresent {

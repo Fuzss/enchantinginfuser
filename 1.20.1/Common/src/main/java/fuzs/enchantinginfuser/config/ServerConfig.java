@@ -2,12 +2,9 @@ package fuzs.enchantinginfuser.config;
 
 import fuzs.puzzleslib.api.config.v3.Config;
 import fuzs.puzzleslib.api.config.v3.ConfigCore;
-import fuzs.puzzleslib.api.config.v3.ValueCallback;
-import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TieredItem;
-import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.function.Predicate;
 
@@ -16,6 +13,7 @@ public class ServerConfig implements ConfigCore {
     public InfuserConfig normalInfuser = new InfuserConfig();
     @Config
     public InfuserConfig advancedInfuser = new InfuserConfig();
+    @Config(category = "integration", description = {"Enable compat for Apotheosis if it is installed. Allows for using the full range of changes Apotheosis applies to vanilla enchantments.", "Should only really be disabled if compat breaks due to internal changes."})
     public boolean apotheosisIntegration = true;
 
     public ServerConfig() {
@@ -24,15 +22,6 @@ public class ServerConfig implements ConfigCore {
         this.advancedInfuser.allowModifyingEnchantments = ModifiableItems.ALL;
         this.advancedInfuser.costs.maximumCost = 20;
         this.advancedInfuser.types.allowAnvilEnchantments = true;
-    }
-
-    @Override
-    public void addToBuilder(ForgeConfigSpec.Builder builder, ValueCallback callback) {
-        if (ModLoaderEnvironment.INSTANCE.getModLoader().isForge()) {
-            builder.push("integration");
-            callback.accept(builder.comment("Enable compat for Apotheosis if it is installed. Allows for using the full range of changes Apotheosis applies to vanilla enchantments.", "Should only really be disabled if compat breaks due to internal changes.").define("apotheosis", true), v -> this.apotheosisIntegration = v);
-            builder.pop();
-        }
     }
 
     public enum ModifiableItems {
