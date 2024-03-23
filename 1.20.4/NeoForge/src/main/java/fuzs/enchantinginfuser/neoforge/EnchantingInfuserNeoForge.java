@@ -33,23 +33,33 @@ public class EnchantingInfuserNeoForge {
         ModConstructor.construct(EnchantingInfuser.MOD_ID, EnchantingInfuser::new);
         registerHandlers();
         registerIntegration();
-        DataProviderHelper.registerDataProviders(EnchantingInfuser.MOD_ID, ModBlockLootProvider::new, ModBlockTagsProvider::new, ModEnchantmentTagsProvider::new, ModRecipeProvider::new, ModSpriteSourceProvider::new);
+        DataProviderHelper.registerDataProviders(EnchantingInfuser.MOD_ID,
+                ModBlockLootProvider::new,
+                ModBlockTagsProvider::new,
+                ModEnchantmentTagsProvider::new,
+                ModRecipeProvider::new
+        );
     }
 
     private static void registerHandlers() {
-        NeoForgeModContainerHelper.getModEventBus(EnchantingInfuser.MOD_ID).addListener((final RegisterCapabilitiesEvent evt) -> {
-            evt.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModRegistry.INFUSER_BLOCK_ENTITY_TYPE.value(), (InfuserBlockEntity blockEntity, @Nullable Direction direction) -> {
-                // Always use sided wrapper so that WorldlyContainer::canPlaceItemThroughFace is called
-                return new SidedInvWrapper(blockEntity, null);
-            });
-        });
+        NeoForgeModContainerHelper.getModEventBus(EnchantingInfuser.MOD_ID)
+                .addListener((final RegisterCapabilitiesEvent evt) -> {
+                    evt.registerBlockEntity(Capabilities.ItemHandler.BLOCK,
+                            ModRegistry.INFUSER_BLOCK_ENTITY_TYPE.value(),
+                            (InfuserBlockEntity blockEntity, @Nullable Direction direction) -> {
+                                // Always use sided wrapper so that WorldlyContainer::canPlaceItemThroughFace is called
+                                return new SidedInvWrapper(blockEntity, null);
+                            }
+                    );
+                });
     }
 
     private static void registerIntegration() {
         if (false) {
             EnchantingInfuser.CONFIG.getHolder(ServerConfig.class).accept(() -> {
-                if (ModLoaderEnvironment.INSTANCE.isModLoaded("apotheosis") && EnchantingInfuser.CONFIG.get(ServerConfig.class).apotheosisIntegration) {
-    //                EnchantingInfuserApi.setEnchantStatsProvider(ApotheosisEnchantStatsProvider.INSTANCE);
+                if (ModLoaderEnvironment.INSTANCE.isModLoaded("apotheosis") &&
+                        EnchantingInfuser.CONFIG.get(ServerConfig.class).apotheosisIntegration) {
+                    //                EnchantingInfuserApi.setEnchantStatsProvider(ApotheosisEnchantStatsProvider.INSTANCE);
                 } else {
                     EnchantingInfuserApi.setEnchantStatsProvider(VanillaEnchantStatsProvider.INSTANCE);
                 }
