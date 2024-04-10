@@ -1,0 +1,9 @@
+{
+  "block.enchantinginfuser.enchanting_infuser": "Зачарувальник",
+  "block.enchantinginfuser.advanced_enchanting_infuser": "Просунутий зачарувальник",
+  "gui.enchantinginfuser.tooltip.enchanting_power": "Сила зачарування %s",
+  "gui.enchantinginfuser.tooltip.required_enchanting_power": "Нагальна сила зачарування: %s / %s",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "Це зачарування надто сльне для такого слабкого зачарувальника.",
+  "gui.enchantinginfuser.tooltip.low_power": "Щоб накласти чари посильніше, знадобиться зачарувальник покраще.",
+  "gui.enchantinginfuser.tooltip.incompatible": "Це зачарування несумісне з: %s"
+}
