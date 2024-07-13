@@ -20,9 +20,9 @@ dependencies {
 //    modApi(include(libs.extensibleenums.fabric.get()))
 
     // Apotheosis
-//    modImplementation libs.fakerlib.fabric
-//    modImplementation libs.zenithattributes.fabric
-//    modImplementation libs.zenith.fabric
+    modCompileOnly libs.fakerlib.fabric
+    modCompileOnly libs.zenithattributes.fabric
+    modCompileOnly libs.zenith.fabric
 
     // Quality of Life Mods
     versionCatalog.findLibrary("modmenu.fabric").ifPresent {

@@ -13,15 +13,15 @@ public class EnchantingInfuserFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         ModConstructor.construct(EnchantingInfuser.MOD_ID, EnchantingInfuser::new);
-//        registerIntegration();
+        registerModIntegrations();
     }
 
-    private static void registerIntegration() {
+    private static void registerModIntegrations() {
         EnchantingInfuser.CONFIG.getHolder(ServerConfig.class).accept(() -> {
             if (!EnchantingInfuser.CONFIG.get(ServerConfig.class).apotheosisIntegration) {
                 EnchantingInfuserAPI.setEnchantStatsProvider(EnchantStatsProvider.INSTANCE);
             } else if (ModLoaderEnvironment.INSTANCE.isModLoaded("zenith")) {
-//                EnchantingInfuserAPI.setEnchantStatsProvider(ApotheosisEnchantStatsProvider.INSTANCE);
+                EnchantingInfuserAPI.setEnchantStatsProvider(ApotheosisEnchantStatsProvider.INSTANCE);
             }
         });
     }

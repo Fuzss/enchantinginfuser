@@ -30,10 +30,10 @@ public class EnchantingInfuserForge {
     public static void onConstructMod(final FMLConstructModEvent evt) {
         ForgeModRegistry.touch();
         ModConstructor.construct(EnchantingInfuser.MOD_ID, EnchantingInfuser::new);
-        registerIntegration();
+        registerModIntegrations();
     }
 
-    private static void registerIntegration() {
+    private static void registerModIntegrations() {
         EnchantingInfuser.CONFIG.getHolder(ServerConfig.class).accept(() -> {
             if (!EnchantingInfuser.CONFIG.get(ServerConfig.class).apotheosisIntegration) {
                 EnchantingInfuserAPI.setEnchantStatsProvider(EnchantStatsProvider.INSTANCE);

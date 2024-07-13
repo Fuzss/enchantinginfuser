@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v8.0.3-1.20.1] - 2024-07-13
+### Changed
+- Enabled integration for Zenith on Fabric
+
 ## [v8.0.2-1.20.1] - 2023-10-04
 ### Changed
 - Re-enabled integration for Apotheosis on Forge
