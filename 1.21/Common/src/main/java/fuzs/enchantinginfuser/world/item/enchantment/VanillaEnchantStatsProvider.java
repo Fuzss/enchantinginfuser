@@ -3,6 +3,7 @@ package fuzs.enchantinginfuser.world.item.enchantment;
 import fuzs.enchantinginfuser.api.v2.EnchantStatsProvider;
 import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,27 +37,27 @@ public class VanillaEnchantStatsProvider implements EnchantStatsProvider {
     }
 
     @Override
-    public boolean isCompatibleWith(Enchantment enchantment, Enchantment other) {
-        return enchantment.isCompatibleWith(other);
+    public boolean isCompatibleWith(Holder<Enchantment> first, Holder<Enchantment> second) {
+        return Enchantment.areCompatible(first, second);
     }
 
     @Override
-    public int getMinLevel(Enchantment enchantment) {
+    public int getMinLevel(Holder<Enchantment> enchantment) {
         return enchantment.getMinLevel();
     }
 
     @Override
-    public int getMaxLevel(Enchantment enchantment) {
+    public int getMaxLevel(Holder<Enchantment> enchantment) {
         return enchantment.getMaxLevel();
     }
 
     @Override
-    public int getMinCost(Enchantment enchantment, int level) {
+    public int getMinCost(Holder<Enchantment> enchantment, int level) {
         return enchantment.getMinCost(level);
     }
 
     @Override
-    public int getMaxCost(Enchantment enchantment, int level) {
+    public int getMaxCost(Holder<Enchantment> enchantment, int level) {
         return enchantment.getMaxCost(level);
     }
 

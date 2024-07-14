@@ -2,49 +2,19 @@ package fuzs.enchantinginfuser.config;
 
 import fuzs.puzzleslib.api.config.v3.Config;
 import fuzs.puzzleslib.api.config.v3.ConfigCore;
-import fuzs.puzzleslib.api.config.v3.ValueCallback;
-import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TieredItem;
-import net.neoforged.neoforge.common.ModConfigSpec;
-
-import java.util.function.Predicate;
 
 public class ServerConfig implements ConfigCore {
     @Config
     public InfuserConfig normalInfuser = new InfuserConfig();
     @Config
     public InfuserConfig advancedInfuser = new InfuserConfig();
-    public boolean apotheosisIntegration = true;
 
     public ServerConfig() {
         this.advancedInfuser.allowRepairing = AllowedRepairItems.TOOLS_AND_ARMOR;
         this.advancedInfuser.allowBooks = true;
         this.advancedInfuser.allowModifyingEnchantments = ModifiableItems.ALL;
         this.advancedInfuser.costs.maximumCost = 20;
-        this.advancedInfuser.types.allowAnvilEnchantments = true;
-    }
-
-    @Override
-    public void addToBuilder(ModConfigSpec.Builder builder, ValueCallback callback) {
-        if (ModLoaderEnvironment.INSTANCE.getModLoader().isNeoForge()) {
-            builder.push("integration");
-            callback.accept(builder.comment("Enable compat for Apotheosis if it is installed. Allows for using the full range of changes Apotheosis applies to vanilla enchantments.", "Should only really be disabled if compat breaks due to internal changes.").define("apotheosis", true), v -> this.apotheosisIntegration = v);
-            builder.pop();
-        }
-    }
-
-    public enum ModifiableItems {
-        UNENCHANTED(ItemStack::isEnchantable),
-        ALL(itemStack -> UNENCHANTED.predicate.test(itemStack) || itemStack.getItem().isEnchantable(itemStack) && itemStack.isEnchanted()),
-        FULL_DURABILITY(itemStack -> !itemStack.isDamaged() && ALL.predicate.test(itemStack));
-
-        public final Predicate<ItemStack> predicate;
-
-        ModifiableItems(Predicate<ItemStack> predicate) {
-            this.predicate = predicate;
-        }
+        this.advancedInfuser.allowAnvilEnchantments = true;
     }
 
     public static class InfuserConfig implements ConfigCore {
@@ -65,22 +35,8 @@ public class ServerConfig implements ConfigCore {
         public CostsConfig costs = new CostsConfig();
         @Config(description = {"This section allows for controlling at what percentage of the total enchanting power certain kinds of enchantments become available.", "With default settings e.g. the first level of a rare enchantment will be available at 40% enchanting power (controlled by \"rare_multiplier\", translates to 40% * 15 = 6 bookshelves), and the maximum level for that enchant will be available at 40% + 40% = 80% enchanting power (controlled by \"rare_multiplier\" and \"rarity_range_multiplier\", translates to 80% * 15 = 12 bookshelves)."})
         public PowerConfig power = new PowerConfig();
-        @Config
-        public TypesConfig types = new TypesConfig();
-    }
-
-    public enum AllowedRepairItems {
-        EVERYTHING, TOOLS_AND_ARMOR, NOTHING;
-
-        public boolean isAllowedToRepair(ItemStack itemStack) {
-            if (itemStack.isEmpty() || !itemStack.isDamaged()) return false;
-            if (this == TOOLS_AND_ARMOR) return itemStack.getItem() instanceof TieredItem || itemStack.getItem() instanceof ArmorItem;
-            return this == EVERYTHING;
-        }
-
-        public boolean isActive() {
-            return this != NOTHING;
-        }
+        @Config(description = "Allow enchantments that can normally not be obtained from an enchanting table, but can be put on the item in an anvil (e.g. sharpness on an axe).")
+        public boolean allowAnvilEnchantments = false;
     }
 
     public static class RepairConfig implements ConfigCore {
@@ -142,18 +98,5 @@ public class ServerConfig implements ConfigCore {
         @Config(description = {"Multiplier for maximum enchanting power for when curse enchantments become available.", "They also need to be enabled in the \"types\" config."})
         @Config.DoubleRange(min = 0.0, max = 1.0)
         public double curseMultiplier = 1.0;
-    }
-
-    public static class TypesConfig implements ConfigCore {
-        @Config(description = "Allow enchantments that can normally not be obtained from an enchanting table, but can be put on the item in an anvil (e.g. sharpness on an axe).")
-        public boolean allowAnvilEnchantments = false;
-        @Config(description = {"Allow undiscoverable enchantments (e.g. soul speed) to be applied using the enchanting infuser.", "This option takes precedence over other options for treasure, curse and tradeable enchantments."})
-        public boolean allowUndiscoverableEnchantments = false;
-        @Config(description = {"Allow untradeable enchantments (e.g. soul speed) to be applied using the enchanting infuser.", "This option takes precedence over other options for treasure and curse enchantments."})
-        public boolean allowUntradeableEnchantments = false;
-        @Config(description = {"Allow curses (e.g. curse of vanishing) to be applied using the enchanting infuser.", "This option takes precedence over option for treasure enchantments (as curses are also treasure enchantments internally)."})
-        public boolean allowCursesEnchantments = false;
-        @Config(description = "Allow treasure enchantments (e.g. mending) to be applied using the enchanting infuser.")
-        public boolean allowTreasureEnchantments = false;
     }
 }

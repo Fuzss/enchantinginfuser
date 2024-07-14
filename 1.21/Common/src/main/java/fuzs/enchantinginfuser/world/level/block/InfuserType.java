@@ -1,9 +1,9 @@
 package fuzs.enchantinginfuser.world.level.block;
 
+import com.mojang.serialization.Codec;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.init.ModRegistry;
-import fuzs.puzzleslib.api.init.v3.tags.TypedTagFactory;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.inventory.MenuType;
@@ -14,12 +14,13 @@ import java.util.Locale;
 public enum InfuserType implements StringRepresentable {
     NORMAL, ADVANCED;
 
-    public static final EnumCodec<InfuserType> CODEC = StringRepresentable.fromEnum(InfuserType::values);
+    public static final Codec<InfuserType> CODEC = StringRepresentable.fromEnum(InfuserType::values);
 
-    public final TagKey<Enchantment> notAllowedEnchantments;
-
-    InfuserType() {
-        this.notAllowedEnchantments = TypedTagFactory.ENCHANTMENT.make(EnchantingInfuser.id("not_obtainable_from_" + this.getSerializedName() + "_infuser"));
+    public TagKey<Enchantment> getAvailableEnchantments() {
+        return switch (this) {
+            case NORMAL -> ModRegistry.IN_ENCHANTING_INFUSER_ENCHANTMENT_TAG;
+            case ADVANCED -> ModRegistry.IN_ADVANCED_ENCHANTING_INFUSER_ENCHANTMENT_TAG;
+        };
     }
 
     public MenuType<?> getMenuType() {

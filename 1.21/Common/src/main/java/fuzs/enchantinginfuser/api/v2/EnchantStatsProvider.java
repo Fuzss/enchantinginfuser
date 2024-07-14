@@ -1,6 +1,7 @@
 package fuzs.enchantinginfuser.api.v2;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,7 +24,7 @@ public interface EnchantStatsProvider {
      * @return the priority
      */
     default int getPriority() {
-        return 10;
+        return 0;
     }
 
     /**
@@ -57,12 +58,12 @@ public interface EnchantStatsProvider {
      * example: normal bookshelves return 1.0, meaning they can provide 15 enchanting power (one each), any more beyond 15 will do nothing, even when enchanting power can go higher
      * most bookshelves from Apotheosis have a higher value here, so it is valid to have more of them
      *
-     * @param state     the block state to get enchanting power from
+     * @param blockState     the block state to get enchanting power from
      * @param level     leve reader instance
-     * @param pos       position of the block
+     * @param blockPos       position of the block
      * @return          power bonus, 1.0 for bookshelves, otherwise 0.0
      */
-    default float getMaximumEnchantPowerScale(BlockState state, Level level, BlockPos pos) {
+    default float getMaximumEnchantPowerScale(BlockState blockState, Level level, BlockPos blockPos) {
         return 1.0F;
     }
 
@@ -82,23 +83,23 @@ public interface EnchantStatsProvider {
     Enchantment.Rarity getRarity(Enchantment enchantment);
 
     /**
-     * @param enchantment the enchantment
-     * @param other other enchantment to check compatiblity with
+     * @param first  the enchantment
+     * @param second other enchantment to check compatiblity with
      * @return are <code>enchantment</code> and <code>other</code> compatible with each other
      */
-    boolean isCompatibleWith(Enchantment enchantment, Enchantment other);
+    boolean isCompatibleWith(Holder<Enchantment> first, Holder<Enchantment> second);
 
     /**
      * @param enchantment the enchantment
      * @return min level <code>enchantment</code> is allowed to have (not really used much)
      */
-    int getMinLevel(Enchantment enchantment);
+    int getMinLevel(Holder<Enchantment> enchantment);
 
     /**
      * @param enchantment the enchantment
      * @return max level <code>enchantment</code> is allowed to have
      */
-    int getMaxLevel(Enchantment enchantment);
+    int getMaxLevel(Holder<Enchantment> enchantment);
 
     /**
      * min cost variable required for this enchantment combination to be able to apply to an item at an enchanting table
@@ -107,7 +108,7 @@ public interface EnchantStatsProvider {
      * @param level the current enchantment level
      * @return min cost
      */
-    int getMinCost(Enchantment enchantment, int level);
+    int getMinCost(Holder<Enchantment> enchantment, int level);
 
     /**
      * max cost variable required for this enchantment combination to be able to apply to an item at an enchanting table
@@ -116,7 +117,7 @@ public interface EnchantStatsProvider {
      * @param level the current enchantment level
      * @return max cost
      */
-    int getMaxCost(Enchantment enchantment, int level);
+    int getMaxCost(Holder<Enchantment> enchantment, int level);
 
     /**
      * @param enchantment the enchantment
