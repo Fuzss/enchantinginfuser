@@ -3,7 +3,7 @@ package fuzs.enchantinginfuser.world.level.block;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fuzs.enchantinginfuser.EnchantingInfuser;
-import fuzs.enchantinginfuser.api.v2.EnchantingInfuserApi;
+import fuzs.enchantinginfuser.api.v2.EnchantmentProviders;
 import fuzs.enchantinginfuser.config.ModifiableItems;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.init.ModRegistry;
@@ -64,8 +64,8 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
     }
 
     public static boolean isValidBookShelf(Level level, BlockPos pos, BlockPos offset) {
-        if (EnchantingInfuserApi.getEnchantStatsProvider()
-                .getEnchantPowerBonus(level.getBlockState(pos.offset(offset)), level, pos.offset(offset)) != 0.0F) {
+        if (EnchantmentProviders.getAdapter()
+                .getProvidedPower(level.getBlockState(pos.offset(offset)), level, pos.offset(offset)) != 0.0F) {
             BlockPos inBetweenPos = pos.offset(offset.getX() / 2, offset.getY(), offset.getZ() / 2);
             return level.getBlockState(inBetweenPos).getCollisionShape(level, inBetweenPos) != Shapes.block();
         } else {

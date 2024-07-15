@@ -1,20 +1,21 @@
 package fuzs.enchantinginfuser.config;
 
-import net.minecraft.world.item.ArmorItem;
+import fuzs.puzzleslib.api.item.v2.ToolTypeHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TieredItem;
 
 public enum AllowedRepairItems {
     EVERYTHING,
     TOOLS_AND_ARMOR,
     NOTHING;
 
-    public boolean isAllowedToRepair(ItemStack itemStack) {
-        if (itemStack.isEmpty() || !itemStack.isDamaged()) return false;
-        if (this == TOOLS_AND_ARMOR) {
-            return itemStack.getItem() instanceof TieredItem || itemStack.getItem() instanceof ArmorItem;
+    public boolean canRepair(ItemStack itemStack) {
+        if (itemStack.isEmpty() || !itemStack.isDamaged()) {
+            return false;
+        } else if (this == TOOLS_AND_ARMOR) {
+            return ToolTypeHelper.INSTANCE.isTool(itemStack) || ToolTypeHelper.INSTANCE.isArmor(itemStack);
+        } else {
+            return this == EVERYTHING;
         }
-        return this == EVERYTHING;
     }
 
     public boolean isActive() {

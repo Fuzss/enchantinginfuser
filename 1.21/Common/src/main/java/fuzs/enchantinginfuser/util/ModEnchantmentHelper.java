@@ -3,6 +3,7 @@ package fuzs.enchantinginfuser.util;
 import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
@@ -11,6 +12,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -75,6 +77,21 @@ public class ModEnchantmentHelper {
             return itemStack.transmuteCopy(Items.ENCHANTED_BOOK);
         } else {
             return itemStack.copy();
+        }
+    }
+
+    public static Rarity getItemNameRarity(HolderLookup.Provider registries, ItemStack itemStack, boolean isEnchanted) {
+        if (!isEnchanted) {
+            return itemStack.getOrDefault(DataComponents.RARITY, Rarity.COMMON);
+        } else {
+            itemStack = new ItemStack(itemStack.getItem());
+            ItemEnchantments.Mutable itemEnchantments = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+            HolderLookup.RegistryLookup<Enchantment> holderOwner = registries.lookupOrThrow(Registries.ENCHANTMENT);
+            itemEnchantments.set(Holder.Reference.createIntrusive(holderOwner, null), 1);
+            itemStack.set(DataComponents.ENCHANTMENTS, itemEnchantments.toImmutable());
+            Rarity rarity = itemStack.getRarity();
+            itemStack.set(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+            return rarity;
         }
     }
 }

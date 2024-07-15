@@ -12,30 +12,46 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import java.util.Locale;
 
 public enum InfuserType implements StringRepresentable {
-    NORMAL, ADVANCED;
+    NORMAL {
+        @Override
+        public TagKey<Enchantment> getAvailableEnchantments() {
+            return ModRegistry.IN_ENCHANTING_INFUSER_ENCHANTMENT_TAG;
+        }
+
+        @Override
+        public MenuType<?> getMenuType() {
+            return ModRegistry.INFUSING_MENU_TYPE.value();
+        }
+
+        @Override
+        public ServerConfig.InfuserConfig getConfig() {
+            return EnchantingInfuser.CONFIG.get(ServerConfig.class).normalInfuser;
+        }
+    },
+    ADVANCED {
+        @Override
+        public TagKey<Enchantment> getAvailableEnchantments() {
+            return ModRegistry.IN_ADVANCED_ENCHANTING_INFUSER_ENCHANTMENT_TAG;
+        }
+
+        @Override
+        public MenuType<?> getMenuType() {
+            return ModRegistry.ADVANCED_INFUSING_MENU_TYPE.value();
+        }
+
+        @Override
+        public ServerConfig.InfuserConfig getConfig() {
+            return EnchantingInfuser.CONFIG.get(ServerConfig.class).advancedInfuser;
+        }
+    };
 
     public static final Codec<InfuserType> CODEC = StringRepresentable.fromEnum(InfuserType::values);
 
-    public TagKey<Enchantment> getAvailableEnchantments() {
-        return switch (this) {
-            case NORMAL -> ModRegistry.IN_ENCHANTING_INFUSER_ENCHANTMENT_TAG;
-            case ADVANCED -> ModRegistry.IN_ADVANCED_ENCHANTING_INFUSER_ENCHANTMENT_TAG;
-        };
-    }
+    public abstract TagKey<Enchantment> getAvailableEnchantments();
 
-    public MenuType<?> getMenuType() {
-        return switch (this) {
-            case NORMAL -> ModRegistry.INFUSING_MENU_TYPE.value();
-            case ADVANCED -> ModRegistry.ADVANCED_INFUSING_MENU_TYPE.value();
-        };
-    }
+    public abstract MenuType<?> getMenuType();
 
-    public ServerConfig.InfuserConfig getConfig() {
-        return switch (this) {
-            case NORMAL -> EnchantingInfuser.CONFIG.get(ServerConfig.class).normalInfuser;
-            case ADVANCED -> EnchantingInfuser.CONFIG.get(ServerConfig.class).advancedInfuser;
-        };
-    }
+    public abstract ServerConfig.InfuserConfig getConfig();
 
     @Override
     public String getSerializedName() {
