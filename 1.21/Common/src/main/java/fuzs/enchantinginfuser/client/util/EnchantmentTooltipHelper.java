@@ -1,7 +1,7 @@
 package fuzs.enchantinginfuser.client.util;
 
 import com.google.common.collect.Lists;
-import fuzs.enchantinginfuser.api.v2.EnchantmentProviders;
+import fuzs.enchantinginfuser.world.item.enchantment.EnchantmentAdapter;
 import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.ClientComponentSplitter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -65,8 +65,8 @@ public class EnchantmentTooltipHelper {
     }
 
     private static Component getLevelComponent(Holder<Enchantment> enchantment) {
-        int minLevel = EnchantmentProviders.getAdapter().getMinLevel(enchantment);
-        int maxLevel = EnchantmentProviders.getAdapter().getMaxLevel(enchantment);
+        int minLevel = EnchantmentAdapter.get().getMinLevel(enchantment);
+        int maxLevel = EnchantmentAdapter.get().getMaxLevel(enchantment);
         MutableComponent component = Component.translatable("enchantment.level." + minLevel);
         if (minLevel != maxLevel) {
             component.append("-").append(Component.translatable("enchantment.level." + maxLevel));
@@ -100,7 +100,7 @@ public class EnchantmentTooltipHelper {
 
     public static MutableComponent getDisplayNameWithLevel(Holder<Enchantment> enchantment, int level) {
         MutableComponent component = getDisplayName(enchantment);
-        if (level != 1 || EnchantmentProviders.getAdapter().getMaxLevel(enchantment) != 1) {
+        if (level != 1 || EnchantmentAdapter.get().getMaxLevel(enchantment) != 1) {
             return component.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level));
         } else {
             return component;

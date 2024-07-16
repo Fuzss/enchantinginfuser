@@ -13,7 +13,7 @@ import java.util.Collection;
 
 public class EnchantmentPowerHelper {
 
-    public static Object2IntMap<Holder<Enchantment>> getMaximumEnchantmentLevels(int enchantingPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
+    public static Object2IntMap<Holder<Enchantment>> getMaximumEnchantmentLevels(int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
         Object2IntMap<Holder<Enchantment>> maximumEnchantmentLevels = new Object2IntOpenHashMap<>();
         for (Holder<Enchantment> holder : itemEnchantments) {
             for (int enchantmentLevel = holder.value().getMaxLevel(); enchantmentLevel >= 0; enchantmentLevel--) {
@@ -23,7 +23,7 @@ public class EnchantmentPowerHelper {
                     int powerForLevel = getScaledPowerForLevel(holder, enchantmentLevel, itemEnchantments, powerLimit,
                             enchantmentValue
                     );
-                    if (powerForLevel <= enchantingPower) {
+                    if (powerForLevel <= enchantmentPower) {
                         maximumEnchantmentLevels.put(holder, enchantmentLevel);
                         break;
                     }
@@ -32,6 +32,22 @@ public class EnchantmentPowerHelper {
         }
 
         return Object2IntMaps.unmodifiable(maximumEnchantmentLevels);
+    }
+
+    public static int getRequiredEnchantmentPower(Holder<Enchantment> enchantment, int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
+        int requiredEnchantmentPower = 0;
+        for (int enchantmentLevel = enchantment.value().getMaxLevel(); enchantmentLevel >= 0; enchantmentLevel--) {
+            int powerForLevel = getScaledPowerForLevel(enchantment, enchantmentLevel, itemEnchantments, powerLimit,
+                    enchantmentValue
+            );
+            if (powerForLevel > enchantmentPower) {
+                requiredEnchantmentPower = powerForLevel;
+            } else {
+                return requiredEnchantmentPower;
+            }
+        }
+
+        return requiredEnchantmentPower;
     }
 
     /**

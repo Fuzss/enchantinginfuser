@@ -1,6 +1,5 @@
 package fuzs.enchantinginfuser.world.item.enchantment;
 
-import fuzs.enchantinginfuser.api.v2.EnchantmentAdapter;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.item.enchantment.Enchantment;

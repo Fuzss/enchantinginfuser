@@ -1,13 +1,17 @@
-package fuzs.enchantinginfuser.api.v2;
+package fuzs.enchantinginfuser.world.item.enchantment;
 
+import fuzs.enchantinginfuser.config.ServerConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.List;
+
 /**
- * provider class for enchantment data created for mods such as Apotheosis that fundamentally change the enchantment
- * system and replace all vanilla calls for enchantment properties set your own provider in
- * {@link EnchantmentProviders#setEnchantStatsProvider}
+ * Allows for accessing enchantment properties and behaviors.
+ * <p>
+ * Serves as an abstraction layer for older Minecraft versions and mods such as Apotheosis that fundamentally change how
+ * the enchantment system is implemented.
  */
 public interface EnchantingBehavior {
 
@@ -20,16 +24,14 @@ public interface EnchantingBehavior {
      *
      * @return namespaces to account for when scaling costs
      */
-    String[] getScalingNamespaces();
+    List<String> getScalingNamespaces();
 
     /**
      * this is the same as the config option, when the returned value is not -1 the config option will be overridden
      *
      * @return the maximum enchanting power required for performing high level enchantments
      */
-    default int getMaximumEnchantPower() {
-        return -1;
-    }
+    int getEnchantmentPowerLimit();
 
     /**
      * @param blockState the block state to get enchanting power from
@@ -37,7 +39,7 @@ public interface EnchantingBehavior {
      * @param blockPos   position of the block
      * @return power bonus, 1.0 for bookshelves, otherwise 0.0
      */
-    float getProvidedPower(BlockState blockState, Level level, BlockPos blockPos);
+    float getEnchantmentPower(BlockState blockState, Level level, BlockPos blockPos);
 
     /**
      * provides the maximum enchanting power scale for a block, meaning how much beyond the normal enchanting power this
@@ -50,9 +52,7 @@ public interface EnchantingBehavior {
      * @param blockPos   position of the block
      * @return power bonus, 1.0 for bookshelves, otherwise 0.0
      */
-    default float getMaximumEnchantPowerScale(BlockState blockState, Level level, BlockPos blockPos) {
-        return Math.signum(this.getProvidedPower(blockState, level, blockPos));
-    }
+    float getEnchantmentPowerLimitScale(BlockState blockState, Level level, BlockPos blockPos);
 
     /**
      * maximum cost determines how many levels you'll have to pay for fully enchanting an item with all possible
@@ -60,7 +60,12 @@ public interface EnchantingBehavior {
      *
      * @return general multiplier for maximum cost
      */
-    default float getMaximumCostMultiplier() {
-        return 1.0F;
-    }
+    float getMaximumCostMultiplier();
+
+    /**
+     * The config instance for this type of enchanting infuser, used to provide values for the vanilla configuration.
+     *
+     * @return the config instance
+     */
+    ServerConfig.InfuserConfig getConfig();
 }

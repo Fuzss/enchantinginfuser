@@ -12,7 +12,7 @@ import java.util.List;
 public class InfuserRepairButton extends InfuserMenuButton {
 
     public InfuserRepairButton(InfuserScreen screen, int x, int y, OnPress onPress) {
-        super(screen, x, y, 144, 185, onPress);
+        super(screen, x, y, 178, 185, onPress);
     }
 
     @Override
@@ -21,13 +21,13 @@ public class InfuserRepairButton extends InfuserMenuButton {
     }
 
     @Override
-    boolean canApply() {
+    boolean mayApply() {
         return this.screen.getMenu().canRepair(this.screen.minecraft.player);
     }
 
     @Override
     ChatFormatting getStringColor() {
-        return this.canApply() ? ChatFormatting.GREEN : ChatFormatting.RED;
+        return this.mayApply() ? ChatFormatting.GREEN : ChatFormatting.RED;
     }
 
     @Override

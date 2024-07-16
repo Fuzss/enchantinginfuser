@@ -1,8 +1,14 @@
-package fuzs.enchantinginfuser.api.v2;
+package fuzs.enchantinginfuser.world.item.enchantment;
 
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.enchantment.Enchantment;
 
+/**
+ * Allows for accessing enchantment properties.
+ * <p>
+ * Serves as an abstraction layer for older Minecraft versions and mods such as Apotheosis that fundamentally change how
+ * the enchantment system is implemented.
+ */
 public interface EnchantmentAdapter {
 
     /**
@@ -61,4 +67,11 @@ public interface EnchantmentAdapter {
      * @return is <code>enchantment</code> a curse enchantment (aka an enchantment with bad effects)
      */
     boolean isCurse(Holder<Enchantment> enchantment);
+
+    /**
+     * @return the current {@link EnchantmentAdapter}
+     */
+    static EnchantmentAdapter get() {
+        return VanillaEnchantmentAdapter.INSTANCE;
+    }
 }

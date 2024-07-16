@@ -2,6 +2,7 @@ package fuzs.enchantinginfuser.client.gui.components;
 
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
+import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.ClientComponentSplitter;
 import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.TooltipComponentImpl;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
@@ -11,6 +12,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +37,7 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
-        if (this.canApply() && this.getValue() != 0) {
+        if (this.mayApply() && this.getValue() != 0) {
             drawStringWithBackground(this.screen.font, guiGraphics, this.getX() + 1, this.getY() + 1,
                     this.getStringValue(), this.getStringColor().getColor()
             );
@@ -44,19 +46,25 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
 
     abstract int getValue();
 
-    abstract boolean canApply();
+    abstract boolean mayApply();
 
     abstract ChatFormatting getStringColor();
 
     abstract String getStringValue();
 
     public void refreshTooltip(ItemStack itemStack) {
-        new TooltipComponentImpl(this, this.getTooltipLines(itemStack));
+        new TooltipComponentImpl(this, this.getTooltipLines(itemStack)) {
+
+            @Override
+            public List<FormattedCharSequence> processTooltipLines(List<? extends FormattedText> tooltipLines) {
+                return ClientComponentSplitter.processTooltipLines(tooltipLines).toList();
+            }
+        };
     }
 
     private List<FormattedText> getTooltipLines(ItemStack itemStack) {
         List<FormattedText> lines = new ArrayList<>();
-        if (this.canApply()) {
+        if (this.mayApply()) {
             lines.add(this.getNameComponent(itemStack));
             lines.addAll(this.getCustomLines(itemStack));
         }
@@ -89,7 +97,7 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
     @Nullable
     Component getLevelsComponent() {
         int value = this.getValue();
-        if (this.canApply()) {
+        if (this.mayApply()) {
             if (value != 0) {
                 if (value == 1) {
                     return Component.translatable("container.enchant.level.one").withStyle(ChatFormatting.GRAY);

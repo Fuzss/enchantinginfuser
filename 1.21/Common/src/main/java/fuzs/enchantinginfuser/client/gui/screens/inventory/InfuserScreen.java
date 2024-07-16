@@ -5,18 +5,19 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
-import fuzs.enchantinginfuser.api.v2.EnchantmentProviders;
 import fuzs.enchantinginfuser.client.gui.components.InfuserEnchantButton;
 import fuzs.enchantinginfuser.client.gui.components.InfuserMenuButton;
 import fuzs.enchantinginfuser.client.util.EnchantmentTooltipHelper;
 import fuzs.enchantinginfuser.network.client.ServerboundEnchantmentLevelMessage;
-import fuzs.enchantinginfuser.util.ModEnchantmentHelper;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
+import fuzs.enchantinginfuser.world.item.enchantment.EnchantmentAdapter;
 import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
+import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.TooltipComponentImpl;
 import fuzs.puzzleslib.api.client.gui.v2.screen.ScreenHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
@@ -30,26 +31,25 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentNames;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.locale.Language;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
+public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implements ContainerListener {
     public static final ResourceLocation INFUSER_LOCATION = EnchantingInfuser.id(
             "textures/gui/container/enchanting_infuser.png");
     private static final int BUTTONS_OFFSET_X = 7;
@@ -64,9 +64,9 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     private EditBox searchBox;
     private ScrollingList scrollingList;
     private boolean ignoreTextInput;
+    private AbstractWidget powerWidget;
     private InfuserMenuButton enchantButton;
     private InfuserMenuButton repairButton;
-    private ItemStack lastEnchantableStack = ItemStack.EMPTY;
 
     public InfuserScreen(InfuserMenu infuserMenu, Inventory inventory, Component title) {
         super(infuserMenu, inventory, title);
@@ -78,23 +78,11 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
 
     @Override
     public void containerTick() {
-        this.enchantButton.active = this.menu.canEnchant(this.minecraft.player);
-        if (this.repairButton != null) {
-            this.repairButton.active = this.menu.canRepair(this.minecraft.player);
-        }
-        ItemStack itemStack = this.menu.getEnchantableStack();
-        if (this.lastEnchantableStack != itemStack) {
-            this.enchantButton.refreshTooltip(itemStack);
-            if (this.repairButton != null) {
-                this.repairButton.refreshTooltip(itemStack);
-            }
-            this.lastEnchantableStack = itemStack;
-        }
+        this.refreshButtons();
     }
 
     @Override
     protected void init() {
-        this.lastEnchantableStack = ItemStack.EMPTY;
         super.init();
         this.searchBox = new EditBox(this.font, this.leftPos + 67, this.topPos + 6, 116, 9,
                 Component.translatable("itemGroup.search")
@@ -105,8 +93,42 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         this.addWidget(this.searchBox);
         this.scrollingList = new ScrollingList(this.leftPos + 29, this.topPos + 17, 162, 18, 4);
         this.addWidget(this.scrollingList);
+        this.powerWidget = this.addRenderableWidget(new AbstractWidget(196, 161, 16, 16, CommonComponents.EMPTY) {
+
+            @Override
+            protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+                guiGraphics.renderFakeItem(new ItemStack(Items.BOOKSHELF), this.getX(), this.getY());
+                int posX = this.getX() + 19 - 2 - InfuserScreen.this.font.width(this.getMessage());
+                int posY = this.getY() + 6 + 3;
+                guiGraphics.drawString(InfuserScreen.this.font, this.getMessage(), posX, posY,
+                        this.getStringColor().getColor()
+                );
+                renderSlotHighlight(guiGraphics, this.getX(), this.getY(), 0);
+            }
+
+            private ChatFormatting getStringColor() {
+                if (InfuserScreen.this.menu.getEnchantmentPower() >=
+                        InfuserScreen.this.menu.getEnchantmentPowerLimit()) {
+                    return ChatFormatting.YELLOW;
+                } else if (InfuserScreen.this.insufficientPower) {
+                    return ChatFormatting.RED;
+                } else {
+                    return ChatFormatting.WHITE;
+                }
+            }
+
+            @Override
+            public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                return false;
+            }
+
+            @Override
+            protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+                // NO-OP
+            }
+        });
         this.enchantButton = this.addRenderableWidget(new InfuserEnchantButton(this, this.leftPos + BUTTONS_OFFSET_X,
-                this.topPos + (this.menu.config.allowRepairing.isActive() ? ENCHANT_BUTTON_OFFSET_Y :
+                this.topPos + (this.menu.behavior.getConfig().allowRepairing.isActive() ? ENCHANT_BUTTON_OFFSET_Y :
                         ENCHANT_ONLY_BUTTON_OFFSET_Y), (Button button) -> {
             if (this.menu.clickMenuButton(this.minecraft.player, 0)) {
                 this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, 0);
@@ -114,7 +136,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             this.searchBox.setValue("");
         }
         ));
-        if (this.menu.config.allowRepairing.isActive()) {
+        if (this.menu.behavior.getConfig().allowRepairing.isActive()) {
             this.repairButton = this.addRenderableWidget(new InfuserEnchantButton(this, this.leftPos + BUTTONS_OFFSET_X,
                     this.topPos + REPAIR_BUTTON_OFFSET_Y, (Button button) -> {
                 if (this.menu.clickMenuButton(this.minecraft.player, 1)) {
@@ -123,7 +145,43 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             }
             ));
         }
-        this.containerTick();
+        this.refreshEnchantingPower(this.menu.getEnchantmentPower());
+        this.refreshButtons();
+        this.refreshTooltips(this.menu.getEnchantableStack());
+        this.menu.addSlotListener(this);
+    }
+
+    private void refreshEnchantingPower(int enchantmentPower) {
+        int enchantmentPowerLimit = this.menu.getEnchantmentPowerLimit();
+        this.powerWidget.setMessage(Component.literal(String.valueOf(enchantmentPower)));
+        List<Component> lines = new ArrayList<>();
+        lines.add(Component.translatable(EnchantmentTooltipHelper.KEY_CURRENT_ENCHANTING_POWER, enchantmentPower,
+                enchantmentPowerLimit
+        ).withStyle(ChatFormatting.YELLOW));
+        if (enchantmentPower < enchantmentPowerLimit) {
+            lines.add(Component.translatable(InfuserMenuButton.KEY_TOOLTIP_HINT).withStyle(ChatFormatting.GRAY));
+        }
+        new TooltipComponentImpl(this.powerWidget, lines);
+    }
+
+    private void refreshButtons() {
+        this.enchantButton.active = this.menu.canEnchant(this.minecraft.player);
+        if (this.repairButton != null) {
+            this.repairButton.active = this.menu.canRepair(this.minecraft.player);
+        }
+    }
+
+    private void refreshTooltips(ItemStack itemStack) {
+        this.enchantButton.refreshTooltip(itemStack);
+        if (this.repairButton != null) {
+            this.repairButton.refreshTooltip(itemStack);
+        }
+    }
+
+    @Override
+    public void removed() {
+        super.removed();
+        this.menu.removeSlotListener(this);
     }
 
     @Override
@@ -138,15 +196,16 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     public boolean charTyped(char codePoint, int modifiers) {
         if (this.ignoreTextInput) {
             return false;
-        }
-        String s = this.searchBox.getValue();
-        if (this.searchBox.charTyped(codePoint, modifiers)) {
-            if (!Objects.equals(s, this.searchBox.getValue())) {
-                this.refreshSearchResults();
-            }
-            return true;
         } else {
-            return false;
+            String s = this.searchBox.getValue();
+            if (this.searchBox.charTyped(codePoint, modifiers)) {
+                if (!Objects.equals(s, this.searchBox.getValue())) {
+                    this.refreshSearchResults();
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
@@ -175,7 +234,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
                     }
                     return true;
                 } else {
-                    return this.searchBox.isFocused() && this.searchBox.isVisible() && keyCode != 256 ||
+                    return this.searchBox.isFocused() && this.searchBox.isVisible() && keyCode != InputConstants.KEY_ESCAPE ||
                             super.keyPressed(keyCode, scanCode, modifiers);
                 }
             }
@@ -270,155 +329,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         this.insufficientPower = false;
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         this.scrollingList.render(guiGraphics, mouseX, mouseY, partialTick);
-        this.renderEnchantingPower(guiGraphics, mouseX, mouseY);
-        this.renderEnchantButtonCost(guiGraphics, mouseX, mouseY);
-        this.renderRepairButtonCost(guiGraphics, mouseX, mouseY);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         this.renderTooltip(guiGraphics, mouseX, mouseY);
-    }
-
-    private void renderRepairButtonCost(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        if (this.repairButton == null) return;
-        final int repairCost = this.menu.getRepairCost();
-        boolean canRepair = this.menu.canRepair(this.minecraft.player);
-        if (!canRepair && repairCost == 0) return;
-        final int posX = this.repairButton.getX();
-        final int posY = this.repairButton.getY();
-        if (repairCost != 0) {
-            final int costColor = canRepair ? ChatFormatting.GREEN.getColor() : ChatFormatting.RED.getColor();
-            drawStringWithBackground(this.font, guiGraphics, posX + 1, posY + 1, String.valueOf(repairCost), costColor);
-        }
-        // cannot use hovered check on button as it does not work when the button is not active
-        if (ScreenHelper.isHovering(posX, posY, 18, 18, mouseX, mouseY)) {
-            this.setTooltipForNextRenderPass(Language.getInstance().getVisualOrder(this.getRepairButtonLines()));
-        }
-    }
-
-    private List<FormattedText> getRepairButtonLines() {
-        int repairCost = this.menu.getRepairCost();
-        List<FormattedText> lines = Lists.newArrayList();
-        if (this.menu.canRepair(this.minecraft.player)) {
-            ItemStack itemStack = this.menu.getEnchantableStack();
-            MutableComponent nameComponent = Component.empty()
-                    .append(itemStack.getHoverName())
-                    .withStyle(itemStack.getRarity().color());
-            if (itemStack.has(DataComponents.CUSTOM_NAME)) {
-                nameComponent.withStyle(ChatFormatting.ITALIC);
-            }
-            lines.add(nameComponent);
-            Component changeComponent = Component.translatable("gui.enchantinginfuser.tooltip.change",
-                    itemStack.getMaxDamage() - itemStack.getDamageValue(), itemStack.getMaxDamage()
-            );
-            Component durabilityComponent = Component.translatable("gui.enchantinginfuser.tooltip.durability",
-                    changeComponent
-            ).withStyle(ChatFormatting.YELLOW);
-            lines.add(durabilityComponent);
-            lines.add(Component.empty());
-            MutableComponent levelComponent;
-            if (repairCost == 1) {
-                levelComponent = Component.translatable("container.enchant.level.one");
-            } else {
-                levelComponent = Component.translatable("container.enchant.level.many", repairCost);
-            }
-            lines.add(levelComponent.withStyle(ChatFormatting.GRAY));
-        } else {
-            lines.add(Component.translatable("container.enchant.level.requirement", repairCost)
-                    .withStyle(ChatFormatting.RED));
-        }
-
-        return lines;
-    }
-
-    private void renderEnchantButtonCost(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        final int enchantCost = this.menu.getEnchantCost();
-        final boolean canEnchant = this.menu.canEnchant(this.minecraft.player);
-        if (!canEnchant && enchantCost == 0) return;
-        final int posX = this.enchantButton.getX();
-        final int posY = this.enchantButton.getY();
-        if (enchantCost != 0) {
-            final int costColor = enchantCost < 0 ? ChatFormatting.YELLOW.getColor() :
-                    (canEnchant ? ChatFormatting.GREEN.getColor() : ChatFormatting.RED.getColor());
-            drawStringWithBackground(this.font, guiGraphics, posX + 1, posY + 1,
-                    enchantCost < 0 ? "+" : String.valueOf(enchantCost), costColor
-            );
-        }
-        // cannot use hovered check on button as it does not work when the button is not active
-        if (ScreenHelper.isHovering(posX, posY, 18, 18, mouseX, mouseY)) {
-            this.setTooltipForNextRenderPass(Language.getInstance().getVisualOrder(this.getEnchantButtonLines()));
-        }
-    }
-
-    private List<FormattedText> getEnchantButtonLines() {
-        int enchantCost = this.menu.getEnchantCost();
-        List<FormattedText> lines = Lists.newArrayList();
-        if (this.menu.canEnchant(this.minecraft.player)) {
-            ItemEnchantments enchantments = this.menu.getItemEnchantments();
-            boolean enchanted = !enchantments.isEmpty();
-            ItemStack itemStack = this.menu.getEnchantableStack();
-            ItemStack displayStack = ModEnchantmentHelper.getEnchantedItemStack(itemStack, enchanted);
-            MutableComponent nameComponent = Component.empty()
-                    .append(displayStack.getHoverName())
-                    .withStyle(this.getItemNameRarity(displayStack, enchanted).color());
-            if (itemStack.has(DataComponents.CUSTOM_NAME)) {
-                nameComponent.withStyle(ChatFormatting.ITALIC);
-            }
-            lines.add(nameComponent);
-
-            this.addEnchantments(itemStack, enchantments, lines);
-
-            if (enchantCost != 0) {
-                lines.add(Component.empty());
-                MutableComponent levelComponent;
-                if (enchantCost < 0) {
-                    levelComponent = Component.translatable("gui.enchantinginfuser.tooltip.points");
-                } else if (enchantCost == 1) {
-                    levelComponent = Component.translatable("container.enchant.level.one");
-                } else {
-                    levelComponent = Component.translatable("container.enchant.level.many", enchantCost);
-                }
-                lines.add(levelComponent.withStyle(ChatFormatting.GRAY));
-            }
-        } else {
-            lines.add(Component.translatable("container.enchant.level.requirement", enchantCost)
-                    .withStyle(ChatFormatting.RED));
-        }
-        return lines;
-    }
-
-    private void renderEnchantingPower(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        ItemStack stack = new ItemStack(Items.BOOKSHELF);
-        int posX = this.leftPos + 196;
-        int posY = this.topPos + 161;
-        guiGraphics.renderItem(stack, posX, posY);
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(0.0, 0.0, 300.0);
-        int power = this.menu.getCurrentPower();
-        int maxPower = this.menu.getMaxPower();
-        int textColor;
-        if (power >= maxPower) {
-            textColor = ChatFormatting.YELLOW.getColor();
-        } else if (this.insufficientPower) {
-            textColor = ChatFormatting.RED.getColor();
-        } else {
-            textColor = ChatFormatting.WHITE.getColor();
-        }
-        guiGraphics.drawString(this.font, String.valueOf(power), posX + 19 - 2 - this.font.width(String.valueOf(power)),
-                posY + 6 + 3, textColor
-        );
-        guiGraphics.pose().popPose();
-        if (mouseX >= posX && mouseY >= posY && mouseX < posX + 16 && mouseY < posY + 16) {
-            final ArrayList<FormattedCharSequence> lines = Lists.newArrayList();
-            lines.add(Component.translatable(EnchantmentTooltipHelper.KEY_CURRENT_ENCHANTING_POWER, power, maxPower)
-                    .withStyle(ChatFormatting.YELLOW)
-                    .getVisualOrderText());
-            if (power < maxPower) {
-                lines.addAll(InfuserScreen.this.font.split(
-                        Component.translatable(InfuserMenuButton.KEY_TOOLTIP_HINT).withStyle(ChatFormatting.GRAY),
-                        175
-                ));
-            }
-            this.setTooltipForNextRenderPass(lines);
-        }
     }
 
     @Override
@@ -427,22 +339,32 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         guiGraphics.blit(INFUSER_LOCATION, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
         this.searchBox.render(guiGraphics, mouseX, mouseY, partialTick);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        int sliderX = this.leftPos + 197 - 2;
-        int sliderY = this.topPos + 17 - 2;
-        int sliderRange = sliderY + 72 + 2 + 2;
-        guiGraphics.blit(INFUSER_LOCATION, sliderX,
-                sliderY + (int) ((float) (sliderRange - sliderY - 18) * this.scrollOffs), 220,
-                54 + (this.scrollingList.canScroll() ? 18 : 0), 18, 18
-        );
+//        int sliderX = this.leftPos + 197 - 2;
+//        int sliderY = this.topPos + 17 - 2;
+//        int sliderRange = sliderY + 72 + 2 + 2;
+//        guiGraphics.blit(INFUSER_LOCATION, sliderX,
+//                sliderY + (int) ((float) (sliderRange - sliderY - 18) * this.scrollOffs), 220,
+//                54 + (this.scrollingList.canScroll() ? 18 : 0), 18, 18
+//        );
         // render slot manually and do not include it as part of the background texture file,
         // as it is placed further down when repairing is disabled
         guiGraphics.blit(INFUSER_LOCATION, this.leftPos + 8 - 1,
-                this.topPos + (this.menu.config.allowRepairing.isActive() ? 23 : 34) - 1, 162, 185, 18, 18
+                this.topPos + (this.menu.behavior.getConfig().allowRepairing.isActive() ? 23 : 34) - 1, 162, 185, 18, 18
         );
     }
 
+    @Override
+    public void slotChanged(AbstractContainerMenu containerMenu, int dataSlotIndex, ItemStack itemStack) {
+        if (dataSlotIndex == 0) this.refreshTooltips(itemStack);
+    }
+
+    @Override
+    public void dataChanged(AbstractContainerMenu containerMenu, int dataSlotIndex, int value) {
+        if (dataSlotIndex == 0) this.refreshEnchantingPower(value);
+    }
+
     private class ScrollingList extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
-        private final List<EnchantmentListEntry> children = Lists.newArrayList();
+        private final List<EnchantmentListEntry> children = new ArrayList<>();
         private final int posX;
         private final int posY;
         private final int itemWidth;
@@ -459,7 +381,6 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         }
 
         public void scrollTo(float pos) {
-            if (pos < 0.0F || pos > 1.0F) throw new IllegalArgumentException("pos must be of interval 0 to 1");
             if (this.canScroll()) {
                 // important to round instead of int cast
                 this.scrollPosition = Math.round((this.getItemCount() - this.length) * pos);
@@ -476,9 +397,9 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             this.children.clear();
         }
 
-        protected void addEntry(EnchantmentListEntry pEntry) {
-            this.children.add(pEntry);
-            pEntry.setParentList(this);
+        protected void addEntry(EnchantmentListEntry entry) {
+            this.children.add(entry);
+            entry.setParentList(this);
             this.markOthersIncompatible();
         }
 
@@ -504,14 +425,16 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
             if (this.isMouseOver(mouseX, mouseY)) {
                 final int index = this.scrollPosition + (int) ((mouseY - this.posY) / this.itemHeight);
                 return index < this.children.size() ? this.children.get(index) : null;
+            } else {
+                return null;
             }
-            return null;
         }
 
         @Override
         public boolean isMouseOver(double mouseX, double mouseY) {
-            return mouseX >= this.posX && mouseX < this.posX + this.itemWidth && mouseY >= this.posY &&
-                    mouseY < this.posY + this.itemHeight * this.length;
+            return ScreenHelper.isHovering(this.posX, this.posY, this.itemWidth, this.itemHeight * this.length, mouseX,
+                    mouseY
+            );
         }
 
         @Override
@@ -532,11 +455,12 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         }
 
         @Override
-        public boolean mouseReleased(double pMouseX, double pMouseY, int pButton) {
+        public boolean mouseReleased(double mouseX, double mouseY, int button) {
             if (this.getFocused() != null) {
-                this.getFocused().mouseReleased(pMouseX, pMouseY, pButton);
+                return this.getFocused().mouseReleased(mouseX, mouseY, button);
+            } else {
+                return false;
             }
-            return false;
         }
 
         @Override
@@ -685,7 +609,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
 
         private void setWeakPowerTooltip(Component component) {
             List<FormattedCharSequence> lines = EnchantmentTooltipHelper.getWeakPowerTooltip(
-                    InfuserScreen.this.menu.getCurrentPower(), this.requiredPower, component);
+                    InfuserScreen.this.menu.getEnchantmentPower(), this.requiredPower, component);
             InfuserScreen.this.setTooltipForNextRenderPass(lines);
             InfuserScreen.this.insufficientPower = true;
         }
@@ -707,8 +631,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
 
         private void updateButtons() {
             this.removeButton.visible = this.enchantmentLevel > 0;
-            this.addButton.visible =
-                    this.enchantmentLevel < EnchantmentProviders.getAdapter().getMaxLevel(this.enchantment);
+            this.addButton.visible = this.enchantmentLevel < EnchantmentAdapter.get().getMaxLevel(this.enchantment);
             this.removeButton.active = this.enchantmentLevel - 1 < this.maxLevel;
             this.addButton.active = this.enchantmentLevel < this.maxLevel;
         }
@@ -732,11 +655,10 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         public boolean isIncompatibleWith(EnchantmentListEntry other) {
             if (other == this) return false;
             return (this.isActive() || other.isActive()) &&
-                    !EnchantmentProviders.getAdapter().areCompatible(this.enchantment, other.enchantment);
+                    !EnchantmentAdapter.get().areCompatible(this.enchantment, other.enchantment);
         }
 
-        public void render(GuiGraphics guiGraphics, int leftPos, int topPos, int width, int height, int mouseX,
-                           int mouseY, float partialTicks) {
+        public void render(GuiGraphics guiGraphics, int leftPos, int topPos, int width, int height, int mouseX, int mouseY, float partialTicks) {
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderTexture(0, INFUSER_LOCATION);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
