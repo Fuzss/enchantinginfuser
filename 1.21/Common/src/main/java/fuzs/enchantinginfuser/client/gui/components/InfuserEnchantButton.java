@@ -35,7 +35,7 @@ public class InfuserEnchantButton extends InfuserMenuButton {
 
     @Override
     int getValue() {
-        return this.screen.getMenu().getEnchantCost();
+        return this.screen.getMenu().getEnchantingCost();
     }
 
     @Override

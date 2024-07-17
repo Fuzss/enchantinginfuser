@@ -6,19 +6,19 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 public record VanillaEnchantingBehavior(ServerConfig.InfuserConfig config) implements EnchantingBehavior {
 
     @Override
-    public List<String> getScalingNamespaces() {
-        return Collections.singletonList("minecraft");
+    public Collection<String> getScalingNamespaces() {
+        return Collections.singleton("minecraft");
     }
 
     @Override
     public int getEnchantmentPowerLimit() {
-        return this.getConfig().maximumBookshelves;
+        return this.config.maximumBookshelves;
     }
 
     @Override

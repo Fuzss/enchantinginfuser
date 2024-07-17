@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Allows for accessing enchantment properties and behaviors.
@@ -24,7 +24,7 @@ public interface EnchantingBehavior {
      *
      * @return namespaces to account for when scaling costs
      */
-    List<String> getScalingNamespaces();
+    Collection<String> getScalingNamespaces();
 
     /**
      * this is the same as the config option, when the returned value is not -1 the config option will be overridden
@@ -53,6 +53,16 @@ public interface EnchantingBehavior {
      * @return power bonus, 1.0 for bookshelves, otherwise 0.0
      */
     float getEnchantmentPowerLimitScale(BlockState blockState, Level level, BlockPos blockPos);
+
+    /**
+     * maximum cost determines how many levels you'll have to pay for fully enchanting an item with all possible
+     * enchantments it can have
+     *
+     * @return general multiplier for maximum cost
+     */
+    default int getMaximumCost() {
+        return (int) (this.getConfig().costs.maximumCost * this.getMaximumCostMultiplier());
+    }
 
     /**
      * maximum cost determines how many levels you'll have to pay for fully enchanting an item with all possible

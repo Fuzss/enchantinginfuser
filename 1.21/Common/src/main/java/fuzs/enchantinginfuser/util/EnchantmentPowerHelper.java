@@ -8,6 +8,7 @@ import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
+import org.apache.commons.lang3.math.Fraction;
 
 import java.util.Collection;
 
@@ -75,9 +76,13 @@ public class EnchantmentPowerHelper {
      * @return the absolute amount of required enchanting power providers (=bookshelves)
      */
     public static int getScaledPowerForLevel(Holder<Enchantment> enchantment, int enchantmentLevel, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
-        float relativePowerForLevel = getRelativePowerForLevel(enchantment, enchantmentLevel, itemEnchantments);
-        float reducedPowerLimit = Math.max(0.0F, powerLimit - enchantmentValue / 60.0F * powerLimit);
-        int scaledPowerForLevel = Math.round(relativePowerForLevel * reducedPowerLimit);
+        Fraction relativePowerForLevel = getRelativePowerForLevel(enchantment, enchantmentLevel, itemEnchantments);
+        Fraction enchantmentValueBonus = Fraction.getFraction(enchantmentValue, 60 * powerLimit);
+        Fraction reducedPowerLimit = Fraction.getFraction(powerLimit, 1).subtract(enchantmentValueBonus);
+        if (reducedPowerLimit.compareTo(Fraction.ZERO) < 0) {
+            reducedPowerLimit = Fraction.ZERO;
+        }
+        int scaledPowerForLevel = Math.round(relativePowerForLevel.multiplyBy(reducedPowerLimit).floatValue());
         if (enchantment.is(EnchantmentTags.CURSE)) {
             scaledPowerForLevel *= 3;
         } else if (enchantment.is(EnchantmentTags.TREASURE)) {
@@ -96,11 +101,11 @@ public class EnchantmentPowerHelper {
      * @param itemEnchantments the enchantment pool for a specific item
      * @return the relative enchanting power
      */
-    private static float getRelativePowerForLevel(Holder<Enchantment> enchantment, int enchantmentLevel, Collection<Holder<Enchantment>> itemEnchantments) {
+    private static Fraction getRelativePowerForLevel(Holder<Enchantment> enchantment, int enchantmentLevel, Collection<Holder<Enchantment>> itemEnchantments) {
         int minPower = getMinPower(itemEnchantments);
         int maxPower = getMaxPower(itemEnchantments);
         int powerForLevel = getPowerForLevel(enchantment, enchantmentLevel);
-        return (powerForLevel - minPower) / (float) (maxPower - minPower);
+        return Fraction.getFraction(powerForLevel - minPower, maxPower - minPower);
     }
 
     /**
