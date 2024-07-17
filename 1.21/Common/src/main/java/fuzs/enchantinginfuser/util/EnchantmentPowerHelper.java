@@ -15,23 +15,35 @@ public class EnchantmentPowerHelper {
 
     public static Object2IntMap<Holder<Enchantment>> getMaximumEnchantmentLevels(int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
         Object2IntMap<Holder<Enchantment>> maximumEnchantmentLevels = new Object2IntOpenHashMap<>();
-        for (Holder<Enchantment> holder : itemEnchantments) {
-            for (int enchantmentLevel = holder.value().getMaxLevel(); enchantmentLevel >= 0; enchantmentLevel--) {
-                if (enchantmentLevel == 0) {
-                    maximumEnchantmentLevels.put(holder, enchantmentLevel);
-                } else {
-                    int powerForLevel = getScaledPowerForLevel(holder, enchantmentLevel, itemEnchantments, powerLimit,
-                            enchantmentValue
-                    );
-                    if (powerForLevel <= enchantmentPower) {
-                        maximumEnchantmentLevels.put(holder, enchantmentLevel);
-                        break;
-                    }
-                }
-            }
+        for (Holder<Enchantment> enchantment : itemEnchantments) {
+            int enchantmentLevel = getMaximumEnchantmentLevel(enchantment, enchantmentPower, itemEnchantments, powerLimit, enchantmentValue);
+            maximumEnchantmentLevels.put(enchantment, enchantmentLevel);
         }
 
         return Object2IntMaps.unmodifiable(maximumEnchantmentLevels);
+    }
+
+    public static int getMaximumEnchantmentLevel(Holder<Enchantment> enchantment, int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
+        for (int enchantmentLevel = enchantment.value().getMaxLevel(); enchantmentLevel > 0; enchantmentLevel--) {
+            int powerForLevel = getScaledPowerForLevel(enchantment, enchantmentLevel, itemEnchantments, powerLimit,
+                    enchantmentValue
+            );
+            if (powerForLevel <= enchantmentPower) {
+                return enchantmentLevel;
+            }
+        }
+
+        return 0;
+    }
+
+    public static Object2IntMap<Holder<Enchantment>> getRequiredEnchantmentPowers(int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
+        Object2IntMap<Holder<Enchantment>> requiredEnchantmentPowers = new Object2IntOpenHashMap<>();
+        for (Holder<Enchantment> enchantment : itemEnchantments) {
+            int enchantmentLevel = getRequiredEnchantmentPower(enchantment, enchantmentPower, itemEnchantments, powerLimit, enchantmentValue);
+            requiredEnchantmentPowers.put(enchantment, enchantmentLevel);
+        }
+
+        return Object2IntMaps.unmodifiable(requiredEnchantmentPowers);
     }
 
     public static int getRequiredEnchantmentPower(Holder<Enchantment> enchantment, int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
@@ -71,6 +83,7 @@ public class EnchantmentPowerHelper {
         } else if (enchantment.is(EnchantmentTags.TREASURE)) {
             scaledPowerForLevel *= 2;
         }
+
         return Mth.clamp(scaledPowerForLevel, 0, powerLimit);
     }
 

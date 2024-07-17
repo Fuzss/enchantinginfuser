@@ -33,8 +33,6 @@ public class ServerConfig implements ConfigCore {
         public RepairConfig repair = new RepairConfig();
         @Config(description = {"The main option in this section is \"maximum_cost\" as it determines how many levels you'll have to pay for fully enchanting an item with all possible enchantments it can have.", "Cost multipliers mainly control how this maximum cost will be spread out between enchantments of different rarities."})
         public CostsConfig costs = new CostsConfig();
-        @Config(description = {"This section allows for controlling at what percentage of the total enchanting power certain kinds of enchantments become available.", "With default settings e.g. the first level of a rare enchantment will be available at 40% enchanting power (controlled by \"rare_multiplier\", translates to 40% * 15 = 6 bookshelves), and the maximum level for that enchant will be available at 40% + 40% = 80% enchanting power (controlled by \"rare_multiplier\" and \"rarity_range_multiplier\", translates to 80% * 15 = 12 bookshelves)."})
-        public PowerConfig power = new PowerConfig();
         @Config(description = "Allow enchantments that can normally not be obtained from an enchanting table, but can be put on the item in an anvil (e.g. sharpness on an axe).")
         public boolean allowAnvilEnchantments = false;
     }
@@ -68,35 +66,5 @@ public class ServerConfig implements ConfigCore {
         public int maximumCost = 30;
         @Config(description = "When scaling costs, only account for vanilla enchantments. Otherwise enchanting costs will become ludicrously cheap with many modded enchantments present.")
         public boolean scaleCostsByVanillaOnly = true;
-    }
-
-    public static class PowerConfig implements ConfigCore {
-        @Config(description = "Multiplier for maximum enchanting power for when common enchantments become available.")
-        @Config.DoubleRange(min = -1.0, max = 1.0)
-        public double commonMultiplier = -0.2;
-        @Config(description = "Multiplier for maximum enchanting power for when uncommon enchantments become available.")
-        @Config.DoubleRange(min = -1.0, max = 1.0)
-        public double uncommonMultiplier = 0.2;
-        @Config(description = "Multiplier for maximum enchanting power for when rare enchantments become available.")
-        @Config.DoubleRange(min = -1.0, max = 1.0)
-        public double rareMultiplier = 0.4;
-        @Config(description = "Multiplier for maximum enchanting power for when very rare enchantments become available.")
-        @Config.DoubleRange(min = -1.0, max = 1.0)
-        public double veryRareMultiplier = 0.6;
-        @Config(description = "Multiplier for maximum enchanting power for how much power is required to max out an enchantment.")
-        @Config.DoubleRange(min = 0.0, max = 1.0)
-        public double rarityRange = 0.4;
-        @Config(description = {"Multiplier for maximum enchanting power for when treasure enchantments become available.", "They also need to be enabled in the \"types\" config."})
-        @Config.DoubleRange(min = 0.0, max = 1.0)
-        public double treasureMultiplier = 0.95;
-        @Config(description = {"Multiplier for maximum enchanting power for when undiscoverable enchantments become available.", "They also need to be enabled in the \"types\" config."})
-        @Config.DoubleRange(min = 0.0, max = 1.0)
-        public double undiscoverableMultiplier = 0.9;
-        @Config(description = {"Multiplier for maximum enchanting power for when untradeable enchantments become available.", "They also need to be enabled in the \"types\" config."})
-        @Config.DoubleRange(min = 0.0, max = 1.0)
-        public double untradeableMultiplier = 0.9;
-        @Config(description = {"Multiplier for maximum enchanting power for when curse enchantments become available.", "They also need to be enabled in the \"types\" config."})
-        @Config.DoubleRange(min = 0.0, max = 1.0)
-        public double curseMultiplier = 1.0;
     }
 }

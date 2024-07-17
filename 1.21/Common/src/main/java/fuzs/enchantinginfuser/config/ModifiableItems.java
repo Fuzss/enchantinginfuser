@@ -6,9 +6,9 @@ import java.util.function.Predicate;
 
 public enum ModifiableItems {
     UNENCHANTED(ItemStack::isEnchantable),
-    ALL(itemStack -> UNENCHANTED.predicate.test(itemStack) ||
-            itemStack.getItem().isEnchantable(itemStack) && itemStack.isEnchanted()),
-    FULL_DURABILITY(itemStack -> !itemStack.isDamaged() && ALL.predicate.test(itemStack));
+    ALL((ItemStack itemStack) -> UNENCHANTED.predicate.test(itemStack) || itemStack.getItem()
+            .isEnchantable(itemStack) && itemStack.isEnchanted()),
+    FULL_DURABILITY((ItemStack itemStack) -> !itemStack.isDamaged() && ALL.predicate.test(itemStack));
 
     public final Predicate<ItemStack> predicate;
 

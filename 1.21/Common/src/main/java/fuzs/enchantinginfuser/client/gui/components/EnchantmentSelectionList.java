@@ -8,11 +8,14 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.List;
 
 public class EnchantmentSelectionList extends ContainerObjectSelectionList<EnchantmentSelectionList.Entry> {
-    private static final int SCROLLER_SIZE = 12;
+    static final int SCROLLBAR_WIDTH = 12;
+    static final int SCROLLER_SIZE = 18;
 
     private final int scrollbarOffset;
 
@@ -30,10 +33,9 @@ public class EnchantmentSelectionList extends ContainerObjectSelectionList<Encha
     @Override
     protected void renderDecorations(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         int posX = this.getScrollbarPosition();
-        int posY = (int) this.getScrollAmount() * (this.getHeight() - SCROLLER_SIZE) / this.getMaxScroll() + this.getY();
+        int posY = (int) this.getScrollAmount() * (this.getHeight() - SCROLLBAR_WIDTH) / this.getMaxScroll() + this.getY();
         RenderSystem.enableBlend();
-        int scrollerSize = SCROLLER_SIZE + 6;
-        guiGraphics.blitSprite(InfuserScreen.INFUSER_LOCATION, posX - 3, posY - 3, scrollerSize, scrollerSize);
+        guiGraphics.blitSprite(InfuserScreen.INFUSER_LOCATION, posX - 3, posY - 3, SCROLLER_SIZE, SCROLLER_SIZE);
         RenderSystem.disableBlend();
     }
 
@@ -64,8 +66,22 @@ public class EnchantmentSelectionList extends ContainerObjectSelectionList<Encha
 
     @Override
     protected void updateScrollingState(double mouseX, double mouseY, int button) {
-        this.scrolling = this.isValidClickButton(button) &&
-                ScreenHelper.isHovering(this.getScrollbarPosition(), this.getY(), SCROLLER_SIZE, this.getHeight(), mouseX, mouseY);
+        this.scrolling = this.isValidClickButton(button) && this.isMouseOverScrollbar(mouseX, mouseY);
+    }
+
+    protected boolean isMouseOverScrollbar(double mouseX, double mouseY) {
+        return ScreenHelper.isHovering(this.getScrollbarPosition(), this.getY(), SCROLLER_SIZE, this.getHeight(),
+                mouseX, mouseY
+        );
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (this.isMouseOver(mouseX, mouseY) || this.isMouseOverScrollbar(mouseX, mouseY)) {
+            return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -84,6 +100,11 @@ public class EnchantmentSelectionList extends ContainerObjectSelectionList<Encha
     }
 
     public class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+        private final Holder<Enchantment> enchantment;
+
+        public Entry(Holder<Enchantment> enchantment) {
+            this.enchantment = enchantment;
+        }
 
         @Override
         public List<? extends NarratableEntry> narratables() {
