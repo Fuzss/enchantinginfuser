@@ -10,8 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 
 public class EnchantingOperationButton extends SpritelessImageButton {
 
-    public EnchantingOperationButton(int x, int y, int width, int height, int xTexStart, int yTexStart, ResourceLocation resourceLocation, OnPress onPress) {
-        super(x, y, width, height, xTexStart, yTexStart, resourceLocation, onPress);
+    public EnchantingOperationButton(int x, int y, boolean isRight, OnPress onPress) {
+        super(x, y, 18, 18, 220 + (isRight ? 18 : 0), 0, InfuserScreen.INFUSER_LOCATION, onPress);
     }
 
     @Override
@@ -19,7 +19,7 @@ public class EnchantingOperationButton extends SpritelessImageButton {
         if (this.active && Screen.hasShiftDown()) {
             RenderSystem.enableDepthTest();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-            int index = !this.active ? 0 : this.isHoveredOrFocused() ? 2 : 1;
+            int index = this.isHoveredOrFocused() ? 2 : 1;
             guiGraphics.blit(this.resourceLocation, this.getX() + 2, this.getY(), this.xTexStart,
                     this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth,
                     this.textureHeight
@@ -37,10 +37,10 @@ public class EnchantingOperationButton extends SpritelessImageButton {
 
     private void refreshTooltip() {
         if (this.isHoveredOrFocused()) {
-            if (InfuserScreen.EnchantmentListEntry.this.enchantmentLevel - 1 >= InfuserScreen.EnchantmentListEntry.this.maxLevel && !InfuserScreen.EnchantmentListEntry.this.isObfuscated()) {
-                InfuserScreen.EnchantmentListEntry.this.setWeakPowerTooltip(
-                        EnchantmentTooltipHelper.MODIFY_LEVEL_COMPONENT);
-            }
+//            if (InfuserScreen.EnchantmentListEntry.this.enchantmentLevel - 1 >= InfuserScreen.EnchantmentListEntry.this.maxLevel && !InfuserScreen.EnchantmentListEntry.this.isObfuscated()) {
+//                InfuserScreen.EnchantmentListEntry.this.setWeakPowerTooltip(
+//                        EnchantmentTooltipHelper.MODIFY_LEVEL_COMPONENT);
+//            }
         }
     }
 }

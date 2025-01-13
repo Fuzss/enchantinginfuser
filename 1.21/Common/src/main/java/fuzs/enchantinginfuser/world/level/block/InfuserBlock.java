@@ -3,11 +3,11 @@ package fuzs.enchantinginfuser.world.level.block;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fuzs.enchantinginfuser.EnchantingInfuser;
-import fuzs.enchantinginfuser.world.item.enchantment.EnchantmentAdapter;
 import fuzs.enchantinginfuser.config.ModifiableItems;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
+import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import fuzs.puzzleslib.api.block.v1.entity.TickingEntityBlock;
 import fuzs.puzzleslib.api.core.v1.Proxy;
@@ -50,10 +50,12 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
                 propertiesCodec()
         ).apply(instance, InfuserBlock::new);
     });
-    public static final Component COMPONENT_CHOOSE = Component.translatable("block.enchantinginfuser.description.choose");
+    public static final Component COMPONENT_CHOOSE = Component.translatable(
+            "block.enchantinginfuser.description.choose");
     public static final Component COMPONENT_CHOOSE_AND_MODIFY = Component.translatable(
             "block.enchantinginfuser.description.chooseAndModify");
-    public static final Component COMPONENT_REPAIR = Component.translatable("block.enchantinginfuser.description.repair");
+    public static final Component COMPONENT_REPAIR = Component.translatable(
+            "block.enchantinginfuser.description.repair");
     protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
 
     private final InfuserType type;
@@ -63,9 +65,8 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
         this.type = type;
     }
 
-    public static boolean isValidBookShelf(Level level, BlockPos pos, BlockPos offset) {
-        if (EnchantmentAdapter.get()
-                .getProvidedPower(level.getBlockState(pos.offset(offset)), level, pos.offset(offset)) != 0.0F) {
+    public static boolean isValidBookShelf(EnchantingBehavior behavior, Level level, BlockPos pos, BlockPos offset) {
+        if (behavior.getEnchantmentPower(level.getBlockState(pos.offset(offset)), level, pos.offset(offset)) != 0.0F) {
             BlockPos inBetweenPos = pos.offset(offset.getX() / 2, offset.getY(), offset.getZ() / 2);
             return level.getBlockState(inBetweenPos).getCollisionShape(level, inBetweenPos) != Shapes.block();
         } else {
@@ -115,10 +116,7 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
             Component component = blockEntity.getDisplayName();
             return new SimpleMenuProvider((int containerId, Inventory inventory, Player player) -> {
                 if (blockEntity.canOpen(player)) {
-                    return new InfuserMenu(this.type,
-                            containerId,
-                            inventory,
-                            blockEntity,
+                    return new InfuserMenu(this.type, containerId, inventory, blockEntity,
                             ContainerLevelAccess.create(level, blockPos)
                     );
                 }
@@ -130,16 +128,13 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
     }
 
     @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        for (BlockPos blockpos : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
-            if (random.nextInt(16) == 0 && isValidBookShelf(level, pos, blockpos)) {
-                level.addParticle(ParticleTypes.ENCHANT,
-                        pos.getX() + 0.5D,
-                        pos.getY() + 2.0D,
-                        pos.getZ() + 0.5D,
-                        ((float) blockpos.getX() + random.nextFloat()) - 0.5D,
-                        ((float) blockpos.getY() - random.nextFloat() - 1.0F),
-                        ((float) blockpos.getZ() + random.nextFloat()) - 0.5D
+    public void animateTick(BlockState blockState, Level level, BlockPos pos, RandomSource random) {
+        for (BlockPos offset : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
+            if (random.nextInt(16) == 0 && isValidBookShelf(this.type.createBehavior(), level, pos, offset)) {
+                level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D,
+                        ((float) offset.getX() + random.nextFloat()) - 0.5D,
+                        ((float) offset.getY() - random.nextFloat() - 1.0F),
+                        ((float) offset.getZ() + random.nextFloat()) - 0.5D
                 );
             }
         }
@@ -183,7 +178,7 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
     }
 
     @Override
-    public boolean hasAnalogOutputSignal(BlockState state) {
+    public boolean hasAnalogOutputSignal(BlockState blockState) {
         return true;
     }
 

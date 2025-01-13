@@ -1,16 +1,19 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
+import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.puzzleslib.api.client.gui.v2.screen.ScreenHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.enchantment.Enchantment;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EnchantmentSelectionList extends ContainerObjectSelectionList<EnchantmentSelectionList.Entry> {
@@ -100,15 +103,11 @@ public class EnchantmentSelectionList extends ContainerObjectSelectionList<Encha
     }
 
     public class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+        private final List<AbstractWidget> children = new ArrayList<>();
         private final Holder<Enchantment> enchantment;
 
         public Entry(Holder<Enchantment> enchantment) {
             this.enchantment = enchantment;
-        }
-
-        @Override
-        public List<? extends NarratableEntry> narratables() {
-            return List.of();
         }
 
         @Override
@@ -118,7 +117,12 @@ public class EnchantmentSelectionList extends ContainerObjectSelectionList<Encha
 
         @Override
         public List<? extends GuiEventListener> children() {
-            return List.of();
+            return this.children;
+        }
+
+        @Override
+        public List<? extends NarratableEntry> narratables() {
+            return this.children;
         }
     }
 }

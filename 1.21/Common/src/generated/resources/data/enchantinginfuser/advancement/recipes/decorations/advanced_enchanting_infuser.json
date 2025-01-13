@@ -1,13 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_amethyst_shard": {
+    "has_netherite_ingot": {
       "conditions": {
         "items": [
           {
-            "items": [
-              "minecraft:amethyst_shard"
-            ]
+            "items": "minecraft:netherite_ingot"
           }
         ]
       },
@@ -15,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "enchantinginfuser:enchanting_infuser"
+        "recipe": "enchantinginfuser:advanced_enchanting_infuser"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -23,12 +21,12 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_amethyst_shard"
+      "has_netherite_ingot"
     ]
   ],
   "rewards": {
     "recipes": [
-      "enchantinginfuser:enchanting_infuser"
+      "enchantinginfuser:advanced_enchanting_infuser"
     ]
   }
 }

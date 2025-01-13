@@ -14,34 +14,18 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
-import net.minecraft.world.level.material.MapColor;
 
 public class ModRegistry {
     static final RegistryManager REGISTRIES = RegistryManager.from(EnchantingInfuser.MOD_ID);
     public static final Holder.Reference<Block> INFUSER_BLOCK = REGISTRIES.registerBlock("enchanting_infuser",
-            () -> new InfuserBlock(InfuserType.NORMAL,
-                    BlockBehaviour.Properties.of()
-                            .mapColor(MapColor.COLOR_RED)
-                            .instrument(NoteBlockInstrument.BASEDRUM)
-                            .requiresCorrectToolForDrops()
-                            .lightLevel(blockState -> 7)
-                            .strength(5.0F, 1200.0F)
-            )
-    );
+            () -> new InfuserBlock(InfuserType.NORMAL, BlockBehaviour.Properties.ofFullCopy(Blocks.ENCHANTING_TABLE)));
     public static final Holder.Reference<Block> ADVANCED_INFUSER_BLOCK = REGISTRIES.registerBlock(
             "advanced_enchanting_infuser",
             () -> new InfuserBlock(InfuserType.ADVANCED,
-                    BlockBehaviour.Properties.of()
-                            .mapColor(MapColor.COLOR_RED)
-                            .instrument(NoteBlockInstrument.BASEDRUM)
-                            .requiresCorrectToolForDrops()
-                            .lightLevel(blockState -> 7)
-                            .strength(5.0F, 1200.0F)
-            )
-    );
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.ENCHANTING_TABLE)));
     public static final Holder.Reference<Item> INFUSER_ITEM = REGISTRIES.registerBlockItem(INFUSER_BLOCK);
     public static final Holder.Reference<Item> ADVANCED_INFUSER_ITEM = REGISTRIES.registerBlockItem(
             ADVANCED_INFUSER_BLOCK);
@@ -50,17 +34,13 @@ public class ModRegistry {
             .registerBlockEntityType("enchanting_infuser",
                     () -> BlockEntityType.Builder.of(InfuserBlockEntity::new,
                             INFUSER_BLOCK.value(),
-                            ADVANCED_INFUSER_BLOCK.value()
-                    )
-            );
+                            ADVANCED_INFUSER_BLOCK.value()));
     public static final Holder.Reference<MenuType<InfuserMenu>> INFUSING_MENU_TYPE = REGISTRIES.registerMenuType(
             "infusing",
-            () -> (id, inventory) -> new InfuserMenu(InfuserType.NORMAL, id, inventory)
-    );
+            () -> (id, inventory) -> new InfuserMenu(InfuserType.NORMAL, id, inventory));
     public static final Holder.Reference<MenuType<InfuserMenu>> ADVANCED_INFUSING_MENU_TYPE = REGISTRIES.registerMenuType(
             "advanced_infusing",
-            () -> (id, inventory) -> new InfuserMenu(InfuserType.ADVANCED, id, inventory)
-    );
+            () -> (id, inventory) -> new InfuserMenu(InfuserType.ADVANCED, id, inventory));
 
     static final BoundTagFactory TAGS = BoundTagFactory.make(EnchantingInfuser.MOD_ID);
     public static final TagKey<Enchantment> IN_ENCHANTING_INFUSER_ENCHANTMENT_TAG = TAGS.registerEnchantmentTag(
@@ -68,7 +48,7 @@ public class ModRegistry {
     public static final TagKey<Enchantment> IN_ADVANCED_ENCHANTING_INFUSER_ENCHANTMENT_TAG = TAGS.registerEnchantmentTag(
             "in_advanced_enchanting_infuser");
 
-    public static void touch() {
+    public static void bootstrap() {
         // NO-OP
     }
 }

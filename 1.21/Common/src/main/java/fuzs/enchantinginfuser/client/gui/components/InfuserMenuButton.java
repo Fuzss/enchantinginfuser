@@ -2,8 +2,7 @@ package fuzs.enchantinginfuser.client.gui.components;
 
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
-import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.ClientComponentSplitter;
-import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.TooltipComponentImpl;
+import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.TooltipBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -12,12 +11,12 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class InfuserMenuButton extends SpritelessImageButton {
@@ -53,29 +52,27 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
     abstract String getStringValue();
 
     public void refreshTooltip(ItemStack itemStack) {
-        new TooltipComponentImpl(this, this.getTooltipLines(itemStack)) {
-
-            @Override
-            public List<FormattedCharSequence> processTooltipLines(List<? extends FormattedText> tooltipLines) {
-                return ClientComponentSplitter.processTooltipLines(tooltipLines).toList();
-            }
-        };
+        TooltipBuilder.create().addLines(this.getTooltipLines(itemStack)).build(this);
     }
 
     private List<FormattedText> getTooltipLines(ItemStack itemStack) {
-        List<FormattedText> lines = new ArrayList<>();
-        if (this.mayApply()) {
-            lines.add(this.getNameComponent(itemStack));
-            lines.addAll(this.getCustomLines(itemStack));
-        }
-        Component levelsComponent = this.getLevelsComponent();
-        if (levelsComponent != null) {
-            if (!lines.isEmpty()) {
-                lines.add(CommonComponents.EMPTY);
+        if (!this.mayApply() && this.getValue() == 0) {
+            return Collections.emptyList();
+        } else {
+            List<FormattedText> lines = new ArrayList<>();
+            if (this.mayApply()) {
+                lines.add(this.getNameComponent(itemStack));
+                lines.addAll(this.getCustomLines(itemStack));
             }
-            lines.add(levelsComponent);
+            Component levelsComponent = this.getLevelsComponent();
+            if (levelsComponent != null) {
+                if (!lines.isEmpty()) {
+                    lines.add(CommonComponents.EMPTY);
+                }
+                lines.add(levelsComponent);
+            }
+            return lines;
         }
-        return lines;
     }
 
     Component getNameComponent(ItemStack itemStack) {

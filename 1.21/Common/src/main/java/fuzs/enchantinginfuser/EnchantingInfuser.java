@@ -20,16 +20,15 @@ public class EnchantingInfuser implements ModConstructor {
     public static final String MOD_NAME = "Enchanting Infuser";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
-    public static final ConfigHolder CONFIG = ConfigHolder.builder(MOD_ID).server(ServerConfig.class);
     public static final NetworkHandler NETWORK = NetworkHandler.builder(MOD_ID)
             .registerSerializer(ItemEnchantments.class, ItemEnchantments.STREAM_CODEC)
             .registerClientbound(ClientboundInfuserEnchantmentsMessage.class)
             .registerServerbound(ServerboundEnchantmentLevelMessage.class);
-    ;
+    public static final ConfigHolder CONFIG = ConfigHolder.builder(MOD_ID).server(ServerConfig.class);
 
     @Override
     public void onConstructMod() {
-        ModRegistry.touch();
+        ModRegistry.bootstrap();
     }
 
     @Override

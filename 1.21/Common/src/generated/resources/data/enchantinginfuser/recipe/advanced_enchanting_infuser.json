@@ -6,13 +6,13 @@
       "item": "minecraft:crying_obsidian"
     },
     "A": {
-      "item": "minecraft:amethyst_shard"
+      "item": "minecraft:netherite_ingot"
     },
     "B": {
       "item": "minecraft:book"
     },
     "T": {
-      "item": "minecraft:enchanting_table"
+      "item": "enchantinginfuser:enchanting_infuser"
     }
   },
   "pattern": [
@@ -21,6 +21,7 @@
     "#T#"
   ],
   "result": {
-    "item": "enchantinginfuser:enchanting_infuser"
+    "count": 1,
+    "id": "enchantinginfuser:advanced_enchanting_infuser"
   }
 }

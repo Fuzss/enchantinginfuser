@@ -93,7 +93,7 @@ public class InfuserBlockEntity extends EnchantingTableBlockEntity implements Wo
     }
 
     @Override
-    public int[] getSlotsForFace(Direction side) {
+    public int[] getSlotsForFace(Direction direction) {
         return new int[]{0};
     }
 

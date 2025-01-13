@@ -13,15 +13,18 @@
           "type": "minecraft:item",
           "functions": [
             {
-              "function": "minecraft:copy_name",
+              "function": "minecraft:copy_components",
+              "include": [
+                "minecraft:custom_name"
+              ],
               "source": "block_entity"
             }
           ],
-          "name": "enchantinginfuser:enchanting_infuser"
+          "name": "enchantinginfuser:advanced_enchanting_infuser"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "enchantinginfuser:blocks/enchanting_infuser"
+  "random_sequence": "enchantinginfuser:blocks/advanced_enchanting_infuser"
 }

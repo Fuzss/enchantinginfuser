@@ -2,43 +2,39 @@ package fuzs.enchantinginfuser.util;
 
 import fuzs.enchantinginfuser.world.item.enchantment.EnchantmentAdapter;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 public class EnchantmentCostHelper {
 
-    public static Fraction getEnchantmentCosts(ItemEnchantments itemEnchantments) {
-        Fraction enchantmentCosts = Fraction.ZERO;
+    public static int getEnchantmentCosts(ItemEnchantments itemEnchantments) {
+        int enchantmentCosts = 0;
         for (Object2IntMap.Entry<Holder<Enchantment>> entry : itemEnchantments.entrySet()) {
             int enchantmentLevel = entry.getIntValue();
             if (entry.getKey().is(EnchantmentTags.TREASURE)) {
                 enchantmentLevel *= 2;
             }
-            Fraction enchantmentCost = getEnchantmentCost(entry.getKey(), enchantmentLevel);
-            enchantmentCosts = enchantmentCosts.add(enchantmentCost);
+            enchantmentCosts += getEnchantmentCost(entry.getKey(), enchantmentLevel);
         }
 
         return enchantmentCosts;
     }
 
-    public static Fraction getScalingEnchantmentCosts(Collection<Holder<Enchantment>> itemEnchantments, Collection<String> scalingNamespaces) {
+    public static int getScalingEnchantmentCosts(Collection<Holder<Enchantment>> itemEnchantments, Collection<String> scalingNamespaces) {
         // this loops through all enchantments that can be applied to the current item
         // it then checks for compatibility and treats those as duplicates, the 'duplicate' with the higher cost is kept
-        Fraction scalingEnchantmentCosts = Fraction.ZERO;
+        int scalingEnchantmentCosts = 0;
         for (Holder<Enchantment> enchantment : filterEnchantmentsForItem(itemEnchantments)) {
             if (scalingNamespaces.isEmpty() || scalingNamespaces.contains(
                     enchantment.unwrapKey().orElseThrow().location().getNamespace())) {
-                Fraction enchantmentCost = getEnchantmentCost(enchantment);
-                scalingEnchantmentCosts = scalingEnchantmentCosts.add(enchantmentCost);
+                scalingEnchantmentCosts += getEnchantmentCost(enchantment);
             }
         }
 
@@ -46,15 +42,15 @@ public class EnchantmentCostHelper {
     }
 
     public static Collection<Holder<Enchantment>> filterEnchantmentsForItem(Collection<Holder<Enchantment>> itemEnchantments) {
-        Map<Holder<Enchantment>, Fraction> itemEnchantmentCosts = new HashMap<>();
+        Object2IntMap<Holder<Enchantment>> itemEnchantmentCosts = new Object2IntOpenHashMap<>();
         for (Holder<Enchantment> enchantment : itemEnchantments) {
-            Fraction newEnchantmentCost = getEnchantmentCost(enchantment);
+            int newEnchantmentCost = getEnchantmentCost(enchantment);
             Holder<Enchantment> incompatibleEnchantment = findIncompatibleEnchantment(enchantment,
                     itemEnchantmentCosts.keySet()
             );
             if (incompatibleEnchantment != null) {
-                Fraction oldEnchantmentCost = itemEnchantmentCosts.remove(incompatibleEnchantment);
-                if (newEnchantmentCost.compareTo(oldEnchantmentCost) > 0) {
+                int oldEnchantmentCost = itemEnchantmentCosts.removeInt(incompatibleEnchantment);
+                if (newEnchantmentCost > oldEnchantmentCost) {
                     itemEnchantmentCosts.put(enchantment, newEnchantmentCost);
                 } else {
                     itemEnchantmentCosts.put(incompatibleEnchantment, oldEnchantmentCost);
@@ -78,11 +74,11 @@ public class EnchantmentCostHelper {
         return null;
     }
 
-    private static Fraction getEnchantmentCost(Holder<Enchantment> enchantment) {
+    private static int getEnchantmentCost(Holder<Enchantment> enchantment) {
         return getEnchantmentCost(enchantment, enchantment.value().getMaxLevel());
     }
 
-    private static Fraction getEnchantmentCost(Holder<Enchantment> enchantment, int enchantmentLevel) {
-        return Fraction.getFraction(enchantmentLevel, enchantment.value().getWeight());
+    private static int getEnchantmentCost(Holder<Enchantment> enchantment, int enchantmentLevel) {
+        return enchantment.value().getAnvilCost() * enchantmentLevel;
     }
 }

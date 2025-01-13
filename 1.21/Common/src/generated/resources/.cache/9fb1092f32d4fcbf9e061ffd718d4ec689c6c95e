@@ -1,5 +1,5 @@
-// 1.20.4	2024-01-20T18:55:19.322138	Recipes
-6d2550cc3c6e1d11a4b8dc806899478c5b34f87f data/enchantinginfuser/advancements/recipes/decorations/advanced_enchanting_infuser.json
-ed17e0766aeb7df39f76605b10ef83570f33010a data/enchantinginfuser/advancements/recipes/decorations/enchanting_infuser.json
-faa235b2cf70bed5b288d40974c36488ca6598c3 data/enchantinginfuser/recipes/advanced_enchanting_infuser.json
-3139206f581f0f5c2792ff4e0bc712442d400317 data/enchantinginfuser/recipes/enchanting_infuser.json
+// 1.21	2024-07-17T21:25:22.99556	Recipes
+a1ea548ee7ae2d727198b75aed4048bb6c332dab data/enchantinginfuser/advancement/recipes/decorations/advanced_enchanting_infuser.json
+0b6ec2a49f5782a5a91c8b7d15dc720a25c50d4f data/enchantinginfuser/advancement/recipes/decorations/enchanting_infuser.json
+c8dc564e212c14864bf22f021828948687f2dbaa data/enchantinginfuser/recipe/advanced_enchanting_infuser.json
+583dab780b9a6d57f3bf523f692753cc5be84166 data/enchantinginfuser/recipe/enchanting_infuser.json
