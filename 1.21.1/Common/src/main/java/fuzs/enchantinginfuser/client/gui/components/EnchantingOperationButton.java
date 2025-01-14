@@ -1,46 +1,122 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import fuzs.enchantinginfuser.client.gui.screens.inventory.EnchantmentComponent;
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.client.util.EnchantmentTooltipHelper;
 import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
+import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.TooltipBuilder;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
-public class EnchantingOperationButton extends SpritelessImageButton {
+public abstract class EnchantingOperationButton extends SpritelessImageButton {
 
-    public EnchantingOperationButton(int x, int y, boolean isRight, OnPress onPress) {
-        super(x, y, 18, 18, 220 + (isRight ? 18 : 0), 0, InfuserScreen.INFUSER_LOCATION, onPress);
+    public EnchantingOperationButton(EnchantmentComponent enchantmentComponent, int x, int y, int xTexOffset, OnPress onPress) {
+        super(x, y, 18, 18, 220 + xTexOffset, 0, InfuserScreen.INFUSER_LOCATION, onPress);
+        this.visible = this.getVisibleValue(enchantmentComponent);
+        this.active = this.getActiveValue(enchantmentComponent);
+        Component component = this.getTooltipComponent(enchantmentComponent);
+        if (component != null) {
+            TooltipBuilder.create(enchantmentComponent.getWeakPowerTooltip(component)).splitLines().build(this);
+        }
+        this.setTextureLayout(LEGACY_TEXTURE_LAYOUT);
     }
+
+    protected abstract boolean getVisibleValue(EnchantmentComponent enchantmentComponent);
+
+    protected abstract boolean getActiveValue(EnchantmentComponent enchantmentComponent);
+
+    @Nullable
+    protected abstract Component getTooltipComponent(EnchantmentComponent enchantmentComponent);
 
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        if (this.active && Screen.hasShiftDown()) {
+        if (this.isActive() && Screen.hasShiftDown()) {
             RenderSystem.enableDepthTest();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-            int index = this.isHoveredOrFocused() ? 2 : 1;
-            guiGraphics.blit(this.resourceLocation, this.getX() + 2, this.getY(), this.xTexStart,
-                    this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth,
-                    this.textureHeight
-            );
-            guiGraphics.blit(this.resourceLocation, this.getX() - 4, this.getY(), this.xTexStart,
-                    this.yTexStart + index * this.yDiffTex, this.width, this.height, this.textureWidth,
-                    this.textureHeight
-            );
-            this.refreshTooltip();
+            int yImage = this.isHoveredOrFocused() ? 2 : 1;
+            guiGraphics.blit(this.resourceLocation,
+                    this.getX() + 3,
+                    this.getY(),
+                    this.xTexStart,
+                    this.yTexStart + yImage * this.yDiffTex,
+                    this.width,
+                    this.height,
+                    this.textureWidth,
+                    this.textureHeight);
+            guiGraphics.blit(this.resourceLocation,
+                    this.getX() - 3,
+                    this.getY(),
+                    this.xTexStart,
+                    this.yTexStart + yImage * this.yDiffTex,
+                    this.width,
+                    this.height,
+                    this.textureWidth,
+                    this.textureHeight);
         } else {
             super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
-            this.refreshTooltip();
         }
     }
 
-    private void refreshTooltip() {
-        if (this.isHoveredOrFocused()) {
-//            if (InfuserScreen.EnchantmentListEntry.this.enchantmentLevel - 1 >= InfuserScreen.EnchantmentListEntry.this.maxLevel && !InfuserScreen.EnchantmentListEntry.this.isObfuscated()) {
-//                InfuserScreen.EnchantmentListEntry.this.setWeakPowerTooltip(
-//                        EnchantmentTooltipHelper.MODIFY_LEVEL_COMPONENT);
-//            }
+    public static class Add extends EnchantingOperationButton {
+
+        public Add(EnchantmentComponent enchantmentComponent, int x, int y, OnPress onPress) {
+            super(enchantmentComponent, x, y, 18, onPress);
+        }
+
+        @Override
+        protected boolean getVisibleValue(EnchantmentComponent enchantmentComponent) {
+            return enchantmentComponent.enchantmentLevel() < enchantmentComponent.enchantmentValues().maxLevel();
+        }
+
+        @Override
+        protected boolean getActiveValue(EnchantmentComponent enchantmentComponent) {
+            return !enchantmentComponent.isIncompatible() &&
+                    enchantmentComponent.enchantmentLevel() < enchantmentComponent.enchantmentValues().availableLevel();
+        }
+
+        @Nullable
+        @Override
+        protected Component getTooltipComponent(EnchantmentComponent enchantmentComponent) {
+            if (enchantmentComponent.enchantmentLevel() >= enchantmentComponent.enchantmentValues().availableLevel() &&
+                    !enchantmentComponent.isNotAvailable()) {
+                return EnchantmentTooltipHelper.INCREASE_LEVEL_COMPONENT;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public static class Remove extends EnchantingOperationButton {
+
+        public Remove(EnchantmentComponent enchantmentComponent, int x, int y, OnPress onPress) {
+            super(enchantmentComponent, x, y, 0, onPress);
+        }
+
+        @Override
+        protected boolean getVisibleValue(EnchantmentComponent enchantmentComponent) {
+            return enchantmentComponent.isPresent();
+        }
+
+        @Override
+        protected boolean getActiveValue(EnchantmentComponent enchantmentComponent) {
+            return !enchantmentComponent.isIncompatible() && enchantmentComponent.enchantmentLevel() - 1 <
+                    enchantmentComponent.enchantmentValues().availableLevel();
+        }
+
+        @Nullable
+        @Override
+        protected Component getTooltipComponent(EnchantmentComponent enchantmentComponent) {
+            if (enchantmentComponent.enchantmentLevel() - 1 >=
+                    enchantmentComponent.enchantmentValues().availableLevel() &&
+                    !enchantmentComponent.isNotAvailable()) {
+                return EnchantmentTooltipHelper.MODIFY_LEVEL_COMPONENT;
+            } else {
+                return null;
+            }
         }
     }
 }

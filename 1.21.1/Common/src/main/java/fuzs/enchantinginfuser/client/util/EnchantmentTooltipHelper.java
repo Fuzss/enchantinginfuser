@@ -10,11 +10,14 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class EnchantmentTooltipHelper {
@@ -27,18 +30,17 @@ public class EnchantmentTooltipHelper {
             "gui.enchantinginfuser.tooltip.lowPower2").withStyle(ChatFormatting.GRAY);
     public static final String KEY_CURRENT_ENCHANTING_POWER = "gui.enchantinginfuser.tooltip.current_enchanting_power";
 
-    public static List<FormattedCharSequence> getWeakPowerTooltip(int currentPower, int requiredPower, Component component) {
-        List<FormattedCharSequence> lines = Lists.newArrayList();
+    public static List<Component> getWeakPowerTooltip(int currentPower, int requiredPower, Component component) {
+        List<Component> lines = new ArrayList<>();
         Component currentPowerComponent = Component.literal(String.valueOf(currentPower))
                 .withStyle(ChatFormatting.RED);
         Component requiredPowerComponent = Component.literal(String.valueOf(requiredPower));
-        lines.add(Component.translatable(KEY_CURRENT_ENCHANTING_POWER, currentPowerComponent, requiredPowerComponent)
-                .getVisualOrderText());
-        ClientComponentSplitter.splitTooltipLines(component).forEach(lines::add);
+        lines.add(Component.translatable(KEY_CURRENT_ENCHANTING_POWER, currentPowerComponent, requiredPowerComponent));
+        lines.add(component);
         return lines;
     }
 
-    public static List<FormattedCharSequence> getIncompatibleEnchantmentsTooltip(Collection<Holder<Enchantment>> incompatibleEnchantments) {
+    public static List<Component> getIncompatibleEnchantmentsTooltip(Collection<Holder<Enchantment>> incompatibleEnchantments) {
         Component component = Component.translatable(KEY_INCOMPATIBLE_ENCHANTMENTS,
                 incompatibleEnchantments.stream()
                         .map(EnchantmentTooltipHelper::getDisplayName)
@@ -46,20 +48,18 @@ public class EnchantmentTooltipHelper {
                         .orElse(Component.empty())
                         .withStyle(ChatFormatting.GRAY)
         );
-        return ClientComponentSplitter.splitTooltipLines(component).toList();
+        return Collections.singletonList(component);
     }
 
-    public static List<FormattedCharSequence> getEnchantmentTooltip(Holder<Enchantment> enchantment) {
-        List<FormattedCharSequence> lines = Lists.newArrayList();
+    public static List<Component> getEnchantmentTooltip(Holder<Enchantment> enchantment) {
+        List<Component> lines = new ArrayList<>();
         lines.add(Component.empty()
                 .append(enchantment.value().description())
                 .append(CommonComponents.SPACE)
-                .append(getLevelComponent(enchantment))
-                .getVisualOrderText());
+                .append(getLevelComponent(enchantment)));
         String translationKey = getEnchantmentDescriptionKey(enchantment);
         if (translationKey != null) {
-            Component component = Component.translatable(translationKey).withStyle(ChatFormatting.GRAY);
-            ClientComponentSplitter.splitTooltipLines(component).forEach(lines::add);
+            lines.add(Component.translatable(translationKey).withStyle(ChatFormatting.GRAY));
         }
         return lines;
     }
@@ -80,7 +80,7 @@ public class EnchantmentTooltipHelper {
 
     @Nullable
     private static String getEnchantmentDescriptionKey(Holder<Enchantment> enchantment) {
-        String translationKey = enchantment.unwrapKey().map(resourceKey -> {
+        String translationKey = enchantment.unwrapKey().map((ResourceKey<Enchantment> resourceKey) -> {
             return Util.makeDescriptionId(resourceKey.registry().getPath(), resourceKey.location());
         }).orElse(null);
         if (translationKey == null) {

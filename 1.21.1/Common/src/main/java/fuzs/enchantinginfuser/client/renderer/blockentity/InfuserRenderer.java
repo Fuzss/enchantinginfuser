@@ -32,9 +32,9 @@ public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> 
     @Override
     public void render(InfuserBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, int packedOverlay) {
         poseStack.pushPose();
-        poseStack.translate(0.5D, 0.75D, 0.5D);
+        poseStack.translate(0.5F, 0.75F, 0.5F);
         float f = (float) blockEntity.time + partialTick;
-        poseStack.translate(0.0D, 0.1F + Mth.sin(f * 0.1F) * 0.01F, 0.0D);
+        poseStack.translate(0.0F, 0.1F + Mth.sin(f * 0.1F) * 0.01F, 0.0F);
 
         float f1;
         for (f1 = blockEntity.rot - blockEntity.oRot; f1 >= (float) Math.PI; f1 -= ((float) Math.PI * 2F)) {

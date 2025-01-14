@@ -5,7 +5,6 @@ import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import fuzs.enchantinginfuser.world.level.block.InfuserType;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
-import fuzs.puzzleslib.api.core.v1.ModLoader;
 import fuzs.puzzleslib.api.init.v3.registry.RegistryManager;
 import fuzs.puzzleslib.api.init.v3.tags.BoundTagFactory;
 import net.minecraft.core.Holder;
@@ -29,12 +28,11 @@ public class ModRegistry {
     public static final Holder.Reference<Item> INFUSER_ITEM = REGISTRIES.registerBlockItem(INFUSER_BLOCK);
     public static final Holder.Reference<Item> ADVANCED_INFUSER_ITEM = REGISTRIES.registerBlockItem(
             ADVANCED_INFUSER_BLOCK);
-    public static final Holder.Reference<BlockEntityType<InfuserBlockEntity>> INFUSER_BLOCK_ENTITY_TYPE = REGISTRIES.whenNotOn(
-                    ModLoader.FORGE)
-            .registerBlockEntityType("enchanting_infuser",
-                    () -> BlockEntityType.Builder.of(InfuserBlockEntity::new,
-                            INFUSER_BLOCK.value(),
-                            ADVANCED_INFUSER_BLOCK.value()));
+    public static final Holder.Reference<BlockEntityType<InfuserBlockEntity>> INFUSER_BLOCK_ENTITY_TYPE = REGISTRIES.registerBlockEntityType(
+            "enchanting_infuser",
+            () -> BlockEntityType.Builder.of(InfuserBlockEntity::new,
+                    INFUSER_BLOCK.value(),
+                    ADVANCED_INFUSER_BLOCK.value()));
     public static final Holder.Reference<MenuType<InfuserMenu>> INFUSING_MENU_TYPE = REGISTRIES.registerMenuType(
             "infusing",
             () -> (id, inventory) -> new InfuserMenu(InfuserType.NORMAL, id, inventory));

@@ -1,8 +1,10 @@
 package fuzs.enchantinginfuser.client.gui.screens.inventory;
 
+import com.google.common.collect.ImmutableSet;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import fuzs.enchantinginfuser.EnchantingInfuser;
+import fuzs.enchantinginfuser.client.gui.components.EnchantmentSelectionList;
 import fuzs.enchantinginfuser.client.gui.components.InfuserEnchantButton;
 import fuzs.enchantinginfuser.client.gui.components.InfuserMenuButton;
 import fuzs.enchantinginfuser.client.gui.components.InfuserRepairButton;
@@ -15,6 +17,7 @@ import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.TooltipBuilder;
 import fuzs.puzzleslib.api.client.gui.v2.screen.ScreenHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -60,12 +63,12 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
     private static final int ENCHANT_ONLY_BUTTON_OFFSET_Y = 55;
     private static final int REPAIR_BUTTON_OFFSET_Y = 66;
 
-    private final int enchantmentSeed = new Random().nextInt();
-    private boolean insufficientPower;
+    public final int enchantmentSeed = new Random().nextInt();
+    private static boolean isPowerTooLow;
     private float scrollOffs;
     private boolean scrolling;
     private EditBox searchBox;
-    private ScrollingList scrollingList;
+    private EnchantmentSelectionList scrollingList;
     private boolean ignoreTextInput;
     private AbstractWidget powerWidget;
     private InfuserMenuButton enchantButton;
@@ -78,6 +81,10 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         this.imageHeight = 185;
         this.inventoryLabelX = 30;
         this.inventoryLabelY = this.imageHeight - 94;
+    }
+
+    public static void setIsPowerTooLow(boolean isPowerTooLow) {
+        InfuserScreen.isPowerTooLow = isPowerTooLow;
     }
 
     @Override
@@ -95,9 +102,9 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         this.searchBox.setBordered(false);
         this.searchBox.setTextColor(0XFFFFFF);
         this.addWidget(this.searchBox);
-        this.scrollingList = new ScrollingList(this.leftPos + 29, this.topPos + 17, 162, 18, 4);
-        this.addWidget(this.scrollingList);
-        this.powerWidget = this.addRenderableWidget(new AbstractWidget(this.leftPos + 196, this.topPos + 161, 16, 16, CommonComponents.EMPTY) {
+        this.scrollingList = new EnchantmentSelectionList(this,this.leftPos + 30, this.topPos + 18);
+        this.addRenderableWidget(this.scrollingList);
+        this.powerWidget = this.addRenderableOnly(new AbstractWidget(this.leftPos + 196, this.topPos + 161, 16, 16, CommonComponents.EMPTY) {
 
             @Override
             protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
@@ -118,7 +125,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
             private ChatFormatting getStringColor() {
                 if (InfuserScreen.this.menu.getEnchantmentPower() >= InfuserScreen.this.menu.getEnchantmentPowerLimit()) {
                     return ChatFormatting.YELLOW;
-                } else if (InfuserScreen.this.insufficientPower) {
+                } else if (InfuserScreen.this.isPowerTooLow) {
                     return ChatFormatting.RED;
                 } else {
                     return ChatFormatting.WHITE;
@@ -250,7 +257,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
 
     public void refreshSearchResults() {
         // TODO this should use our new scroll bar
-        int oldItemCount = this.scrollingList.getItemCount();
+        int size = this.scrollingList.children().size();
         this.scrollingList.clearEntries();
         ItemEnchantments itemEnchantments = this.menu.getItemEnchantments();
         Set<Holder<Enchantment>> enchantments = this.menu.getAllEnchantments();
@@ -259,12 +266,25 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                 .getOrThrow(EnchantmentTags.TOOLTIP_ORDER);
         for (Holder<Enchantment> enchantment : holders) {
             if (enchantments.contains(enchantment) && this.matchesSearch(enchantment)) {
-                this.scrollingList.addEntry(new EnchantmentListEntry(enchantment, itemEnchantments.getLevel(enchantment)));
+                InfuserMenu.EnchantmentValues enchantmentValues = this.menu.getEnchantmentValues(enchantment);
+                EnchantmentComponent enchantmentComponent = EnchantmentComponent.create(enchantment,
+                        enchantmentValues,
+                        itemEnchantments);
+                this.scrollingList.addEntry(enchantment, enchantmentComponent);
             }
         }
-        if (oldItemCount != this.scrollingList.getItemCount()) {
-            this.scrollOffs = 0.0F;
-            this.scrollingList.scrollTo(0.0F);
+        for (Holder<Enchantment> enchantment : enchantments) {
+            if (!holders.contains(enchantment) && this.matchesSearch(enchantment)) {
+                InfuserMenu.EnchantmentValues enchantmentValues = this.menu.getEnchantmentValues(enchantment);
+                EnchantmentComponent enchantmentComponent = EnchantmentComponent.create(enchantment,
+                        enchantmentValues,
+                        itemEnchantments);
+                this.scrollingList.addEntry(enchantment, enchantmentComponent);
+            }
+        }
+        if (size != this.scrollingList.children().size()) {
+//            this.scrollOffs = 0.0F;
+            this.scrollingList.setScrollAmount(0.0);
         }
     }
 
@@ -272,7 +292,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         String s = this.searchBox.getValue().toLowerCase(Locale.ROOT).trim();
         if (s.isEmpty()) {
             return true;
-        } else if (this.menu.getMaximumEnchantmentLevel(enchantment) == 0) {
+        } else if (this.menu.getAvailableEnchantmentLevel(enchantment) == 0) {
             return false;
         } else {
             return EnchantmentTooltipHelper.getDisplayName(enchantment).getString().toLowerCase(Locale.ROOT)
@@ -280,64 +300,64 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         }
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
-            if (this.insideScrollbar(mouseX, mouseY)) {
-                this.scrolling = this.scrollingList.canScroll();
-                return true;
-            }
-        }
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
-
-    protected boolean insideScrollbar(double mouseX, double mouseY) {
-        int fromX = this.leftPos + 197;
-        int fromY = this.topPos + 17;
-        int toX = fromX + 14;
-        int toY = fromY + 72;
-        return mouseX >= (double) fromX && mouseY >= (double) fromY && mouseX < (double) toX && mouseY < (double) toY;
-    }
-
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) {
-            this.scrolling = false;
-        }
-        return super.mouseReleased(mouseX, mouseY, button);
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (!this.scrollingList.canScroll()) {
-            return false;
-        } else {
-            this.scrollOffs = (float) ((double) this.scrollOffs - scrollY / (this.scrollingList.getItemCount() - 4));
-            this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
-            this.scrollingList.scrollTo(this.scrollOffs);
-            return true;
-        }
-    }
-
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (this.scrolling) {
-            int i = this.topPos + 17;
-            int j = i + 72;
-            this.scrollOffs = ((float) mouseY - (float) i - 7.5F) / ((float) (j - i) - 15.0F);
-            this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
-            this.scrollingList.scrollTo(this.scrollOffs);
-            return true;
-        } else {
-            return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
-        }
-    }
+//    @Override
+//    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+//        if (button == 0) {
+//            if (this.insideScrollbar(mouseX, mouseY)) {
+//                this.scrolling = this.scrollingList.canScroll();
+//                return true;
+//            }
+//        }
+//        return super.mouseClicked(mouseX, mouseY, button);
+//    }
+//
+//    protected boolean insideScrollbar(double mouseX, double mouseY) {
+//        int fromX = this.leftPos + 197;
+//        int fromY = this.topPos + 17;
+//        int toX = fromX + 14;
+//        int toY = fromY + 72;
+//        return mouseX >= (double) fromX && mouseY >= (double) fromY && mouseX < (double) toX && mouseY < (double) toY;
+//    }
+//
+//    @Override
+//    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+//        if (button == 0) {
+//            this.scrolling = false;
+//        }
+//        return super.mouseReleased(mouseX, mouseY, button);
+//    }
+//
+//    @Override
+//    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+//        if (!this.scrollingList.canScroll()) {
+//            return false;
+//        } else {
+//            this.scrollOffs = (float) ((double) this.scrollOffs - scrollY / (this.scrollingList.getItemCount() - 4));
+//            this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
+//            this.scrollingList.scrollTo(this.scrollOffs);
+//            return true;
+//        }
+//    }
+//
+//    @Override
+//    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+//        if (this.scrolling) {
+//            int i = this.topPos + 17;
+//            int j = i + 72;
+//            this.scrollOffs = ((float) mouseY - (float) i - 7.5F) / ((float) (j - i) - 15.0F);
+//            this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
+//            this.scrollingList.scrollTo(this.scrollOffs);
+//            return true;
+//        } else {
+//            return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+//        }
+//    }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.insufficientPower = false;
+//        this.isPowerTooLow = false;
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        this.scrollingList.render(guiGraphics, mouseX, mouseY, partialTick);
+//        this.scrollingList.render(guiGraphics, mouseX, mouseY, partialTick);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
@@ -347,14 +367,14 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         guiGraphics.blit(INFUSER_LOCATION, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
         this.searchBox.render(guiGraphics, mouseX, mouseY, partialTick);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        int sliderX = this.leftPos + 197 - 2;
-        int sliderY = this.topPos + 17 - 2;
-        int sliderRange = sliderY + 72 + 2 + 2;
-        guiGraphics.blit(INFUSER_LOCATION, sliderX,
-                sliderY + (int) ((float) (sliderRange - sliderY - 18) * this.scrollOffs), 220,
-                54 + (this.scrollingList.canScroll() ? 18 : 0), 18, 18
-        );
+//        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+//        int sliderX = this.leftPos + 197 - 2;
+//        int sliderY = this.topPos + 17 - 2;
+//        int sliderRange = sliderY + 72 + 2 + 2;
+//        guiGraphics.blit(INFUSER_LOCATION, sliderX,
+//                sliderY + (int) ((float) (sliderRange - sliderY - 18) * this.scrollOffs), 220,
+//                54 + (this.scrollingList.canScroll() ? 18 : 0), 18, 18
+//        );
         // render slot manually and do not include it as part of the background texture file,
         // so it can be placed further down when repairing is disabled
         guiGraphics.blit(INFUSER_LOCATION, this.leftPos + 8 - 1,
@@ -619,12 +639,12 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         }
 
         private void setWeakPowerTooltip(Component component) {
-            List<FormattedCharSequence> lines = EnchantmentTooltipHelper.getWeakPowerTooltip(
-                    InfuserScreen.this.menu.getEnchantmentPower(), menu.getRequiredEnchantmentPower(this.enchantment),
-                    component
-            );
-            InfuserScreen.this.setTooltipForNextRenderPass(lines);
-            InfuserScreen.this.insufficientPower = true;
+//            List<FormattedCharSequence> lines = EnchantmentTooltipHelper.getWeakPowerTooltip(
+//                    InfuserScreen.this.menu.getEnchantmentPower(), menu.getRequiredEnchantmentPower(this.enchantment),
+//                    component
+//            );
+//            InfuserScreen.this.setTooltipForNextRenderPass(lines);
+            InfuserScreen.this.isPowerTooLow = true;
         }
 
         public void setParentList(ScrollingList parentList) {
@@ -632,7 +652,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         }
 
         private int getMaximumLevel() {
-            return menu.getMaximumEnchantmentLevel(this.enchantment);
+            return menu.getAvailableEnchantmentLevel(this.enchantment);
         }
 
         public void markIncompatible(Collection<EnchantmentListEntry> incompatibleList) {
@@ -698,11 +718,11 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                 if (this.isObfuscated()) {
                     this.setWeakPowerTooltip(EnchantmentTooltipHelper.UNKNOWN_ENCHANT_COMPONENT);
                 } else if (this.isIncompatible()) {
-                    InfuserScreen.this.setTooltipForNextRenderPass(
-                            EnchantmentTooltipHelper.getIncompatibleEnchantmentsTooltip(this.incompatibleEnchantments));
+//                    InfuserScreen.this.setTooltipForNextRenderPass(
+//                            EnchantmentTooltipHelper.getIncompatibleEnchantmentsTooltip(this.incompatibleEnchantments));
                 } else {
-                    InfuserScreen.this.setTooltipForNextRenderPass(
-                            EnchantmentTooltipHelper.getEnchantmentTooltip(this.enchantment));
+//                    InfuserScreen.this.setTooltipForNextRenderPass(
+//                            EnchantmentTooltipHelper.getEnchantmentTooltip(this.enchantment));
                 }
             }
         }

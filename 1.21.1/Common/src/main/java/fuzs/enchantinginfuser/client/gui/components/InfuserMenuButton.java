@@ -37,10 +37,25 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
     public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
         if (this.mayApply() && this.getValue() != 0) {
-            drawStringWithBackground(this.screen.font, guiGraphics, this.getX() + 1, this.getY() + 1,
-                    this.getStringValue(), this.getStringColor().getColor()
-            );
+            drawStringWithBackground(this.screen.font,
+                    guiGraphics,
+                    this.getX() + 1,
+                    this.getY() + 1,
+                    Component.literal(this.getStringValue()),
+                    this.getStringColor().getColor());
         }
+    }
+
+    static void drawStringWithBackground(Font font, GuiGraphics guiGraphics, int posX, int posY, Component component, int color) {
+        font.drawInBatch8xOutline(component.getVisualOrderText(),
+                posX + (19 - 2 - font.width(component)),
+                posY + (6 + 3),
+                color,
+                0,
+                guiGraphics.pose().last().pose(),
+                guiGraphics.bufferSource(),
+                0XF000F0);
+        guiGraphics.flush();
     }
 
     abstract int getValue();
@@ -52,7 +67,12 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
     abstract String getStringValue();
 
     public void refreshTooltip(ItemStack itemStack) {
-        TooltipBuilder.create().addLines(this.getTooltipLines(itemStack)).build(this);
+        List<FormattedText> tooltipLines = this.getTooltipLines(itemStack);
+        if (!tooltipLines.isEmpty()) {
+            TooltipBuilder.create().addLines(tooltipLines).build(this);
+        } else {
+            this.setTooltip(null);
+        }
     }
 
     private List<FormattedText> getTooltipLines(ItemStack itemStack) {
@@ -91,8 +111,7 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
 
     abstract List<FormattedText> getCustomLines(ItemStack itemStack);
 
-    @Nullable
-    Component getLevelsComponent() {
+    @Nullable Component getLevelsComponent() {
         int value = this.getValue();
         if (this.mayApply()) {
             if (value != 0) {
@@ -107,20 +126,5 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
         } else {
             return Component.translatable("container.enchant.level.requirement", value).withStyle(ChatFormatting.RED);
         }
-    }
-
-    static void drawStringWithBackground(Font font, GuiGraphics guiGraphics, int posX, int posY, String text, int textColor) {
-        drawStringWithBackground(font, guiGraphics, posX, posY, text, textColor, 0);
-    }
-
-    static void drawStringWithBackground(Font font, GuiGraphics guiGraphics, int posX, int posY, String text, int textColor, int backgroundColor) {
-        posX += 19 - 2 - font.width(text);
-        posY += 6 + 3;
-        // render shadow on every side to avoid readability issues with colorful background
-        guiGraphics.drawString(font, text, posX - 1, posY, backgroundColor, false);
-        guiGraphics.drawString(font, text, posX + 1, posY, backgroundColor, false);
-        guiGraphics.drawString(font, text, posX, posY - 1, backgroundColor, false);
-        guiGraphics.drawString(font, text, posX, posY + 1, backgroundColor, false);
-        guiGraphics.drawString(font, text, posX, posY, textColor, false);
     }
 }

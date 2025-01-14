@@ -14,17 +14,17 @@ import java.util.Collection;
 
 public class EnchantmentPowerHelper {
 
-    public static Object2IntMap<Holder<Enchantment>> getMaximumEnchantmentLevels(int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
+    public static Object2IntMap<Holder<Enchantment>> getAvailableEnchantmentLevels(int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
         Object2IntMap<Holder<Enchantment>> maximumEnchantmentLevels = new Object2IntOpenHashMap<>();
         for (Holder<Enchantment> enchantment : itemEnchantments) {
-            int enchantmentLevel = getMaximumEnchantmentLevel(enchantment, enchantmentPower, itemEnchantments, powerLimit, enchantmentValue);
+            int enchantmentLevel = getAvailableEnchantmentLevel(enchantment, enchantmentPower, itemEnchantments, powerLimit, enchantmentValue);
             maximumEnchantmentLevels.put(enchantment, enchantmentLevel);
         }
 
         return Object2IntMaps.unmodifiable(maximumEnchantmentLevels);
     }
 
-    public static int getMaximumEnchantmentLevel(Holder<Enchantment> enchantment, int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
+    public static int getAvailableEnchantmentLevel(Holder<Enchantment> enchantment, int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
         for (int enchantmentLevel = enchantment.value().getMaxLevel(); enchantmentLevel > 0; enchantmentLevel--) {
             int powerForLevel = getScaledPowerForLevel(enchantment, enchantmentLevel, itemEnchantments, powerLimit,
                     enchantmentValue
