@@ -24,6 +24,15 @@ public abstract class AbstractCustomSelectionList<E extends ContainerObjectSelec
     }
 
     @Override
+    protected E getEntryAtPosition(double mouseX, double mouseY) {
+        // a trick to get around vanilla subtracting 4 without having to copy the whole method
+        this.headerHeight -= 4;
+        E entry = super.getEntryAtPosition(mouseX, mouseY);
+        this.headerHeight += 4;
+        return entry;
+    }
+
+    @Override
     public int getRowWidth() {
         return this.getWidth();
     }

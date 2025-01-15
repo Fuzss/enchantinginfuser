@@ -36,7 +36,7 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
-        if (this.mayApply() && this.getValue() != 0) {
+        if (this.getValue() != 0) {
             drawStringWithBackground(this.screen.font,
                     guiGraphics,
                     this.getX() + 1,

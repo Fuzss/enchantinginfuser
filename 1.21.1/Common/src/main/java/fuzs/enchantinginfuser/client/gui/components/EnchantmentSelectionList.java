@@ -34,22 +34,20 @@ public class EnchantmentSelectionList extends AbstractCustomSelectionList<Enchan
     }
 
     public class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+        private final EnchantmentComponent enchantmentComponent;
         private final Component component;
         private final List<FormattedCharSequence> tooltip;
-        private final boolean isInactive;
-        private final int yImage;
         private final AbstractWidget removeButton;
         private final AbstractWidget addButton;
 
         public Entry(Holder<Enchantment> enchantment, EnchantmentComponent enchantmentComponent, int x, int y) {
+            this.enchantmentComponent = enchantmentComponent;
             this.component = enchantmentComponent.getDisplayName(enchantment,
                     124,
                     EnchantmentSelectionList.this.minecraft.font,
                     EnchantmentSelectionList.this.screen.enchantmentSeed);
             this.tooltip = ClientComponentSplitter.splitTooltipLines(enchantmentComponent.getTooltip(enchantment))
                     .toList();
-            this.isInactive = enchantmentComponent.isIncompatible() || enchantmentComponent.isNotAvailable();
-            this.yImage = this.getYImage(enchantmentComponent);
             this.removeButton = new EnchantingOperationButton.Remove(enchantmentComponent, x, y, (Button button) -> {
                 if (EnchantmentSelectionList.this.screen.getMenu()
                         .clickClientEnchantmentLevelButton(enchantment,
@@ -68,26 +66,30 @@ public class EnchantmentSelectionList extends AbstractCustomSelectionList<Enchan
             });
         }
 
-        private int getYImage(EnchantmentComponent enchantmentComponent) {
-            return enchantmentComponent.isIncompatible() || enchantmentComponent.isNotAvailable() ? 0 :
-                    enchantmentComponent.isPresent() ? 2 : 1;
-        }
-
         @Override
         public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
-            guiGraphics.blit(InfuserScreen.INFUSER_LOCATION, left, top, 0, 185 + this.yImage * 18, width, height);
+            guiGraphics.blit(InfuserScreen.INFUSER_LOCATION, left, top, 0, 185 + this.getYImage() * 18, width, height);
             guiGraphics.drawCenteredString(EnchantmentSelectionList.this.minecraft.font,
                     this.component,
                     left + width / 2,
                     top + 5,
-                    this.isInactive ? 0X685E4A : -1);
+                    this.enchantmentComponent.isInactive() ? 0X685E4A : -1);
             for (AbstractWidget abstractWidget : this.children()) {
                 abstractWidget.setY(top);
                 abstractWidget.render(guiGraphics, mouseX, mouseY, partialTick);
             }
-            if (hovering && (this.isInactive || mouseX >= left + 18 && mouseX < left + 18 + 124)) {
+            if (hovering &&
+                    (this.enchantmentComponent.isInactive() || mouseX >= left + 18 && mouseX < left + 18 + 124)) {
                 EnchantmentSelectionList.this.screen.setTooltipForNextRenderPass(this.tooltip);
+                if (this.enchantmentComponent.isNotAvailable()) {
+                    InfuserScreen.setIsPowerTooLow(true);
+                }
             }
+        }
+
+        private int getYImage() {
+            return this.enchantmentComponent.isIncompatible() || this.enchantmentComponent.isNotAvailable() ? 0 :
+                    this.enchantmentComponent.isPresent() ? 2 : 1;
         }
 
         @Override

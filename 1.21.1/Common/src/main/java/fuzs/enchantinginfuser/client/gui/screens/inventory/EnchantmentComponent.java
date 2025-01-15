@@ -46,8 +46,12 @@ public record EnchantmentComponent(InfuserMenu.EnchantmentValues enchantmentValu
         return !this.incompatibleEnchantments.isEmpty();
     }
 
+    public boolean isInactive() {
+        return this.isIncompatible() || this.isNotAvailable();
+    }
+
     public boolean isNotAvailable() {
-        return this.enchantmentValues.availableLevel() <= 0;
+        return this.enchantmentValues.availableLevel() == 0;
     }
 
     public Component getDisplayName(Holder<Enchantment> enchantment, int maxWidth, Font font, int enchantmentSeed) {

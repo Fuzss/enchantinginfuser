@@ -7,7 +7,6 @@ import fuzs.enchantinginfuser.client.util.EnchantmentTooltipHelper;
 import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
 import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.TooltipBuilder;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +15,7 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
 
     public EnchantingOperationButton(EnchantmentComponent enchantmentComponent, int x, int y, int xTexOffset, OnPress onPress) {
         super(x, y, 18, 18, 220 + xTexOffset, 0, InfuserScreen.INFUSER_LOCATION, onPress);
-        this.visible = this.getVisibleValue(enchantmentComponent);
+        this.visible = !enchantmentComponent.isNotAvailable() && this.getVisibleValue(enchantmentComponent);
         this.active = this.getActiveValue(enchantmentComponent);
         Component component = this.getTooltipComponent(enchantmentComponent);
         if (component != null) {
@@ -58,6 +57,9 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
                     this.textureHeight);
         } else {
             super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
+        }
+        if (this.isHoveredOrFocused() && this.getTooltip() != null) {
+            InfuserScreen.setIsPowerTooLow(true);
         }
     }
 

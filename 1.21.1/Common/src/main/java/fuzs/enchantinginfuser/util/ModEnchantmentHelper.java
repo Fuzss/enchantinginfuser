@@ -2,10 +2,8 @@ package fuzs.enchantinginfuser.util;
 
 import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryAccess;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
@@ -22,8 +20,9 @@ import java.util.Collection;
 public class ModEnchantmentHelper {
 
     public static Collection<Holder<Enchantment>> getEnchantmentsForItem(RegistryAccess registryAccess, ItemStack itemStack, TagKey<Enchantment> availableEnchantments, boolean primaryOnly) {
+        Registry<Enchantment> enchantments = registryAccess.registryOrThrow(Registries.ENCHANTMENT);
         boolean isBook = isBook(itemStack);
-        return registryAccess.registryOrThrow(Registries.ENCHANTMENT)
+        return enchantments
                 .getTag(availableEnchantments)
                 .stream()
                 .flatMap(HolderSet::stream)
@@ -52,10 +51,10 @@ public class ModEnchantmentHelper {
         return mutableEnchantments.toImmutable();
     }
 
-    public static ItemStack setNewEnchantments(ItemStack itemStack, ItemEnchantments newEnchantments, boolean increaseRepairCost) {
+    public static ItemStack setNewEnchantments(ItemStack itemStack, Object2IntOpenHashMap<Holder<Enchantment>> newEnchantments, boolean increaseRepairCost) {
         ItemEnchantments itemEnchantments = EnchantmentHelper.getEnchantmentsForCrafting(itemStack);
         ItemEnchantments.Mutable mutableEnchantments = new ItemEnchantments.Mutable(itemEnchantments);
-        for (Object2IntMap.Entry<Holder<Enchantment>> entry : newEnchantments.entrySet()) {
+        for (Object2IntMap.Entry<Holder<Enchantment>> entry : newEnchantments.object2IntEntrySet()) {
             mutableEnchantments.set(entry.getKey(), entry.getIntValue());
         }
         ItemEnchantments newItemEnchantments = mutableEnchantments.toImmutable();
