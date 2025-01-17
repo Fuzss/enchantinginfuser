@@ -2,18 +2,31 @@ package fuzs.enchantinginfuser.config;
 
 import fuzs.puzzleslib.api.config.v3.Config;
 import fuzs.puzzleslib.api.config.v3.ConfigCore;
+import fuzs.puzzleslib.api.config.v3.ValueCallback;
+import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ServerConfig implements ConfigCore {
     @Config
     public InfuserConfig normalInfuser = new InfuserConfig();
     @Config
     public InfuserConfig advancedInfuser = new InfuserConfig();
+    public boolean apotheosisIntegration = true;
 
     public ServerConfig() {
         this.advancedInfuser.allowRepairing = AllowedRepairItems.TOOLS_AND_ARMOR;
         this.advancedInfuser.allowBooks = true;
         this.advancedInfuser.allowModifyingEnchantments = ModifiableItems.ALL;
         this.advancedInfuser.allowAnvilEnchantments = true;
+    }
+
+    @Override
+    public void addToBuilder(ModConfigSpec.Builder builder, ValueCallback callback) {
+        if (ModLoaderEnvironment.INSTANCE.isModLoaded("apothic_enchanting")) {
+            callback.accept(builder.comment(
+                            "Enable compat for Apotheosis if it is installed. Allows for using the full range of changes Apotheosis applies to vanilla enchantments.")
+                    .define("apotheosis_integration", true), v -> this.apotheosisIntegration = v);
+        }
     }
 
     public static class InfuserConfig implements ConfigCore {

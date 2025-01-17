@@ -1,7 +1,9 @@
 package fuzs.enchantinginfuser.world.item.enchantment;
 
-import fuzs.enchantinginfuser.config.ServerConfig;
+import fuzs.enchantinginfuser.world.level.block.InfuserType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -14,6 +16,14 @@ import java.util.Collection;
  * the enchantment system is implemented.
  */
 public interface EnchantingBehavior {
+
+    static EnchantingBehavior get() {
+        return VanillaEnchantingBehavior.enchantingBehavior;
+    }
+
+    static void set(EnchantingBehavior enchantingBehavior) {
+        VanillaEnchantingBehavior.enchantingBehavior = enchantingBehavior;
+    }
 
     /**
      * Enchanting Infuser scales enchantment level costs to account for various kinds of gear being able to receive a
@@ -31,7 +41,7 @@ public interface EnchantingBehavior {
      *
      * @return the maximum enchanting power required for performing high level enchantments
      */
-    int getEnchantmentPowerLimit();
+    int getEnchantmentPowerLimit(InfuserType infuserType);
 
     /**
      * @param blockState the block state to get enchanting power from
@@ -60,22 +70,31 @@ public interface EnchantingBehavior {
      *
      * @return general multiplier for maximum cost
      */
-    default int getMaximumCost() {
-        return (int) (this.getConfig().costs.maximumCost * this.getMaximumCostMultiplier());
-    }
-
-    /**
-     * maximum cost determines how many levels you'll have to pay for fully enchanting an item with all possible
-     * enchantments it can have
-     *
-     * @return general multiplier for maximum cost
-     */
     float getMaximumCostMultiplier();
 
     /**
-     * The config instance for this type of enchanting infuser, used to provide values for the vanilla configuration.
-     *
-     * @return the config instance
+     * @param enchantment the enchantment
+     * @return max level <code>enchantment</code> is allowed to have
      */
-    ServerConfig.InfuserConfig getConfig();
+    int getMaxLevel(Holder<Enchantment> enchantment);
+
+    /**
+     * min cost variable required for this enchantment combination to be able to apply to an item at an enchanting table
+     * does not directly translate to experience levels / points
+     *
+     * @param enchantment the enchantment
+     * @param level       the current enchantment level
+     * @return min cost
+     */
+    int getMinCost(Holder<Enchantment> enchantment, int level);
+
+    /**
+     * max cost variable required for this enchantment combination to be able to apply to an item at an enchanting table
+     * does not directly translate to experience levels / points
+     *
+     * @param enchantment the enchantment
+     * @param level       the current enchantment level
+     * @return max cost
+     */
+    int getMaxCost(Holder<Enchantment> enchantment, int level);
 }

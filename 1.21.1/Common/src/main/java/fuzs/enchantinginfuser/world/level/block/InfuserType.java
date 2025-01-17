@@ -2,10 +2,8 @@ package fuzs.enchantinginfuser.world.level.block;
 
 import com.mojang.serialization.Codec;
 import fuzs.enchantinginfuser.EnchantingInfuser;
-import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.init.ModRegistry;
-import fuzs.enchantinginfuser.world.item.enchantment.VanillaEnchantingBehavior;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.inventory.MenuType;
@@ -54,10 +52,6 @@ public enum InfuserType implements StringRepresentable {
     public abstract MenuType<?> getMenuType();
 
     public abstract ServerConfig.InfuserConfig getConfig();
-
-    public EnchantingBehavior createBehavior() {
-        return new VanillaEnchantingBehavior(this.getConfig());
-    }
 
     @Override
     public String getSerializedName() {

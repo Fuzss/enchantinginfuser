@@ -1,15 +1,23 @@
 package fuzs.enchantinginfuser.world.item.enchantment;
 
-import fuzs.enchantinginfuser.config.ServerConfig;
+import fuzs.enchantinginfuser.world.level.block.InfuserType;
 import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Collection;
 import java.util.Collections;
 
-public record VanillaEnchantingBehavior(ServerConfig.InfuserConfig config) implements EnchantingBehavior {
+public final class VanillaEnchantingBehavior implements EnchantingBehavior {
+    public static final EnchantingBehavior INSTANCE = new VanillaEnchantingBehavior();
+    static EnchantingBehavior enchantingBehavior = INSTANCE;
+
+    private VanillaEnchantingBehavior() {
+        // NO-OP
+    }
 
     @Override
     public Collection<String> getScalingNamespaces() {
@@ -17,8 +25,8 @@ public record VanillaEnchantingBehavior(ServerConfig.InfuserConfig config) imple
     }
 
     @Override
-    public int getEnchantmentPowerLimit() {
-        return this.config.maximumBookshelves;
+    public int getEnchantmentPowerLimit(InfuserType infuserType) {
+        return infuserType.getConfig().maximumBookshelves;
     }
 
     @Override
@@ -37,7 +45,17 @@ public record VanillaEnchantingBehavior(ServerConfig.InfuserConfig config) imple
     }
 
     @Override
-    public ServerConfig.InfuserConfig getConfig() {
-        return this.config;
+    public int getMaxLevel(Holder<Enchantment> enchantment) {
+        return enchantment.value().getMaxLevel();
+    }
+
+    @Override
+    public int getMinCost(Holder<Enchantment> enchantment, int level) {
+        return enchantment.value().getMinCost(level);
+    }
+
+    @Override
+    public int getMaxCost(Holder<Enchantment> enchantment, int level) {
+        return enchantment.value().getMaxCost(level);
     }
 }

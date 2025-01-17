@@ -3,4 +3,9 @@ apply from: "https://raw.githubusercontent.com/Fuzss/modresources/main/gradle/${
 dependencies {
     // Puzzles Lib
     modApi libs.puzzleslib.neoforge
+
+    // Apotheosis
+    modImplementation libs.placebo.neoforge
+    modImplementation libs.apothicattributes.neoforge
+    modImplementation libs.apotheosis.neoforge
 }

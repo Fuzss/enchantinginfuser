@@ -6,7 +6,7 @@ import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import fuzs.enchantinginfuser.world.level.block.InfuserType;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import fuzs.puzzleslib.api.init.v3.registry.RegistryManager;
-import fuzs.puzzleslib.api.init.v3.tags.BoundTagFactory;
+import fuzs.puzzleslib.api.init.v3.tags.TagFactory;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.MenuType;
@@ -40,7 +40,7 @@ public class ModRegistry {
             "advanced_infusing",
             () -> (id, inventory) -> new InfuserMenu(InfuserType.ADVANCED, id, inventory));
 
-    static final BoundTagFactory TAGS = BoundTagFactory.make(EnchantingInfuser.MOD_ID);
+    static final TagFactory TAGS = TagFactory.make(EnchantingInfuser.MOD_ID);
     public static final TagKey<Enchantment> IN_ENCHANTING_INFUSER_ENCHANTMENT_TAG = TAGS.registerEnchantmentTag(
             "in_enchanting_infuser");
     public static final TagKey<Enchantment> IN_ADVANCED_ENCHANTING_INFUSER_ENCHANTMENT_TAG = TAGS.registerEnchantmentTag(

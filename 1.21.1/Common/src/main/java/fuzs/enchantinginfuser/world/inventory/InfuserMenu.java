@@ -3,6 +3,7 @@ package fuzs.enchantinginfuser.world.inventory;
 import com.mojang.datafixers.util.Pair;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.config.ModifiableItems;
+import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.network.ClientboundInfuserEnchantmentsMessage;
 import fuzs.enchantinginfuser.network.client.ServerboundEnchantmentLevelMessage;
 import fuzs.enchantinginfuser.util.EnchantmentCostHelper;
@@ -10,7 +11,6 @@ import fuzs.enchantinginfuser.util.EnchantmentPowerHelper;
 import fuzs.enchantinginfuser.util.ModEnchantmentHelper;
 import fuzs.enchantinginfuser.util.PlayerExperienceHelper;
 import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
-import fuzs.enchantinginfuser.world.item.enchantment.EnchantmentAdapter;
 import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import fuzs.enchantinginfuser.world.level.block.InfuserType;
 import fuzs.puzzleslib.api.container.v1.ContainerMenuHelper;
@@ -28,7 +28,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -47,9 +46,11 @@ import net.minecraft.world.level.block.EnchantingTableBlock;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.IntUnaryOperator;
 
 public class InfuserMenu extends AbstractContainerMenu implements ContainerListener {
@@ -60,17 +61,16 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     public static final int ENCHANTING_COST_DATA_SLOT = 1;
     public static final int REPAIR_COST_DATA_SLOT = 2;
 
+    private final InfuserType infuserType;
     private final Container enchantSlots;
     private final ContainerLevelAccess levelAccess;
     private final Player player;
-    public final EnchantingBehavior behavior;
-    private final TagKey<Enchantment> tagKey;
     private final DataSlot enchantmentPower = DataSlot.standalone();
     private final DataSlot enchantingCost = DataSlot.standalone();
     private final DataSlot repairCost = DataSlot.standalone();
-    private Object2IntOpenHashMap<Holder<Enchantment>> enchantmentLevels;
-    private Object2IntMap<Holder<Enchantment>> availableEnchantmentLevels;
-    private Object2IntMap<Holder<Enchantment>> requiredEnchantmentPowers;
+    private Object2IntMap<Holder<Enchantment>> enchantmentLevels = Object2IntMaps.emptyMap();
+    private Object2IntMap<Holder<Enchantment>> availableEnchantmentLevels = Object2IntMaps.emptyMap();
+    private Object2IntMap<Holder<Enchantment>> requiredEnchantmentPowers = Object2IntMaps.emptyMap();
     private int originalEnchantingCost;
     private boolean markedDirty;
 
@@ -81,12 +81,11 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     public InfuserMenu(InfuserType infuserType, int containerId, Inventory inventory, Container container, ContainerLevelAccess levelAccess) {
         super(infuserType.getMenuType(), containerId);
         checkContainerSize(container, 1);
+        this.infuserType = infuserType;
         this.enchantSlots = container;
         this.levelAccess = levelAccess;
         this.player = inventory.player;
-        this.behavior = infuserType.createBehavior();
-        this.tagKey = infuserType.getAvailableEnchantments();
-        this.addSlot(new Slot(container, 0, 8, this.behavior.getConfig().allowRepairing.isActive() ? 23 : 34) {
+        this.addSlot(new Slot(container, 0, 8, this.getConfig().allowRepairing.isActive() ? 23 : 34) {
 
             @Override
             public int getMaxStackSize() {
@@ -115,13 +114,22 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         this.addDataSlot(this.enchantmentPower);
         this.addDataSlot(this.enchantingCost);
         this.addDataSlot(this.repairCost);
-        this.setInitialEnchantments(null, Optional.empty());
-        this.addSlotListener(this);
+    }
+
+    public ServerConfig.InfuserConfig getConfig() {
+        return this.infuserType.getConfig();
     }
 
     @Override
     public boolean stillValid(Player player) {
         return this.enchantSlots.stillValid(player);
+    }
+
+    @Override
+    public void setItem(int slotId, int stateId, ItemStack stack) {
+        super.setItem(slotId, stateId, stack);
+        // need this here to update client screen listener when receiving data changes via ClientboundContainerSetDataPacket
+        this.broadcastChanges();
     }
 
     @Override
@@ -136,15 +144,15 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         // only called on the server anyway as the slot listener only works there
         if (container == this.enchantSlots) {
             this.levelAccess.execute((Level level, BlockPos pos) -> {
-                this.setData(ENCHANTMENT_POWER_DATA_SLOT, this.getAvailablePower(level, pos));
+                this.enchantmentPower.set(this.getAvailablePower(level, pos));
                 if (this.mayEnchantStack(this.getEnchantableStack())) {
                     this.setInitialEnchantments(level, Optional.of(this.getOriginalEnchantments()));
-                    this.setData(ENCHANTING_COST_DATA_SLOT, this.calculateEnchantingCost());
-                    this.setData(REPAIR_COST_DATA_SLOT, this.calculateRepairCost());
+                    this.enchantingCost.set(this.calculateEnchantingCost());
+                    this.repairCost.set(this.calculateRepairCost());
                 } else {
                     this.setInitialEnchantments(level, Optional.empty());
-                    this.setData(ENCHANTING_COST_DATA_SLOT, 0);
-                    this.setData(REPAIR_COST_DATA_SLOT, 0);
+                    this.enchantingCost.set(0);
+                    this.repairCost.set(0);
                 }
             });
         }
@@ -154,33 +162,32 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     private boolean mayEnchantStack(ItemStack itemStack) {
         if (itemStack.isEmpty()) {
             return false;
-        } else if (this.behavior.getConfig().allowBooks) {
+        } else if (this.getConfig().allowBooks) {
             if (itemStack.is(Items.BOOK)) {
                 return true;
             } else if (itemStack.is(Items.ENCHANTED_BOOK)) {
-                return this.behavior.getConfig().allowModifyingEnchantments != ModifiableItems.UNENCHANTED;
+                return this.getConfig().allowModifyingEnchantments != ModifiableItems.UNENCHANTED;
             }
         } else if (ModEnchantmentHelper.isBook(itemStack)) {
             return false;
         }
 
-        return this.behavior.getConfig().allowModifyingEnchantments.predicate.test(itemStack);
+        return this.getConfig().allowModifyingEnchantments.predicate.test(itemStack);
     }
 
     private int getAvailablePower(Level level, BlockPos pos) {
         float enchantingPower = 0.0F;
         float maxPowerScale = 1.0F;
         for (BlockPos offset : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
-            if (InfuserBlock.isValidBookShelf(this.behavior, level, pos, offset)) {
+            if (InfuserBlock.isValidBookShelf(level, pos, offset)) {
                 BlockState blockState = level.getBlockState(pos.offset(offset));
-                enchantingPower += this.behavior.getEnchantmentPower(blockState, level, pos.offset(offset));
+                enchantingPower += EnchantingBehavior.get().getEnchantmentPower(blockState, level, pos.offset(offset));
                 maxPowerScale = Math.max(maxPowerScale,
-                        this.behavior.getEnchantmentPowerLimitScale(blockState, level, pos.offset(offset)));
+                        EnchantingBehavior.get().getEnchantmentPowerLimitScale(blockState, level, pos.offset(offset)));
             }
         }
         // Apotheosis has bookshelves with negative enchanting power, so make sure this value doesn't go there
-        return (int) Math.min(Math.max(0.0F, enchantingPower),
-                this.behavior.getConfig().maximumBookshelves * maxPowerScale);
+        return (int) Math.min(Math.max(0.0F, enchantingPower), this.getConfig().maximumBookshelves * maxPowerScale);
     }
 
     @Override
@@ -211,19 +218,19 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         // the enchantment is newly added and is not compatible with existing enchantments, so no level is allowed
         int enchantmentLevel = this.enchantmentLevels.getInt(enchantment);
         if (enchantmentLevel == 0 &&
-                !EnchantmentAdapter.get().isEnchantmentCompatible(this.getItemEnchantments().keySet(), enchantment)) {
+                !EnchantmentHelper.isEnchantmentCompatible(this.getItemEnchantments().keySet(), enchantment)) {
             return 0;
         } else {
             int newEnchantmentLevel = operation.applyAsInt(enchantmentLevel);
             // the new enchantment level exceeds min & max enchantment bounds
-            newEnchantmentLevel = Mth.clamp(newEnchantmentLevel, 0, EnchantmentAdapter.get().getMaxLevel(enchantment));
+            newEnchantmentLevel = Mth.clamp(newEnchantmentLevel, 0, EnchantingBehavior.get().getMaxLevel(enchantment));
             // the new enchantment level exceeds max possible level for the available enchantment power,
             // based on the current block configuration
             newEnchantmentLevel = Math.min(newEnchantmentLevel, this.getAvailableEnchantmentLevel(enchantment));
             if (newEnchantmentLevel != enchantmentLevel) {
                 this.enchantmentLevels.put(enchantment, newEnchantmentLevel);
-                this.setChanged();
-                this.setData(ENCHANTING_COST_DATA_SLOT, this.calculateEnchantingCost());
+                this.markedDirty = !this.getItemEnchantments().equals(this.getOriginalEnchantments());
+                this.enchantingCost.set(this.calculateEnchantingCost());
                 this.broadcastChanges();
             }
             return newEnchantmentLevel;
@@ -245,14 +252,12 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 this.processEnchantingCost(player, level, pos, this.getEnchantingCost());
                 ItemStack itemStack = ModEnchantmentHelper.setNewEnchantments(this.getEnchantableStack(),
                         this.enchantmentLevels,
-                        this.behavior.getConfig().increaseAnvilRepairCost);
+                        this.getConfig().increaseAnvilRepairCost);
                 this.enchantSlots.setItem(ENCHANT_ITEM_SLOT, itemStack);
                 if (this.getEnchantingCost() > 0) {
                     player.awardStat(Stats.ENCHANT_ITEM);
-                    if (player instanceof ServerPlayer) {
-                        CriteriaTriggers.ENCHANTED_ITEM.trigger((ServerPlayer) player,
-                                itemStack,
-                                this.getEnchantingCost());
+                    if (player instanceof ServerPlayer serverPlayer) {
+                        CriteriaTriggers.ENCHANTED_ITEM.trigger(serverPlayer, itemStack, this.getEnchantingCost());
                     }
                 }
                 this.enchantSlots.setChanged();
@@ -304,7 +309,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 int itemRepairCost = itemStack.getOrDefault(DataComponents.REPAIR_COST, 0);
                 itemStack = itemStack.copy();
                 itemStack.setDamageValue(0);
-                if (this.behavior.getConfig().increaseAnvilRepairCost) {
+                if (this.getConfig().increaseAnvilRepairCost) {
                     itemStack.set(DataComponents.REPAIR_COST, AnvilMenu.calculateIncreasedRepairCost(itemRepairCost));
                 }
                 this.enchantSlots.setItem(ENCHANT_ITEM_SLOT, itemStack);
@@ -320,33 +325,34 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     private int calculateRepairCost() {
         ItemStack itemStack = this.getEnchantableStack();
-        if (this.behavior.getConfig().allowRepairing.canRepair(itemStack)) {
-            double repairStep = itemStack.getMaxDamage() * this.behavior.getConfig().repair.repairPercentageStep;
-            return (int) Math.ceil(Math.ceil(itemStack.getDamageValue() / repairStep) *
-                    this.behavior.getConfig().repair.repairStepMultiplier);
+        if (this.getConfig().allowRepairing.canRepair(itemStack)) {
+            double repairStep = itemStack.getMaxDamage() * this.getConfig().repair.repairPercentageStep;
+            return (int) Math.ceil(
+                    Math.ceil(itemStack.getDamageValue() / repairStep) * this.getConfig().repair.repairStepMultiplier);
         } else {
             return 0;
         }
     }
 
     private int getScaledEnchantmentCosts(ItemEnchantments itemEnchantments) {
-        int scalingEnchantmentCosts = EnchantmentCostHelper.getScalingEnchantmentCosts(this.availableEnchantmentLevels.keySet(),
-                this.getScalingNamespaces());
-        int maximumCost = this.behavior.getMaximumCost();
-        if (scalingEnchantmentCosts > maximumCost && !ModEnchantmentHelper.isBook(this.getEnchantableStack())) {
-            float enchantmentCostScale = maximumCost / (float) scalingEnchantmentCosts;
-            int scaledEnchantmentCosts = Math.round(
-                    EnchantmentCostHelper.getEnchantmentCosts(itemEnchantments) * enchantmentCostScale);
-            int minimumCosts = itemEnchantments.entrySet().stream().mapToInt(Object2IntMap.Entry::getIntValue).sum();
-            return Math.max(scaledEnchantmentCosts, minimumCosts);
+        float enchantmentCostsScale;
+        if (ModEnchantmentHelper.isBook(this.getEnchantableStack())) {
+            enchantmentCostsScale = 1.0F;
         } else {
-            return EnchantmentCostHelper.getEnchantmentCosts(itemEnchantments);
+            int scalingEnchantmentCosts = EnchantmentCostHelper.getScalingEnchantmentCosts(this.availableEnchantmentLevels.keySet(),
+                    this.getScalingNamespaces());
+            int maximumCost = Mth.ceil(
+                    this.getConfig().costs.maximumCost * EnchantingBehavior.get().getMaximumCostMultiplier());
+            enchantmentCostsScale = Math.min(1.0F, maximumCost / (float) scalingEnchantmentCosts);
         }
+        float enchantmentCosts = EnchantmentCostHelper.getEnchantmentCosts(itemEnchantments, enchantmentCostsScale);
+        int minimumCosts = itemEnchantments.entrySet().stream().mapToInt(Object2IntMap.Entry::getIntValue).sum();
+        return Math.max(Mth.ceil(enchantmentCosts), minimumCosts);
     }
 
     private Collection<String> getScalingNamespaces() {
-        if (this.behavior.getConfig().costs.scaleCostsByVanillaOnly) {
-            return this.behavior.getScalingNamespaces();
+        if (this.getConfig().costs.scaleCostsByVanillaOnly) {
+            return EnchantingBehavior.get().getScalingNamespaces();
         } else {
             return Collections.emptySet();
         }
@@ -406,7 +412,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     public int getEnchantmentPowerLimit() {
-        return this.behavior.getEnchantmentPowerLimit();
+        return EnchantingBehavior.get().getEnchantmentPowerLimit(this.infuserType);
     }
 
     public ItemStack getEnchantableStack() {
@@ -430,7 +436,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     public boolean canRepair(Player player) {
-        if (this.behavior.getConfig().allowRepairing.canRepair(this.getEnchantableStack())) {
+        if (this.getConfig().allowRepairing.canRepair(this.getEnchantableStack())) {
             return player.experienceLevel >= this.getRepairCost() || player.getAbilities().instabuild;
         } else {
             return false;
@@ -457,27 +463,13 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         return EnchantmentHelper.getEnchantmentsForCrafting(this.getEnchantableStack());
     }
 
-    public int getRequiredEnchantmentPower(Holder<Enchantment> enchantment) {
+    private int getRequiredEnchantmentPower(Holder<Enchantment> enchantment) {
         return this.requiredEnchantmentPowers.getInt(enchantment);
     }
 
-    public void setItemEnchantments(ItemEnchantments itemEnchantments) {
-        Object2IntOpenHashMap<Holder<Enchantment>> enchantmentLevels = new Object2IntOpenHashMap<>();
-        for (Object2IntMap.Entry<Holder<Enchantment>> entry : itemEnchantments.entrySet()) {
-            enchantmentLevels.put(entry.getKey(), entry.getIntValue());
-        }
-        this.enchantmentLevels = enchantmentLevels;
-        this.setChanged();
-    }
-
-    private void setChanged() {
-        this.markedDirty = !this.getItemEnchantments().equals(this.getOriginalEnchantments());
-    }
-
-    public void setInitialEnchantments(@Nullable Level level, Optional<ItemEnchantments> itemEnchantments) {
+    public void setInitialEnchantments(Level level, Optional<ItemEnchantments> itemEnchantments) {
         this.setItemEnchantments(itemEnchantments.orElse(ItemEnchantments.EMPTY));
         if (itemEnchantments.isPresent()) {
-            Objects.requireNonNull(level, "level is null");
             this.initializeEnchantmentMaps(level);
             this.originalEnchantingCost = this.getScaledEnchantmentCosts(itemEnchantments.get());
         } else {
@@ -488,11 +480,20 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         this.sendEnchantments(itemEnchantments);
     }
 
+    private void setItemEnchantments(ItemEnchantments itemEnchantments) {
+        Object2IntOpenHashMap<Holder<Enchantment>> enchantmentLevels = new Object2IntOpenHashMap<>();
+        for (Object2IntMap.Entry<Holder<Enchantment>> entry : itemEnchantments.entrySet()) {
+            enchantmentLevels.put(entry.getKey(), entry.getIntValue());
+        }
+        this.enchantmentLevels = enchantmentLevels;
+        this.markedDirty = false;
+    }
+
     private void initializeEnchantmentMaps(Level level) {
         Collection<Holder<Enchantment>> enchantments = ModEnchantmentHelper.getEnchantmentsForItem(level.registryAccess(),
                 this.getEnchantableStack(),
-                this.tagKey,
-                !this.behavior.getConfig().allowAnvilEnchantments);
+                this.infuserType.getAvailableEnchantments(),
+                !this.getConfig().allowAnvilEnchantments);
         int enchantmentValue = this.getEnchantableStack().getItem().getEnchantmentValue();
         this.availableEnchantmentLevels = EnchantmentPowerHelper.getAvailableEnchantmentLevels(this.getEnchantmentPower(),
                 enchantments,
@@ -514,7 +515,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     public EnchantmentValues getEnchantmentValues(Holder<Enchantment> enchantment) {
-        int maxLevel = EnchantmentAdapter.get().getMaxLevel(enchantment);
+        int maxLevel = EnchantingBehavior.get().getMaxLevel(enchantment);
         int availableLevel = this.getAvailableEnchantmentLevel(enchantment);
         int requiredEnchantmentPower = this.getRequiredEnchantmentPower(enchantment);
         return new EnchantmentValues(maxLevel, availableLevel, this.getEnchantmentPower(), requiredEnchantmentPower);

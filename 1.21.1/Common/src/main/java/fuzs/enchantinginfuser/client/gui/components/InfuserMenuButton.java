@@ -4,6 +4,7 @@ import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
 import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.TooltipBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.component.DataComponents;
@@ -13,6 +14,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -25,25 +27,22 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
     public static final String KEY_TOOLTIP_DURABILITY = "gui.enchantinginfuser.tooltip.durability";
     public static final String KEY_TOOLTIP_HINT = "gui.enchantinginfuser.tooltip.enchanting_power.hint";
 
-    final InfuserScreen screen;
+    private int color = -1;
 
-    public InfuserMenuButton(InfuserScreen screen, int x, int y, int xTexStart, int yTexStart, OnPress onPress) {
+    public InfuserMenuButton(int x, int y, int xTexStart, int yTexStart, OnPress onPress) {
         super(x, y, 18, 18, xTexStart, yTexStart, InfuserScreen.INFUSER_LOCATION, onPress);
-        this.screen = screen;
         this.setTextureLayout(SpritelessImageButton.LEGACY_TEXTURE_LAYOUT);
     }
 
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
-        if (this.getValue() != 0) {
-            drawStringWithBackground(this.screen.font,
-                    guiGraphics,
-                    this.getX() + 1,
-                    this.getY() + 1,
-                    Component.literal(this.getStringValue()),
-                    this.getStringColor().getColor());
-        }
+        drawStringWithBackground(Minecraft.getInstance().font,
+                guiGraphics,
+                this.getX() + 1,
+                this.getY() + 1,
+                this.getMessage(),
+                this.color);
     }
 
     static void drawStringWithBackground(Font font, GuiGraphics guiGraphics, int posX, int posY, Component component, int color) {
@@ -58,33 +57,30 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
         guiGraphics.flush();
     }
 
-    abstract int getValue();
-
-    abstract boolean mayApply();
-
-    abstract ChatFormatting getStringColor();
-
-    abstract String getStringValue();
-
-    public void refreshTooltip(ItemStack itemStack) {
-        List<FormattedText> tooltipLines = this.getTooltipLines(itemStack);
-        if (!tooltipLines.isEmpty()) {
-            TooltipBuilder.create().addLines(tooltipLines).build(this);
-        } else {
-            this.setTooltip(null);
-        }
+    public void refreshMessage(int value, boolean mayApply) {
+        this.setMessage(value != 0 ? Component.literal(this.getStringValue(value)) : CommonComponents.EMPTY);
+        this.color = this.getStringColor(value, mayApply).getColor();
     }
 
-    private List<FormattedText> getTooltipLines(ItemStack itemStack) {
-        if (!this.mayApply() && this.getValue() == 0) {
+    abstract ChatFormatting getStringColor(int value, boolean mayApply);
+
+    abstract String getStringValue(int value);
+
+    public void refreshTooltip(ItemStack itemStack, ItemEnchantments itemEnchantments, int value, boolean mayApply) {
+        List<FormattedText> tooltipLines = this.getTooltipLines(itemStack, itemEnchantments, value, mayApply);
+        TooltipBuilder.create().addLines(tooltipLines).build(this);
+    }
+
+    private List<FormattedText> getTooltipLines(ItemStack itemStack, ItemEnchantments itemEnchantments, int value, boolean mayApply) {
+        if (!mayApply && value == 0) {
             return Collections.emptyList();
         } else {
             List<FormattedText> lines = new ArrayList<>();
-            if (this.mayApply()) {
-                lines.add(this.getNameComponent(itemStack));
-                lines.addAll(this.getCustomLines(itemStack));
+            if (mayApply) {
+                lines.add(this.getNameComponent(itemStack, itemEnchantments));
+                lines.addAll(this.getCustomLines(itemStack, itemEnchantments));
             }
-            Component levelsComponent = this.getLevelsComponent();
+            Component levelsComponent = this.getLevelsComponent(value, mayApply);
             if (levelsComponent != null) {
                 if (!lines.isEmpty()) {
                     lines.add(CommonComponents.EMPTY);
@@ -95,25 +91,24 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
         }
     }
 
-    Component getNameComponent(ItemStack itemStack) {
+    Component getNameComponent(ItemStack itemStack, ItemEnchantments itemEnchantments) {
         MutableComponent component = Component.empty()
                 .append(itemStack.getHoverName())
-                .withStyle(this.getItemNameRarity(itemStack).color());
+                .withStyle(this.getItemNameRarity(itemStack, itemEnchantments).color());
         if (itemStack.has(DataComponents.CUSTOM_NAME)) {
             component.withStyle(ChatFormatting.ITALIC);
         }
         return component;
     }
 
-    Rarity getItemNameRarity(ItemStack itemStack) {
+    Rarity getItemNameRarity(ItemStack itemStack, ItemEnchantments itemEnchantments) {
         return itemStack.getRarity();
     }
 
-    abstract List<FormattedText> getCustomLines(ItemStack itemStack);
+    abstract List<FormattedText> getCustomLines(ItemStack itemStack, ItemEnchantments itemEnchantments);
 
-    @Nullable Component getLevelsComponent() {
-        int value = this.getValue();
-        if (this.mayApply()) {
+    @Nullable Component getLevelsComponent(int value, boolean mayApply) {
+        if (mayApply) {
             if (value != 0) {
                 if (value == 1) {
                     return Component.translatable("container.enchant.level.one").withStyle(ChatFormatting.GRAY);

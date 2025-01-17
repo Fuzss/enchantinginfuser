@@ -1,5 +1,6 @@
 package fuzs.enchantinginfuser.util;
 
+import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -17,7 +18,11 @@ public class EnchantmentPowerHelper {
     public static Object2IntMap<Holder<Enchantment>> getAvailableEnchantmentLevels(int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
         Object2IntMap<Holder<Enchantment>> maximumEnchantmentLevels = new Object2IntOpenHashMap<>();
         for (Holder<Enchantment> enchantment : itemEnchantments) {
-            int enchantmentLevel = getAvailableEnchantmentLevel(enchantment, enchantmentPower, itemEnchantments, powerLimit, enchantmentValue);
+            int enchantmentLevel = getAvailableEnchantmentLevel(enchantment,
+                    enchantmentPower,
+                    itemEnchantments,
+                    powerLimit,
+                    enchantmentValue);
             maximumEnchantmentLevels.put(enchantment, enchantmentLevel);
         }
 
@@ -25,10 +30,13 @@ public class EnchantmentPowerHelper {
     }
 
     public static int getAvailableEnchantmentLevel(Holder<Enchantment> enchantment, int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
-        for (int enchantmentLevel = enchantment.value().getMaxLevel(); enchantmentLevel > 0; enchantmentLevel--) {
-            int powerForLevel = getScaledPowerForLevel(enchantment, enchantmentLevel, itemEnchantments, powerLimit,
-                    enchantmentValue
-            );
+        for (int enchantmentLevel = EnchantingBehavior.get().getMaxLevel(enchantment);
+             enchantmentLevel > 0; enchantmentLevel--) {
+            int powerForLevel = getScaledPowerForLevel(enchantment,
+                    enchantmentLevel,
+                    itemEnchantments,
+                    powerLimit,
+                    enchantmentValue);
             if (powerForLevel <= enchantmentPower) {
                 return enchantmentLevel;
             }
@@ -40,7 +48,11 @@ public class EnchantmentPowerHelper {
     public static Object2IntMap<Holder<Enchantment>> getRequiredEnchantmentPowers(int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
         Object2IntMap<Holder<Enchantment>> requiredEnchantmentPowers = new Object2IntOpenHashMap<>();
         for (Holder<Enchantment> enchantment : itemEnchantments) {
-            int enchantmentLevel = getRequiredEnchantmentPower(enchantment, enchantmentPower, itemEnchantments, powerLimit, enchantmentValue);
+            int enchantmentLevel = getRequiredEnchantmentPower(enchantment,
+                    enchantmentPower,
+                    itemEnchantments,
+                    powerLimit,
+                    enchantmentValue);
             requiredEnchantmentPowers.put(enchantment, enchantmentLevel);
         }
 
@@ -49,10 +61,13 @@ public class EnchantmentPowerHelper {
 
     public static int getRequiredEnchantmentPower(Holder<Enchantment> enchantment, int enchantmentPower, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
         int requiredEnchantmentPower = 0;
-        for (int enchantmentLevel = enchantment.value().getMaxLevel(); enchantmentLevel >= 0; enchantmentLevel--) {
-            int powerForLevel = getScaledPowerForLevel(enchantment, enchantmentLevel, itemEnchantments, powerLimit,
-                    enchantmentValue
-            );
+        for (int enchantmentLevel = EnchantingBehavior.get().getMaxLevel(enchantment);
+             enchantmentLevel >= 0; enchantmentLevel--) {
+            int powerForLevel = getScaledPowerForLevel(enchantment,
+                    enchantmentLevel,
+                    itemEnchantments,
+                    powerLimit,
+                    enchantmentValue);
             if (powerForLevel > enchantmentPower) {
                 requiredEnchantmentPower = powerForLevel;
             } else {
@@ -140,11 +155,11 @@ public class EnchantmentPowerHelper {
         if (itemEnchantments.isEmpty()) {
             return 0;
         } else {
-            int averageMaxStrength = itemEnchantments.stream().mapToInt((Holder<Enchantment> holder) -> {
-                return getPowerForLevel(holder, holder.value().getMaxLevel());
+            int averageMaxStrength = itemEnchantments.stream().mapToInt((Holder<Enchantment> enchantment) -> {
+                return getPowerForLevel(enchantment, EnchantingBehavior.get().getMaxLevel(enchantment));
             }).sum() / itemEnchantments.size();
-            int absoluteMaxStrength = itemEnchantments.stream().mapToInt((Holder<Enchantment> holder) -> {
-                return getPowerForLevel(holder, holder.value().getMaxLevel());
+            int absoluteMaxStrength = itemEnchantments.stream().mapToInt((Holder<Enchantment> enchantment) -> {
+                return getPowerForLevel(enchantment, EnchantingBehavior.get().getMaxLevel(enchantment));
             }).max().orElse(0);
             return (averageMaxStrength + absoluteMaxStrength) / 2;
         }
@@ -161,8 +176,9 @@ public class EnchantmentPowerHelper {
      * depending on the level.
      */
     private static int getPowerForLevel(Holder<Enchantment> enchantment, int enchantmentLevel) {
-        int minCost = enchantment.value().getMinCost(enchantmentLevel);
-        int maxCost = enchantment.value().getMaxCost(enchantmentLevel);
-        return minCost + (maxCost - minCost) * enchantmentLevel / (enchantment.value().getMaxLevel() + 1);
+        int minCost = EnchantingBehavior.get().getMinCost(enchantment, enchantmentLevel);
+        int maxCost = EnchantingBehavior.get().getMaxCost(enchantment, enchantmentLevel);
+        return minCost +
+                (maxCost - minCost) * enchantmentLevel / (EnchantingBehavior.get().getMaxLevel(enchantment) + 1);
     }
 }

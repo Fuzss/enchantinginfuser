@@ -47,15 +47,12 @@ import java.util.List;
 public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<InfuserBlockEntity> {
     public static final MapCodec<InfuserBlock> CODEC = RecordCodecBuilder.mapCodec((instance) -> {
         return instance.group(InfuserType.CODEC.fieldOf("type").forGetter(infuserBlock -> infuserBlock.type),
-                propertiesCodec()
-        ).apply(instance, InfuserBlock::new);
+                propertiesCodec()).apply(instance, InfuserBlock::new);
     });
-    public static final Component COMPONENT_CHOOSE = Component.translatable(
-            "block.enchantinginfuser.description.choose");
+    public static final Component COMPONENT_CHOOSE = Component.translatable("block.enchantinginfuser.description.choose");
     public static final Component COMPONENT_CHOOSE_AND_MODIFY = Component.translatable(
             "block.enchantinginfuser.description.chooseAndModify");
-    public static final Component COMPONENT_REPAIR = Component.translatable(
-            "block.enchantinginfuser.description.repair");
+    public static final Component COMPONENT_REPAIR = Component.translatable("block.enchantinginfuser.description.repair");
     protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
 
     private final InfuserType type;
@@ -65,8 +62,9 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
         this.type = type;
     }
 
-    public static boolean isValidBookShelf(EnchantingBehavior behavior, Level level, BlockPos pos, BlockPos offset) {
-        if (behavior.getEnchantmentPower(level.getBlockState(pos.offset(offset)), level, pos.offset(offset)) != 0.0F) {
+    public static boolean isValidBookShelf(Level level, BlockPos pos, BlockPos offset) {
+        if (EnchantingBehavior.get()
+                .getEnchantmentPower(level.getBlockState(pos.offset(offset)), level, pos.offset(offset)) != 0.0F) {
             BlockPos inBetweenPos = pos.offset(offset.getX() / 2, offset.getY(), offset.getZ() / 2);
             return level.getBlockState(inBetweenPos).getCollisionShape(level, inBetweenPos) != Shapes.block();
         } else {
@@ -116,11 +114,16 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
             Component component = blockEntity.getDisplayName();
             return new SimpleMenuProvider((int containerId, Inventory inventory, Player player) -> {
                 if (blockEntity.canOpen(player)) {
-                    return new InfuserMenu(this.type, containerId, inventory, blockEntity,
-                            ContainerLevelAccess.create(level, blockPos)
-                    );
+                    InfuserMenu menu = new InfuserMenu(this.type,
+                            containerId,
+                            inventory,
+                            blockEntity,
+                            ContainerLevelAccess.create(level, blockPos));
+                    menu.addSlotListener(menu);
+                    return menu;
+                } else {
+                    return null;
                 }
-                return null;
             }, component);
         } else {
             return null;
@@ -130,12 +133,14 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
     @Override
     public void animateTick(BlockState blockState, Level level, BlockPos pos, RandomSource random) {
         for (BlockPos offset : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
-            if (random.nextInt(16) == 0 && isValidBookShelf(this.type.createBehavior(), level, pos, offset)) {
-                level.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D,
-                        ((float) offset.getX() + random.nextFloat()) - 0.5D,
+            if (random.nextInt(16) == 0 && isValidBookShelf(level, pos, offset)) {
+                level.addParticle(ParticleTypes.ENCHANT,
+                        pos.getX() + 0.5,
+                        pos.getY() + 2.0,
+                        pos.getZ() + 0.5,
+                        ((float) offset.getX() + random.nextFloat()) - 0.5,
                         ((float) offset.getY() - random.nextFloat() - 1.0F),
-                        ((float) offset.getZ() + random.nextFloat()) - 0.5D
-                );
+                        ((float) offset.getZ() + random.nextFloat()) - 0.5);
             }
         }
     }

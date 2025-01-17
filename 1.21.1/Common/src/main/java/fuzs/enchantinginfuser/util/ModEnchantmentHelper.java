@@ -2,7 +2,6 @@ package fuzs.enchantinginfuser.util;
 
 import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -22,8 +21,7 @@ public class ModEnchantmentHelper {
     public static Collection<Holder<Enchantment>> getEnchantmentsForItem(RegistryAccess registryAccess, ItemStack itemStack, TagKey<Enchantment> availableEnchantments, boolean primaryOnly) {
         Registry<Enchantment> enchantments = registryAccess.registryOrThrow(Registries.ENCHANTMENT);
         boolean isBook = isBook(itemStack);
-        return enchantments
-                .getTag(availableEnchantments)
+        return enchantments.getTag(availableEnchantments)
                 .stream()
                 .flatMap(HolderSet::stream)
                 .filter((Holder<Enchantment> holder) -> {
@@ -51,7 +49,7 @@ public class ModEnchantmentHelper {
         return mutableEnchantments.toImmutable();
     }
 
-    public static ItemStack setNewEnchantments(ItemStack itemStack, Object2IntOpenHashMap<Holder<Enchantment>> newEnchantments, boolean increaseRepairCost) {
+    public static ItemStack setNewEnchantments(ItemStack itemStack, Object2IntMap<Holder<Enchantment>> newEnchantments, boolean increaseRepairCost) {
         ItemEnchantments itemEnchantments = EnchantmentHelper.getEnchantmentsForCrafting(itemStack);
         ItemEnchantments.Mutable mutableEnchantments = new ItemEnchantments.Mutable(itemEnchantments);
         for (Object2IntMap.Entry<Holder<Enchantment>> entry : newEnchantments.object2IntEntrySet()) {
@@ -62,8 +60,7 @@ public class ModEnchantmentHelper {
         EnchantmentHelper.setEnchantments(newItemStack, newItemEnchantments);
         if (increaseRepairCost) {
             newItemStack.set(DataComponents.REPAIR_COST,
-                    AnvilMenu.calculateIncreasedRepairCost(itemStack.getOrDefault(DataComponents.REPAIR_COST, 0))
-            );
+                    AnvilMenu.calculateIncreasedRepairCost(itemStack.getOrDefault(DataComponents.REPAIR_COST, 0)));
         }
 
         return newItemStack;
@@ -85,8 +82,10 @@ public class ModEnchantmentHelper {
         } else {
             itemStack = new ItemStack(itemStack.getItem());
             ItemEnchantments.Mutable itemEnchantments = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-            HolderLookup.RegistryLookup<Enchantment> holderOwner = registries.lookupOrThrow(Registries.ENCHANTMENT);
-            itemEnchantments.set(Holder.Reference.createIntrusive(holderOwner, null), 1);
+            HolderLookup.RegistryLookup<Enchantment> enchantments = registries.lookupOrThrow(Registries.ENCHANTMENT);
+            // just any entry must be present for the item to count as enchanted
+            // alternatively create a custom ItemEnchantments implementation
+            itemEnchantments.set(null, 1);
             itemStack.set(DataComponents.ENCHANTMENTS, itemEnchantments.toImmutable());
             Rarity rarity = itemStack.getRarity();
             itemStack.set(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);

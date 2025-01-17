@@ -7,7 +7,13 @@ import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
-public abstract class AbstractCustomSelectionList<E extends ContainerObjectSelectionList.Entry<E>> extends ContainerObjectSelectionList<E> {
+/**
+ * A selection list implementation that can be used as part of a screen anywhere, without having to cover the whole
+ * screen width.
+ * <p>
+ * Also, the scroll bar is mostly handled separately, and is placed outside the bounds of the actual list.
+ */
+public abstract class AbstractMenuSelectionList<E extends ContainerObjectSelectionList.Entry<E>> extends ContainerObjectSelectionList<E> {
     private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace(
             "container/creative_inventory/scroller");
     private static final ResourceLocation SCROLLER_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace(
@@ -17,7 +23,7 @@ public abstract class AbstractCustomSelectionList<E extends ContainerObjectSelec
 
     private final int scrollbarOffset;
 
-    public AbstractCustomSelectionList(Minecraft minecraft, int x, int y, int width, int height, int itemHeight, int scrollbarOffset) {
+    public AbstractMenuSelectionList(Minecraft minecraft, int x, int y, int width, int height, int itemHeight, int scrollbarOffset) {
         super(minecraft, width, height, y, itemHeight);
         this.scrollbarOffset = scrollbarOffset;
         this.setX(x);

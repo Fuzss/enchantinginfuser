@@ -1,8 +1,6 @@
 package fuzs.enchantinginfuser.client.util;
 
-import com.google.common.collect.Lists;
-import fuzs.enchantinginfuser.world.item.enchantment.EnchantmentAdapter;
-import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.ClientComponentSplitter;
+import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
@@ -11,7 +9,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,8 +29,7 @@ public class EnchantmentTooltipHelper {
 
     public static List<Component> getWeakPowerTooltip(int currentPower, int requiredPower, Component component) {
         List<Component> lines = new ArrayList<>();
-        Component currentPowerComponent = Component.literal(String.valueOf(currentPower))
-                .withStyle(ChatFormatting.RED);
+        Component currentPowerComponent = Component.literal(String.valueOf(currentPower)).withStyle(ChatFormatting.RED);
         Component requiredPowerComponent = Component.literal(String.valueOf(requiredPower));
         lines.add(Component.translatable(KEY_CURRENT_ENCHANTING_POWER, currentPowerComponent, requiredPowerComponent));
         lines.add(component);
@@ -46,8 +42,7 @@ public class EnchantmentTooltipHelper {
                         .map(EnchantmentTooltipHelper::getDisplayName)
                         .reduce((MutableComponent o1, MutableComponent o2) -> o1.append(", ").append(o2))
                         .orElse(Component.empty())
-                        .withStyle(ChatFormatting.GRAY)
-        );
+                        .withStyle(ChatFormatting.GRAY));
         return Collections.singletonList(component);
     }
 
@@ -65,8 +60,8 @@ public class EnchantmentTooltipHelper {
     }
 
     private static Component getLevelComponent(Holder<Enchantment> enchantment) {
-        int minLevel = EnchantmentAdapter.get().getMinLevel(enchantment);
-        int maxLevel = EnchantmentAdapter.get().getMaxLevel(enchantment);
+        int minLevel = enchantment.value().getMinLevel();
+        int maxLevel = EnchantingBehavior.get().getMaxLevel(enchantment);
         MutableComponent component = Component.translatable("enchantment.level." + minLevel);
         if (minLevel != maxLevel) {
             component.append("-").append(Component.translatable("enchantment.level." + maxLevel));
@@ -95,13 +90,14 @@ public class EnchantmentTooltipHelper {
     }
 
     public static MutableComponent getDisplayName(Holder<Enchantment> enchantment) {
-        return Component.empty().append(enchantment.value().description());
+        return enchantment.value().description().copy();
     }
 
     public static MutableComponent getDisplayNameWithLevel(Holder<Enchantment> enchantment, int level) {
         MutableComponent component = getDisplayName(enchantment);
-        if (level != 1 || EnchantmentAdapter.get().getMaxLevel(enchantment) != 1) {
-            return component.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level));
+        if (level != 1 || EnchantingBehavior.get().getMaxLevel(enchantment) != 1) {
+            return component.append(CommonComponents.SPACE)
+                    .append(Component.translatable("enchantment.level." + level));
         } else {
             return component;
         }

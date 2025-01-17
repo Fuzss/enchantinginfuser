@@ -1,6 +1,6 @@
 package fuzs.enchantinginfuser.util;
 
-import fuzs.enchantinginfuser.world.item.enchantment.EnchantmentAdapter;
+import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
@@ -26,8 +26,8 @@ public class PlayerExperienceHelper {
             int originalLevel = originalEnchantments.getLevel(enchantment);
             int currentLevel = entry.getIntValue();
             if (originalLevel > currentLevel) {
-                int originalMinCost = EnchantmentAdapter.get().getMinCost(enchantment, originalLevel);
-                int currentMinCost = EnchantmentAdapter.get().getMinCost(enchantment, currentLevel);
+                int originalMinCost = EnchantingBehavior.get().getMinCost(enchantment, originalLevel);
+                int currentMinCost = EnchantingBehavior.get().getMinCost(enchantment, currentLevel);
                 experiencePoints += Math.max(0, originalMinCost) - Math.max(0, currentMinCost);
             }
         }

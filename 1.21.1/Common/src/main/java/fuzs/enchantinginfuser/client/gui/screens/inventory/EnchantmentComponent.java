@@ -3,7 +3,6 @@ package fuzs.enchantinginfuser.client.gui.screens.inventory;
 import com.google.common.collect.ImmutableSet;
 import fuzs.enchantinginfuser.client.util.EnchantmentTooltipHelper;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
-import fuzs.enchantinginfuser.world.item.enchantment.EnchantmentAdapter;
 import fuzs.puzzleslib.api.chat.v1.ComponentHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -29,7 +28,7 @@ public record EnchantmentComponent(InfuserMenu.EnchantmentValues enchantmentValu
         int enchantmentLevel = itemEnchantments.getLevel(enchantment);
         Set<Holder<Enchantment>> incompatibleEnchantments = new HashSet<>();
         for (Holder<Enchantment> holder : itemEnchantments.keySet()) {
-            if (!enchantment.is(holder) && !EnchantmentAdapter.get().areCompatible(enchantment, holder)) {
+            if (!enchantment.is(holder) && !Enchantment.areCompatible(enchantment, holder)) {
                 incompatibleEnchantments.add(holder);
             }
         }

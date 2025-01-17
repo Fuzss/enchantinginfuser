@@ -1,9 +1,10 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
-import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
+import com.google.common.collect.Sets;
 import fuzs.enchantinginfuser.client.util.EnchantmentTooltipHelper;
 import fuzs.enchantinginfuser.util.ModEnchantmentHelper;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
@@ -29,57 +30,48 @@ import java.util.Optional;
 
 public class InfuserEnchantButton extends InfuserMenuButton {
 
-    public InfuserEnchantButton(InfuserScreen screen, int x, int y, OnPress onPress) {
-        super(screen, x, y, 160, 185, onPress);
+    public InfuserEnchantButton(int x, int y, OnPress onPress) {
+        super(x, y, 160, 185, onPress);
     }
 
     @Override
-    int getValue() {
-        return this.screen.getMenu().getEnchantingCost();
+    ChatFormatting getStringColor(int value, boolean mayApply) {
+        return value < 0 ? ChatFormatting.YELLOW : (mayApply ? ChatFormatting.GREEN : ChatFormatting.RED);
     }
 
     @Override
-    boolean mayApply() {
-        return this.screen.getMenu().canEnchant(this.screen.minecraft.player);
+    String getStringValue(int value) {
+        return value < 0 ? "+" : String.valueOf(value);
     }
 
     @Override
-    ChatFormatting getStringColor() {
-        return this.getValue() < 0 ? ChatFormatting.YELLOW :
-                (this.mayApply() ? ChatFormatting.GREEN : ChatFormatting.RED);
-    }
-
-    @Override
-    String getStringValue() {
-        return this.getValue() < 0 ? "+" : String.valueOf(this.getValue());
-    }
-
-    @Override
-    Component getNameComponent(ItemStack itemStack) {
-        boolean isEnchanted = !this.screen.getMenu().getItemEnchantments().isEmpty();
+    Component getNameComponent(ItemStack itemStack, ItemEnchantments itemEnchantments) {
+        boolean isEnchanted = !itemEnchantments.isEmpty();
         itemStack = ModEnchantmentHelper.getEnchantedItemStack(itemStack, isEnchanted);
-        return super.getNameComponent(itemStack);
+        return super.getNameComponent(itemStack, itemEnchantments);
     }
 
     @Override
-    Rarity getItemNameRarity(ItemStack itemStack) {
-        boolean isEnchanted = !this.screen.getMenu().getItemEnchantments().isEmpty();
+    Rarity getItemNameRarity(ItemStack itemStack, ItemEnchantments itemEnchantments) {
+        boolean isEnchanted = !itemEnchantments.isEmpty();
         itemStack = ModEnchantmentHelper.getEnchantedItemStack(itemStack, isEnchanted);
-        HolderLookup.Provider registries = this.screen.minecraft.getConnection().registryAccess();
+        HolderLookup.Provider registries = Minecraft.getInstance().getConnection().registryAccess();
         return ModEnchantmentHelper.getItemNameRarity(registries, itemStack, isEnchanted);
     }
 
     @Override
-    List<FormattedText> getCustomLines(ItemStack itemStack) {
-        ItemEnchantments itemEnchantments = this.screen.getMenu().getItemEnchantments();
+    List<FormattedText> getCustomLines(ItemStack itemStack, ItemEnchantments itemEnchantments) {
         ItemEnchantments originalEnchantments = EnchantmentHelper.getEnchantmentsForCrafting(itemStack);
         List<FormattedText> newLines = new ArrayList<>();
         List<FormattedText> changedLines = new ArrayList<>();
         List<FormattedText> unchangedLines = new ArrayList<>();
         List<FormattedText> removedLines = new ArrayList<>();
-        this.getEnchantmentLines(itemEnchantments, originalEnchantments, newLines, changedLines, unchangedLines,
-                removedLines
-        );
+        this.getEnchantmentLines(itemEnchantments,
+                originalEnchantments,
+                newLines,
+                changedLines,
+                unchangedLines,
+                removedLines);
         List<FormattedText> lines = new ArrayList<>();
         lines.addAll(newLines);
         lines.addAll(changedLines);
@@ -89,34 +81,56 @@ public class InfuserEnchantButton extends InfuserMenuButton {
     }
 
     private void getEnchantmentLines(ItemEnchantments itemEnchantments, ItemEnchantments originalEnchantments, List<FormattedText> newLines, List<FormattedText> changedLines, List<FormattedText> unchangedLines, List<FormattedText> removedLines) {
-        HolderLookup.Provider registries = this.screen.minecraft.getConnection().registryAccess();
-        HolderSet<Enchantment> holders = getTagOrEmpty(registries, Registries.ENCHANTMENT, EnchantmentTags.TOOLTIP_ORDER);
-        for (Holder<Enchantment> enchantment : holders) {
-            int oldLevel = originalEnchantments.getLevel(enchantment);
-            int newLevel = itemEnchantments.getLevel(enchantment);
-            if (newLevel > 0 && oldLevel == 0) {
-                // the enchantment was added
-                MutableComponent component = EnchantmentTooltipHelper.getDisplayNameWithLevel(enchantment, newLevel);
-                newLines.add(component.withStyle(ChatFormatting.GREEN));
-            } else if (newLevel == 0 && oldLevel > 0) {
-                // the enchantment was removed
-                MutableComponent component = EnchantmentTooltipHelper.getDisplayNameWithLevel(enchantment, oldLevel);
-                removedLines.add(component.withStyle(ChatFormatting.RED));
-            } else if (newLevel > 0 && newLevel != oldLevel) {
-                // the enchantment level changed
-                MutableComponent component = EnchantmentTooltipHelper.getDisplayName(enchantment);
-                MutableComponent changeComponent = Component.translatable(InfuserMenuButton.KEY_TOOLTIP_CHANGE,
-                        Component.translatable("enchantment.level." + oldLevel),
-                        Component.translatable("enchantment.level." + newLevel)
-                );
-                changedLines.add(component.append(CommonComponents.SPACE)
-                        .append(changeComponent)
-                        .withStyle(ChatFormatting.YELLOW));
-            } else if (newLevel > 0) {
-                // the enchantment has not changed
-                MutableComponent component = EnchantmentTooltipHelper.getDisplayNameWithLevel(enchantment, newLevel);
-                unchangedLines.add(component.withStyle(ChatFormatting.GRAY));
+        HolderLookup.Provider registries = Minecraft.getInstance().getConnection().registryAccess();
+        HolderSet<Enchantment> holderSet = getTagOrEmpty(registries,
+                Registries.ENCHANTMENT,
+                EnchantmentTags.TOOLTIP_ORDER);
+        for (Holder<Enchantment> enchantment : holderSet) {
+            this.addEnchantmentLine(itemEnchantments,
+                    originalEnchantments,
+                    newLines,
+                    changedLines,
+                    unchangedLines,
+                    removedLines,
+                    enchantment);
+        }
+        for (Holder<Enchantment> enchantment : Sets.union(itemEnchantments.keySet(), originalEnchantments.keySet())) {
+            if (!holderSet.contains(enchantment)) {
+                this.addEnchantmentLine(itemEnchantments,
+                        originalEnchantments,
+                        newLines,
+                        changedLines,
+                        unchangedLines,
+                        removedLines,
+                        enchantment);
             }
+        }
+    }
+
+    private void addEnchantmentLine(ItemEnchantments itemEnchantments, ItemEnchantments originalEnchantments, List<FormattedText> newLines, List<FormattedText> changedLines, List<FormattedText> unchangedLines, List<FormattedText> removedLines, Holder<Enchantment> enchantment) {
+        int oldLevel = originalEnchantments.getLevel(enchantment);
+        int newLevel = itemEnchantments.getLevel(enchantment);
+        if (newLevel > 0 && oldLevel == 0) {
+            // the enchantment was added
+            MutableComponent component = EnchantmentTooltipHelper.getDisplayNameWithLevel(enchantment, newLevel);
+            newLines.add(component.withStyle(ChatFormatting.GREEN));
+        } else if (newLevel == 0 && oldLevel > 0) {
+            // the enchantment was removed
+            MutableComponent component = EnchantmentTooltipHelper.getDisplayNameWithLevel(enchantment, oldLevel);
+            removedLines.add(component.withStyle(ChatFormatting.RED));
+        } else if (newLevel > 0 && newLevel != oldLevel) {
+            // the enchantment level changed
+            MutableComponent component = EnchantmentTooltipHelper.getDisplayName(enchantment);
+            MutableComponent changeComponent = Component.translatable(InfuserMenuButton.KEY_TOOLTIP_CHANGE,
+                    Component.translatable("enchantment.level." + oldLevel),
+                    Component.translatable("enchantment.level." + newLevel));
+            changedLines.add(component.append(CommonComponents.SPACE)
+                    .append(changeComponent)
+                    .withStyle(ChatFormatting.YELLOW));
+        } else if (newLevel > 0) {
+            // the enchantment has not changed
+            MutableComponent component = EnchantmentTooltipHelper.getDisplayNameWithLevel(enchantment, newLevel);
+            unchangedLines.add(component.withStyle(ChatFormatting.GRAY));
         }
     }
 
@@ -126,12 +140,11 @@ public class InfuserEnchantButton extends InfuserMenuButton {
     }
 
     @Override
-    @Nullable
-    Component getLevelsComponent() {
-        if (this.mayApply() && this.getValue() < 0) {
+    @Nullable Component getLevelsComponent(int value, boolean mayApply) {
+        if (mayApply && value < 0) {
             return Component.translatable(InfuserMenuButton.KEY_TOOLTIP_EXPERIENCE).withStyle(ChatFormatting.GRAY);
         } else {
-            return super.getLevelsComponent();
+            return super.getLevelsComponent(value, mayApply);
         }
     }
 }
