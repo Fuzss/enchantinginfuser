@@ -360,51 +360,11 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        ItemStack itemStack = ItemStack.EMPTY;
-        Slot slot = this.slots.get(index);
-        if (slot.hasItem()) {
-            ItemStack itemInSlot = slot.getItem();
-            itemStack = itemInSlot.copy();
-            EquipmentSlot equipmentSlot = player.getEquipmentSlotForItem(itemStack);
-            if (index == 0) {
-                if (equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR &&
-                        !this.slots.get(4 - equipmentSlot.getIndex()).hasItem()) {
-                    int i = 4 - equipmentSlot.getIndex();
-                    if (!this.moveItemStackTo(itemInSlot, i, i + 1, false)) {
-                        slot.onTake(player, itemInSlot);
-                        return ItemStack.EMPTY;
-                    }
-                } else if (equipmentSlot == EquipmentSlot.OFFHAND && !this.slots.get(41).hasItem()) {
-                    if (!this.moveItemStackTo(itemInSlot, 41, 42, false)) {
-                        slot.onTake(player, itemInSlot);
-                        return ItemStack.EMPTY;
-                    }
-                }
-                if (!this.moveItemStackTo(itemInSlot, 5, 41, true)) {
-                    slot.onTake(player, itemInSlot);
-                    return ItemStack.EMPTY;
-                }
-            } else {
-                if (this.slots.getFirst().hasItem()) {
-                    return ItemStack.EMPTY;
-                }
-                ItemStack itemInSlotCopy = itemInSlot.copy();
-                itemInSlotCopy.setCount(1);
-                itemInSlot.shrink(1);
-                this.slots.getFirst().set(itemInSlotCopy);
-            }
-            if (itemInSlot.isEmpty()) {
-                slot.set(ItemStack.EMPTY);
-            } else {
-                slot.setChanged();
-            }
-            if (itemInSlot.getCount() == itemStack.getCount()) {
-                return ItemStack.EMPTY;
-            }
-            slot.onTake(player, itemInSlot);
-        }
-
-        return itemStack;
+        return QuickMoveRuleSet.of(this, this::moveItemStackTo)
+                .addContainerSlotRule(0)
+                .addInventoryRules()
+                .addInventoryCompartmentRules()
+                .quickMoveStack(player, index);
     }
 
     public int getEnchantmentPower() {
