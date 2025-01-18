@@ -1,5 +1,6 @@
 package fuzs.enchantinginfuser.client.util;
 
+import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -8,6 +9,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.jetbrains.annotations.Nullable;
@@ -18,14 +20,16 @@ import java.util.Collections;
 import java.util.List;
 
 public class EnchantmentTooltipHelper {
-    public static final String KEY_INCOMPATIBLE_ENCHANTMENTS = "gui.enchantinginfuser.tooltip.incompatible";
+    public static final String KEY_INCOMPATIBLE_ENCHANTMENTS =
+            "gui." + EnchantingInfuser.MOD_ID + ".tooltip.incompatible";
     public static final Component UNKNOWN_ENCHANT_COMPONENT = Component.translatable(
-            "gui.enchantinginfuser.tooltip.unknown_enchantment").withStyle(ChatFormatting.GRAY);
+            "gui." + EnchantingInfuser.MOD_ID + ".tooltip.unknown_enchantment").withStyle(ChatFormatting.GRAY);
     public static final Component INCREASE_LEVEL_COMPONENT = Component.translatable(
-            "gui.enchantinginfuser.tooltip.lowPower1").withStyle(ChatFormatting.GRAY);
+            "gui." + EnchantingInfuser.MOD_ID + ".tooltip.lowPower1").withStyle(ChatFormatting.GRAY);
     public static final Component MODIFY_LEVEL_COMPONENT = Component.translatable(
-            "gui.enchantinginfuser.tooltip.lowPower2").withStyle(ChatFormatting.GRAY);
-    public static final String KEY_CURRENT_ENCHANTING_POWER = "gui.enchantinginfuser.tooltip.current_enchanting_power";
+            "gui." + EnchantingInfuser.MOD_ID + ".tooltip.lowPower2").withStyle(ChatFormatting.GRAY);
+    public static final String KEY_CURRENT_ENCHANTING_POWER =
+            "gui." + EnchantingInfuser.MOD_ID + ".tooltip.current_enchanting_power";
 
     public static List<Component> getWeakPowerTooltip(int currentPower, int requiredPower, Component component) {
         List<Component> lines = new ArrayList<>();
@@ -90,7 +94,7 @@ public class EnchantmentTooltipHelper {
     }
 
     public static MutableComponent getDisplayName(Holder<Enchantment> enchantment) {
-        return enchantment.value().description().copy();
+        return enchantment.value().description().copy().setStyle(Style.EMPTY);
     }
 
     public static MutableComponent getDisplayNameWithLevel(Holder<Enchantment> enchantment, int level) {

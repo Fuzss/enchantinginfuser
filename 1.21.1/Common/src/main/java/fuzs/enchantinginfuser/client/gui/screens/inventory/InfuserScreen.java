@@ -426,7 +426,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                         top,
                         left + width - 18 - 2,
                         top + height,
-                        this.enchantmentComponent.isInactive() ? 0X685E4A : -1);
+                        this.getFontColor());
                 for (AbstractWidget abstractWidget : this.children()) {
                     abstractWidget.setY(top);
                     abstractWidget.render(guiGraphics, mouseX, mouseY, partialTick);
@@ -441,8 +441,12 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
             }
 
             private int getYImage() {
-                return this.enchantmentComponent.isIncompatible() || this.enchantmentComponent.isNotAvailable() ? 0 :
-                        this.enchantmentComponent.isPresent() ? 2 : 1;
+                return this.enchantmentComponent.isInactive() ? 0 : this.enchantmentComponent.isPresent() ? 2 : 1;
+            }
+
+            private int getFontColor() {
+                return this.enchantmentComponent.isInactive() ? 0x685E4A :
+                        this.enchantmentComponent.isPresent() ? ChatFormatting.YELLOW.getColor() : -1;
             }
 
             @Override
