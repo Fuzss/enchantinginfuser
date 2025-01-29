@@ -360,6 +360,18 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
     }
 
     @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        // AbstractContainerMenu::mouseScrolled does not call super, so this is copied from ContainerEventHandler::mouseScrolled
+        if (this.getChildAt(mouseX, mouseY)
+                .filter(listener -> listener.mouseScrolled(mouseX, mouseY, scrollX, scrollY))
+                .isPresent()) {
+            return true;
+        } else {
+            return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        }
+    }
+
+    @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         // AbstractContainerMenu::mouseDragged does not call super, so this is copied from ContainerEventHandler::mouseDragged
         // Fabric Api patches that in though so we only need it for NeoForge
