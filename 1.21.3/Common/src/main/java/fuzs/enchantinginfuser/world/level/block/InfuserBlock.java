@@ -11,6 +11,7 @@ import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import fuzs.puzzleslib.api.block.v1.entity.TickingEntityBlock;
 import fuzs.puzzleslib.api.core.v1.Proxy;
+import fuzs.puzzleslib.api.util.v1.InteractionResultHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -101,7 +102,7 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
                 player.containerMenu.slotsChanged(blockEntity);
             }
 
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            return InteractionResultHelper.sidedSuccess(level.isClientSide);
         }
 
         return InteractionResult.PASS;

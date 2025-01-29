@@ -5,7 +5,7 @@ dependencies {
     modApi libs.puzzleslib.neoforge
 
     // Apotheosis
-    modImplementation libs.placebo.neoforge
-    modImplementation libs.apothicattributes.neoforge
-    modImplementation libs.apotheosis.neoforge
+//    modImplementation libs.placebo.neoforge
+//    modImplementation libs.apothicattributes.neoforge
+//    modImplementation libs.apotheosis.neoforge
 }

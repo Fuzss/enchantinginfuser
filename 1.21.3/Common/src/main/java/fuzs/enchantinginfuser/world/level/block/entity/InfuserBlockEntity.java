@@ -13,8 +13,8 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
@@ -38,7 +38,7 @@ public class InfuserBlockEntity extends EnchantingTableBlockEntity implements Wo
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        this.code = LockCode.fromTag(tag);
+        this.code = LockCode.fromTag(tag, registries);
         this.items.clear();
         ContainerHelper.loadAllItems(tag, this.items, registries);
     }
@@ -46,7 +46,7 @@ public class InfuserBlockEntity extends EnchantingTableBlockEntity implements Wo
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        this.code.addToTag(tag);
+        this.code.addToTag(tag, registries);
         ContainerHelper.saveAllItems(tag, this.items, true, registries);
     }
 
@@ -79,7 +79,9 @@ public class InfuserBlockEntity extends EnchantingTableBlockEntity implements Wo
         if (this.level != null && this.level.getBlockEntity(this.worldPosition) != this) {
             return false;
         } else {
-            return !(player.distanceToSqr(this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 0.5, this.worldPosition.getZ() + 0.5) > 64.0);
+            return !(player.distanceToSqr(this.worldPosition.getX() + 0.5,
+                    this.worldPosition.getY() + 0.5,
+                    this.worldPosition.getZ() + 0.5) > 64.0);
         }
     }
 
@@ -105,7 +107,7 @@ public class InfuserBlockEntity extends EnchantingTableBlockEntity implements Wo
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack itemStack, Direction direction) {
         // only allow extracting of enchantable item
-        return index == 0 && (itemStack.isEnchanted() || itemStack.getItem() instanceof EnchantedBookItem);
+        return index == 0 && (itemStack.isEnchanted() || itemStack.is(Items.ENCHANTED_BOOK));
     }
 
     public boolean canOpen(Player player) {

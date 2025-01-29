@@ -454,7 +454,8 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 this.getEnchantableStack(),
                 this.infuserType.getAvailableEnchantments(),
                 !this.getConfig().allowAnvilEnchantments);
-        int enchantmentValue = this.getEnchantableStack().getItem().getEnchantmentValue();
+        int enchantmentValue = this.getEnchantableStack().has(DataComponents.ENCHANTABLE) ?
+                this.getEnchantableStack().get(DataComponents.ENCHANTABLE).value() : 0;
         this.availableEnchantmentLevels = EnchantmentPowerHelper.getAvailableEnchantmentLevels(this.getEnchantmentPower(),
                 enchantments,
                 this.getEnchantmentPowerLimit(),

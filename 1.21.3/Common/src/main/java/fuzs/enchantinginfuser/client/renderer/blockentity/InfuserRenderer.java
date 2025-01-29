@@ -16,12 +16,12 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
 
 /**
- * Copied from enchanting table renderer, so we can replace book texture, which also needs to be stitched on atlas.
+ * Copied from {@link net.minecraft.client.renderer.blockentity.EnchantTableRenderer}, so we can replace book texture,
+ * which also needs to be stitched on atlas.
  */
 public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> {
     public static final Material BOOK_LOCATION = new Material(InventoryMenu.BLOCK_ATLAS,
-            EnchantingInfuser.id("entity/enchanting_infuser_book")
-    );
+            EnchantingInfuser.id("entity/enchanting_infuser_book"));
 
     private final BookModel bookModel;
 
@@ -53,7 +53,7 @@ public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> 
         float f6 = Mth.lerp(partialTick, blockEntity.oOpen, blockEntity.open);
         this.bookModel.setupAnim(f, Mth.clamp(f4, 0.0F, 1.0F), Mth.clamp(f5, 0.0F, 1.0F), f6);
         VertexConsumer vertexConsumer = BOOK_LOCATION.buffer(multiBufferSource, RenderType::entitySolid);
-        this.bookModel.render(poseStack, vertexConsumer, packedLight, packedOverlay, -1);
+        this.bookModel.renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay);
         poseStack.popPose();
     }
 }

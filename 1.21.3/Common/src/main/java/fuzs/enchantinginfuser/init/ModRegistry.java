@@ -17,22 +17,24 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
+import java.util.Set;
+
 public class ModRegistry {
     static final RegistryManager REGISTRIES = RegistryManager.from(EnchantingInfuser.MOD_ID);
     public static final Holder.Reference<Block> INFUSER_BLOCK = REGISTRIES.registerBlock("enchanting_infuser",
-            () -> new InfuserBlock(InfuserType.NORMAL, BlockBehaviour.Properties.ofFullCopy(Blocks.ENCHANTING_TABLE)));
+            (BlockBehaviour.Properties properties) -> new InfuserBlock(InfuserType.NORMAL, properties),
+            () -> BlockBehaviour.Properties.ofFullCopy(Blocks.ENCHANTING_TABLE));
     public static final Holder.Reference<Block> ADVANCED_INFUSER_BLOCK = REGISTRIES.registerBlock(
             "advanced_enchanting_infuser",
-            () -> new InfuserBlock(InfuserType.ADVANCED,
-                    BlockBehaviour.Properties.ofFullCopy(Blocks.ENCHANTING_TABLE)));
+            (BlockBehaviour.Properties properties) -> new InfuserBlock(InfuserType.ADVANCED, properties),
+            () -> BlockBehaviour.Properties.ofFullCopy(Blocks.ENCHANTING_TABLE));
     public static final Holder.Reference<Item> INFUSER_ITEM = REGISTRIES.registerBlockItem(INFUSER_BLOCK);
     public static final Holder.Reference<Item> ADVANCED_INFUSER_ITEM = REGISTRIES.registerBlockItem(
             ADVANCED_INFUSER_BLOCK);
     public static final Holder.Reference<BlockEntityType<InfuserBlockEntity>> INFUSER_BLOCK_ENTITY_TYPE = REGISTRIES.registerBlockEntityType(
             "enchanting_infuser",
-            () -> BlockEntityType.Builder.of(InfuserBlockEntity::new,
-                    INFUSER_BLOCK.value(),
-                    ADVANCED_INFUSER_BLOCK.value()));
+            InfuserBlockEntity::new,
+            () -> Set.of(INFUSER_BLOCK.value(), ADVANCED_INFUSER_BLOCK.value()));
     public static final Holder.Reference<MenuType<InfuserMenu>> INFUSING_MENU_TYPE = REGISTRIES.registerMenuType(
             "infusing",
             () -> (id, inventory) -> new InfuserMenu(InfuserType.NORMAL, id, inventory));

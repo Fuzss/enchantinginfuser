@@ -8,6 +8,7 @@ import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
 import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.TooltipBuilder;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,7 +38,8 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
             RenderSystem.enableDepthTest();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
             int yImage = this.isHoveredOrFocused() ? 2 : 1;
-            guiGraphics.blit(this.resourceLocation,
+            guiGraphics.blit(RenderType::guiTextured,
+                    this.resourceLocation,
                     this.getX() + 3,
                     this.getY(),
                     this.xTexStart,
@@ -46,7 +48,8 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
                     this.height,
                     this.textureWidth,
                     this.textureHeight);
-            guiGraphics.blit(this.resourceLocation,
+            guiGraphics.blit(RenderType::guiTextured,
+                    this.resourceLocation,
                     this.getX() - 3,
                     this.getY(),
                     this.xTexStart,

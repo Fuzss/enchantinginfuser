@@ -7,6 +7,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -46,15 +47,16 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
     }
 
     static void drawStringWithBackground(Font font, GuiGraphics guiGraphics, int posX, int posY, Component component, int color) {
-        font.drawInBatch8xOutline(component.getVisualOrderText(),
-                posX + (19 - 2 - font.width(component)),
-                posY + (6 + 3),
-                color,
-                0,
-                guiGraphics.pose().last().pose(),
-                guiGraphics.bufferSource(),
-                0XF000F0);
-        guiGraphics.flush();
+        guiGraphics.drawSpecial((MultiBufferSource bufferSource) -> {
+            font.drawInBatch8xOutline(component.getVisualOrderText(),
+                    posX + (19 - 2 - font.width(component)),
+                    posY + (6 + 3),
+                    color,
+                    0,
+                    guiGraphics.pose().last().pose(),
+                    bufferSource,
+                    0XF000F0);
+        });
     }
 
     public void refreshMessage(int value, boolean mayApply) {

@@ -1,17 +1,12 @@
 package fuzs.enchantinginfuser.neoforge;
 
 import fuzs.enchantinginfuser.EnchantingInfuser;
-import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.data.ModBlockLootProvider;
 import fuzs.enchantinginfuser.data.ModBlockTagsProvider;
 import fuzs.enchantinginfuser.data.ModEnchantmentTagsProvider;
 import fuzs.enchantinginfuser.data.ModRecipeProvider;
 import fuzs.enchantinginfuser.init.ModRegistry;
-import fuzs.enchantinginfuser.neoforge.integration.apotheosis.ApotheosisEnchantingBehavior;
-import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
-import fuzs.enchantinginfuser.world.item.enchantment.VanillaEnchantingBehavior;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;
-import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
 import fuzs.puzzleslib.neoforge.api.data.v2.core.DataProviderHelper;
 import fuzs.puzzleslib.neoforge.api.init.v3.capability.NeoForgeCapabilityHelper;
 import net.neoforged.fml.common.Mod;
@@ -31,12 +26,12 @@ public class EnchantingInfuserNeoForge {
     }
 
     private static void registerModIntegrations() {
-        EnchantingInfuser.CONFIG.getHolder(ServerConfig.class).addCallback((ServerConfig config) -> {
-            if (config.apotheosisIntegration && ModLoaderEnvironment.INSTANCE.isModLoaded("apothic_enchanting")) {
-                EnchantingBehavior.set(ApotheosisEnchantingBehavior.INSTANCE);
-            } else {
-                EnchantingBehavior.set(VanillaEnchantingBehavior.INSTANCE);
-            }
-        });
+//        EnchantingInfuser.CONFIG.getHolder(ServerConfig.class).addCallback((ServerConfig config) -> {
+//            if (config.apotheosisIntegration && ModLoaderEnvironment.INSTANCE.isModLoaded("apothic_enchanting")) {
+//                EnchantingBehavior.set(ApotheosisEnchantingBehavior.INSTANCE);
+//            } else {
+//                EnchantingBehavior.set(VanillaEnchantingBehavior.INSTANCE);
+//            }
+//        });
     }
 }

@@ -5,7 +5,6 @@ import fuzs.puzzleslib.api.data.v2.AbstractRecipeProvider;
 import fuzs.puzzleslib.api.data.v2.core.DataProviderContext;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.world.item.Items;
 
 public class ModRecipeProvider extends AbstractRecipeProvider {
@@ -16,7 +15,7 @@ public class ModRecipeProvider extends AbstractRecipeProvider {
 
     @Override
     public void addRecipes(RecipeOutput recipeOutput) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, ModRegistry.INFUSER_ITEM.value())
+        this.shaped(RecipeCategory.DECORATIONS, ModRegistry.INFUSER_ITEM.value())
                 .define('B', Items.BOOK)
                 .define('#', Items.CRYING_OBSIDIAN)
                 .define('A', Items.AMETHYST_SHARD)
@@ -24,9 +23,9 @@ public class ModRecipeProvider extends AbstractRecipeProvider {
                 .pattern(" B ")
                 .pattern("A#A")
                 .pattern("#T#")
-                .unlockedBy(getHasName(Items.AMETHYST_SHARD), has(Items.AMETHYST_SHARD))
+                .unlockedBy(getHasName(Items.AMETHYST_SHARD), this.has(Items.AMETHYST_SHARD))
                 .save(recipeOutput);
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, ModRegistry.ADVANCED_INFUSER_ITEM.value())
+        this.shaped(RecipeCategory.DECORATIONS, ModRegistry.ADVANCED_INFUSER_ITEM.value())
                 .define('B', Items.BOOK)
                 .define('#', Items.CRYING_OBSIDIAN)
                 .define('A', Items.NETHERITE_INGOT)
@@ -34,7 +33,7 @@ public class ModRecipeProvider extends AbstractRecipeProvider {
                 .pattern(" B ")
                 .pattern("A#A")
                 .pattern("#T#")
-                .unlockedBy(getHasName(Items.NETHERITE_INGOT), has(Items.NETHERITE_INGOT))
+                .unlockedBy(getHasName(Items.NETHERITE_INGOT), this.has(Items.NETHERITE_INGOT))
                 .save(recipeOutput);
     }
 }

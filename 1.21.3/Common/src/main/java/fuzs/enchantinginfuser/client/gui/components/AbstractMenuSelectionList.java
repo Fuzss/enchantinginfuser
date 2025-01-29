@@ -4,6 +4,7 @@ import fuzs.puzzleslib.api.client.gui.v2.screen.ScreenHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
@@ -55,7 +56,7 @@ public abstract class AbstractMenuSelectionList<E extends ContainerObjectSelecti
         double scrollAmount = this.getMaxScroll() > 0 ? this.getScrollAmount() / this.getMaxScroll() : 0;
         int posY = this.getY() + (int) (scrollAmount * (this.getHeight() - SCROLLER_HEIGHT));
         ResourceLocation resourceLocation = this.getMaxScroll() > 0 ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-        guiGraphics.blitSprite(resourceLocation, posX, posY, SCROLLER_WIDTH, SCROLLER_HEIGHT);
+        guiGraphics.blitSprite(RenderType::guiTextured, resourceLocation, posX, posY, SCROLLER_WIDTH, SCROLLER_HEIGHT);
     }
 
     @Override
@@ -142,7 +143,7 @@ public abstract class AbstractMenuSelectionList<E extends ContainerObjectSelecti
     }
 
     @Override
-    protected int getRowTop(int index) {
+    public int getRowTop(int index) {
         return super.getRowTop(index) - 4;
     }
 }

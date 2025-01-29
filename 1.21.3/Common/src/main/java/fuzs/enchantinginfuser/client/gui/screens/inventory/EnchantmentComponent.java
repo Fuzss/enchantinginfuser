@@ -3,7 +3,7 @@ package fuzs.enchantinginfuser.client.gui.screens.inventory;
 import com.google.common.collect.ImmutableSet;
 import fuzs.enchantinginfuser.client.util.EnchantmentTooltipHelper;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
-import fuzs.puzzleslib.api.chat.v1.ComponentHelper;
+import fuzs.puzzleslib.api.util.v1.ComponentHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.EnchantmentNames;
@@ -58,7 +58,7 @@ public record EnchantmentComponent(InfuserMenu.EnchantmentValues enchantmentValu
             int enchantmentId = Minecraft.getInstance()
                     .getConnection()
                     .registryAccess()
-                    .registryOrThrow(Registries.ENCHANTMENT)
+                    .lookupOrThrow(Registries.ENCHANTMENT)
                     .getIdOrThrow(enchantment.value());
             EnchantmentNames.getInstance().initSeed(enchantmentSeed + enchantmentId);
             maxWidth = (int) (maxWidth * 0.72F);

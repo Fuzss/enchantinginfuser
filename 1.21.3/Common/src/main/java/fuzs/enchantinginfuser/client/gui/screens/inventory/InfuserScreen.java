@@ -20,6 +20,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
@@ -43,6 +44,10 @@ import java.util.*;
 public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implements ContainerListener {
     public static final ResourceLocation INFUSER_LOCATION = EnchantingInfuser.id(
             "textures/gui/container/enchanting_infuser.png");
+    private static final ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE = ResourceLocation.withDefaultNamespace(
+            "container/slot_highlight_back");
+    private static final ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE = ResourceLocation.withDefaultNamespace(
+            "container/slot_highlight_front");
     private static final int BUTTONS_OFFSET_X = 7;
     private static final int ENCHANT_BUTTON_OFFSET_Y = 44;
     private static final int ENCHANT_ONLY_BUTTON_OFFSET_Y = 55;
@@ -95,6 +100,14 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
             @Override
             protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
                 guiGraphics.pose().pushPose();
+                if (this.isHoveredOrFocused()) {
+                    guiGraphics.blitSprite(RenderType::guiTextured,
+                            SLOT_HIGHLIGHT_BACK_SPRITE,
+                            this.getX() - 4,
+                            this.getY() - 4,
+                            24,
+                            24);
+                }
                 guiGraphics.renderFakeItem(new ItemStack(Items.BOOKSHELF), this.getX(), this.getY());
                 int posX = this.getX() + 19 - 2 - InfuserScreen.this.font.width(this.getMessage());
                 int posY = this.getY() + 6 + 3;
@@ -105,7 +118,12 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                         posY,
                         this.getStringColor().getColor());
                 if (this.isHoveredOrFocused()) {
-                    renderSlotHighlight(guiGraphics, this.getX(), this.getY(), 0);
+                    guiGraphics.blitSprite(RenderType::guiTexturedOverlay,
+                            SLOT_HIGHLIGHT_FRONT_SPRITE,
+                            this.getX() - 4,
+                            this.getY() - 4,
+                            24,
+                            24);
                 }
                 guiGraphics.pose().popPose();
             }
@@ -316,17 +334,29 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        guiGraphics.blit(INFUSER_LOCATION, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        guiGraphics.blit(RenderType::guiTextured,
+                INFUSER_LOCATION,
+                this.leftPos,
+                this.topPos,
+                0,
+                0,
+                this.imageWidth,
+                this.imageHeight,
+                256,
+                256);
         this.searchBox.render(guiGraphics, mouseX, mouseY, partialTick);
         // render slot manually and do not include it as part of the background texture file,
         // so it can be placed further down when repairing is disabled
-        guiGraphics.blit(INFUSER_LOCATION,
+        guiGraphics.blit(RenderType::guiTextured,
+                INFUSER_LOCATION,
                 this.leftPos + 8 - 1,
                 this.topPos + (this.menu.getConfig().allowRepairing.isActive() ? 23 : 34) - 1,
                 196,
                 185,
                 18,
-                18);
+                18,
+                256,
+                256);
     }
 
     @Override
@@ -412,13 +442,16 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
 
             @Override
             public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
-                guiGraphics.blit(InfuserScreen.INFUSER_LOCATION,
+                guiGraphics.blit(RenderType::guiTextured,
+                        InfuserScreen.INFUSER_LOCATION,
                         left,
                         top,
                         0,
                         185 + this.getYImage() * EnchantmentSelectionList.this.itemHeight,
                         width,
-                        height);
+                        height,
+                        256,
+                        256);
                 AbstractWidget.renderScrollingString(guiGraphics,
                         EnchantmentSelectionList.this.minecraft.font,
                         this.component,

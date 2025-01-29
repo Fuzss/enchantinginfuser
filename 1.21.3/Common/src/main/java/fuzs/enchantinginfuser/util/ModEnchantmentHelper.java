@@ -19,9 +19,9 @@ import java.util.Collection;
 public class ModEnchantmentHelper {
 
     public static Collection<Holder<Enchantment>> getEnchantmentsForItem(RegistryAccess registryAccess, ItemStack itemStack, TagKey<Enchantment> availableEnchantments, boolean primaryOnly) {
-        Registry<Enchantment> enchantments = registryAccess.registryOrThrow(Registries.ENCHANTMENT);
+        Registry<Enchantment> enchantments = registryAccess.lookupOrThrow(Registries.ENCHANTMENT);
         boolean isBook = isBook(itemStack);
-        return enchantments.getTag(availableEnchantments)
+        return enchantments.get(availableEnchantments)
                 .stream()
                 .flatMap(HolderSet::stream)
                 .filter((Holder<Enchantment> holder) -> {
