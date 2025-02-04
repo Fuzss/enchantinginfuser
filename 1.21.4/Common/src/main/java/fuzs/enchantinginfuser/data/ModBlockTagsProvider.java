@@ -16,7 +16,7 @@ public class ModBlockTagsProvider extends AbstractTagProvider<Block> {
 
     @Override
     public void addTags(HolderLookup.Provider provider) {
-        this.add(BlockTags.MINEABLE_WITH_PICKAXE)
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(ModRegistry.INFUSER_BLOCK.value(), ModRegistry.ADVANCED_INFUSER_BLOCK.value());
     }
 }

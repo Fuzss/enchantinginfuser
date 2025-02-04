@@ -52,10 +52,10 @@ public abstract class AbstractMenuSelectionList<E extends ContainerObjectSelecti
 
     @Override
     protected void renderDecorations(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        int posX = this.getScrollbarPosition();
-        double scrollAmount = this.getMaxScroll() > 0 ? this.getScrollAmount() / this.getMaxScroll() : 0;
+        int posX = this.scrollBarX();
+        double scrollAmount = this.maxScrollAmount() > 0 ? this.scrollAmount() / this.maxScrollAmount() : 0;
         int posY = this.getY() + (int) (scrollAmount * (this.getHeight() - SCROLLER_HEIGHT));
-        ResourceLocation resourceLocation = this.getMaxScroll() > 0 ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+        ResourceLocation resourceLocation = this.maxScrollAmount() > 0 ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
         guiGraphics.blitSprite(RenderType::guiTextured, resourceLocation, posX, posY, SCROLLER_WIDTH, SCROLLER_HEIGHT);
     }
 
@@ -75,26 +75,31 @@ public abstract class AbstractMenuSelectionList<E extends ContainerObjectSelecti
     }
 
     @Override
-    public int getMaxScroll() {
-        return Math.max(0, this.getMaxPosition() - this.getHeight());
+    protected int contentHeight() {
+        return super.contentHeight() - 4;
     }
 
     @Override
-    protected int getScrollbarPosition() {
+    public int maxScrollAmount() {
+        return Math.max(0, this.contentHeight() - this.getHeight());
+    }
+
+    @Override
+    protected int scrollBarX() {
         return this.getRowRight() + this.scrollbarOffset;
     }
 
     @Override
-    protected void updateScrollingState(double mouseX, double mouseY, int button) {
-        this.scrolling = this.isValidClickButton(button) && this.isMouseOverScrollbar(mouseX, mouseY);
+    public boolean updateScrolling(double mouseX, double mouseY, int button) {
+        return this.scrolling = this.isValidClickButton(button) && this.isMouseOverScrollbar(mouseX, mouseY);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!this.isValidMouseClick(button)) {
+        if (!this.isValidClickButton(button)) {
             return false;
         }
-        this.updateScrollingState(mouseX, mouseY, button);
+        this.updateScrolling(mouseX, mouseY, button);
         if (this.scrolling) {
             this.setScrollAmountFromMouse(mouseY);
             return true;
@@ -115,7 +120,7 @@ public abstract class AbstractMenuSelectionList<E extends ContainerObjectSelecti
 
     protected void setScrollAmountFromMouse(double mouseY) {
         double scrollOffs = (mouseY - this.getY() - SCROLLER_HEIGHT / 2.0) / (this.getHeight() - SCROLLER_HEIGHT);
-        this.setScrollAmount(Mth.clamp(scrollOffs, 0.0, 1.0) * this.getMaxScroll());
+        this.setScrollAmount(Mth.clamp(scrollOffs, 0.0, 1.0) * this.maxScrollAmount());
     }
 
     @Override
@@ -124,7 +129,7 @@ public abstract class AbstractMenuSelectionList<E extends ContainerObjectSelecti
     }
 
     protected boolean isMouseOverScrollbar(double mouseX, double mouseY) {
-        return ScreenHelper.isHovering(this.getScrollbarPosition(),
+        return ScreenHelper.isHovering(this.scrollBarX(),
                 this.getY(),
                 SCROLLER_WIDTH,
                 this.getHeight(),
