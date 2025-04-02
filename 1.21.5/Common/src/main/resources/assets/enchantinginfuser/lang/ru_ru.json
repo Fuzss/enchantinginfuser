@@ -1,0 +1,21 @@
+{
+  "block.enchantinginfuser.enchanting_infuser": "Зачаровывающий наполнитель",
+  "block.enchantinginfuser.advanced_enchanting_infuser": "Продвинутый зачаровывающий наполнитель",
+  "block.enchantinginfuser.description.choose": "Выберайте зачарования для своего снаряжения.",
+  "block.enchantinginfuser.description.chooseAndModify": "Выбирайте, изменяйте и снимайте зачарования для своего снаряжения.",
+  "block.enchantinginfuser.description.repair": "Ремонтируйте свое снаряжение с помощью уровней.",
+  "gui.enchantinginfuser.tooltip.enchanting_power": "Сила %s зачарования",
+  "gui.enchantinginfuser.tooltip.enchanting_power.apotheosis": "%s / %s этерна",
+  "gui.enchantinginfuser.tooltip.enchanting_power.hint": "Разместите больше книжных полок квадратом вокруг наполнителя в два блока высотой.",
+  "gui.enchantinginfuser.tooltip.durability": "Прочность: %s",
+  "gui.enchantinginfuser.tooltip.change": "%s —> %s",
+  "gui.enchantinginfuser.tooltip.points": "Наберите очки опыта",
+  "gui.enchantinginfuser.tooltip.required_enchanting_power": "Текущая сила зачарования: %s / %s",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "Данное зачарование слишком мощное для наполнителя с такой малой силой.",
+  "gui.enchantinginfuser.tooltip.lowPower1": "Для дальнейшего повышения уровня этого зачарования требуется наполнитель с большей силой.",
+  "gui.enchantinginfuser.tooltip.lowPower2": "Для изменения уровня этого зачарования требуется наполнитель с большей силой.",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment.apotheosis": "Это зачарование слишком сильное для того, кто заваривает с такой малой этерной",
+  "gui.enchantinginfuser.tooltip.lowPower1.apotheosis": "Для дальнейшего повышения уровня этого зачарования требуется наполнитель с большей этерной.",
+  "gui.enchantinginfuser.tooltip.lowPower2.apotheosis": "Для изменения уровня этого зачарования требуется наполнитель с большей этерной.",
+  "gui.enchantinginfuser.tooltip.incompatible": "Это зачарование несовместимо с: %s"
+}
