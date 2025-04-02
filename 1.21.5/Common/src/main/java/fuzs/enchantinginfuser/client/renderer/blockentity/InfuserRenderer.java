@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Copied from {@link net.minecraft.client.renderer.blockentity.EnchantTableRenderer}, so we can replace book texture,
@@ -30,7 +31,7 @@ public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> 
     }
 
     @Override
-    public void render(InfuserBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, int packedOverlay) {
+    public void render(InfuserBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, int packedOverlay, Vec3 cameraPosition) {
         poseStack.pushPose();
         poseStack.translate(0.5F, 0.75F, 0.5F);
         float f = (float) blockEntity.time + partialTick;

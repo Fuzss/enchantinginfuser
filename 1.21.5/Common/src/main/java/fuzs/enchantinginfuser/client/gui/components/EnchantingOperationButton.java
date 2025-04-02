@@ -1,15 +1,15 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import fuzs.enchantinginfuser.client.gui.screens.inventory.EnchantmentComponent;
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.client.util.EnchantmentTooltipHelper;
 import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
-import fuzs.puzzleslib.api.client.gui.v2.components.tooltip.TooltipBuilder;
+import fuzs.puzzleslib.api.client.gui.v2.tooltip.TooltipBuilder;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ARGB;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class EnchantingOperationButton extends SpritelessImageButton {
@@ -35,8 +35,6 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         if (this.isActive() && Screen.hasShiftDown()) {
-            RenderSystem.enableDepthTest();
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
             int yImage = this.isHoveredOrFocused() ? 2 : 1;
             guiGraphics.blit(RenderType::guiTextured,
                     this.resourceLocation,
@@ -47,7 +45,8 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
                     this.width,
                     this.height,
                     this.textureWidth,
-                    this.textureHeight);
+                    this.textureHeight,
+                    ARGB.white(this.alpha));
             guiGraphics.blit(RenderType::guiTextured,
                     this.resourceLocation,
                     this.getX() - 3,
@@ -57,7 +56,8 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
                     this.width,
                     this.height,
                     this.textureWidth,
-                    this.textureHeight);
+                    this.textureHeight,
+                    ARGB.white(this.alpha));
         } else {
             super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
         }

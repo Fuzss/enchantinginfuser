@@ -4,19 +4,19 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.config.ModifiableItems;
-import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import fuzs.puzzleslib.api.block.v1.entity.TickingEntityBlock;
-import fuzs.puzzleslib.api.core.v1.Proxy;
 import fuzs.puzzleslib.api.util.v1.InteractionResultHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
@@ -25,9 +25,6 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -43,17 +40,17 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<InfuserBlockEntity> {
     public static final MapCodec<InfuserBlock> CODEC = RecordCodecBuilder.mapCodec((instance) -> {
-        return instance.group(InfuserType.CODEC.fieldOf("type").forGetter(infuserBlock -> infuserBlock.type),
-                propertiesCodec()).apply(instance, InfuserBlock::new);
+        return instance.group(InfuserType.CODEC.fieldOf("type").forGetter(InfuserBlock::getType), propertiesCodec())
+                .apply(instance, InfuserBlock::new);
     });
-    public static final Component COMPONENT_CHOOSE = Component.translatable("block.enchantinginfuser.description.choose");
+    public static final Component COMPONENT_CHOOSE = Component.translatable(
+            "block." + EnchantingInfuser.MOD_ID + ".description.choose");
     public static final Component COMPONENT_CHOOSE_AND_MODIFY = Component.translatable(
-            "block.enchantinginfuser.description.chooseAndModify");
-    public static final Component COMPONENT_REPAIR = Component.translatable("block.enchantinginfuser.description.repair");
+            "block." + EnchantingInfuser.MOD_ID + ".description.chooseAndModify");
+    public static final Component COMPONENT_REPAIR = Component.translatable(
+            "block." + EnchantingInfuser.MOD_ID + ".description.repair");
     protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
 
     private final InfuserType type;
@@ -76,6 +73,10 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
     @Override
     public MapCodec<InfuserBlock> codec() {
         return CODEC;
+    }
+
+    public InfuserType getType() {
+        return this.type;
     }
 
     @Override
@@ -157,30 +158,22 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
     }
 
     @Override
-    public void onRemove(BlockState blockState, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!blockState.is(newState.getBlock())) {
-            if (level.getBlockEntity(pos) instanceof InfuserBlockEntity blockEntity) {
-                Containers.dropContents(level, pos, blockEntity);
-            }
-        }
-        super.onRemove(blockState, level, pos, newState, isMoving);
+    protected void affectNeighborsAfterRemoval(BlockState blockState, ServerLevel serverLevel, BlockPos blockPos, boolean isMoving) {
+        Containers.updateNeighboursAfterDestroy(blockState, serverLevel, blockPos);
     }
 
-    @Override
-    public void appendHoverText(ItemStack itemStack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        // don't let this go through when initially gathering tooltip data during start-up, configs do not exist then, and it's ok if this is not searchable
-        if (!EnchantingInfuser.CONFIG.getHolder(ServerConfig.class).isAvailable()) return;
+    public Component getDescriptionComponent() {
         Component component;
-        if (this.type.getConfig().allowModifyingEnchantments == ModifiableItems.UNENCHANTED) {
-            component = COMPONENT_CHOOSE;
+        if (this.getType().getConfig().allowModifyingEnchantments == ModifiableItems.UNENCHANTED) {
+            component = InfuserBlock.COMPONENT_CHOOSE;
         } else {
-            component = COMPONENT_CHOOSE_AND_MODIFY;
+            component = InfuserBlock.COMPONENT_CHOOSE_AND_MODIFY;
         }
         MutableComponent mutableComponent = Component.empty().append(component).withStyle(ChatFormatting.GRAY);
-        if (this.type.getConfig().allowRepairing.isActive()) {
-            mutableComponent = mutableComponent.append(" ").append(COMPONENT_REPAIR);
+        if (this.getType().getConfig().allowRepairing.isActive()) {
+            mutableComponent = mutableComponent.append(CommonComponents.SPACE).append(InfuserBlock.COMPONENT_REPAIR);
         }
-        tooltipComponents.addAll(Proxy.INSTANCE.splitTooltipLines(mutableComponent));
+        return mutableComponent;
     }
 
     @Override

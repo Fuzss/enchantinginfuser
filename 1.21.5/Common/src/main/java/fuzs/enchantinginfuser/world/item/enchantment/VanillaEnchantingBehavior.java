@@ -1,7 +1,7 @@
 package fuzs.enchantinginfuser.world.item.enchantment;
 
 import fuzs.enchantinginfuser.world.level.block.InfuserType;
-import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
+import fuzs.puzzleslib.api.item.v2.EnchantingHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -31,7 +31,7 @@ public final class VanillaEnchantingBehavior implements EnchantingBehavior {
 
     @Override
     public float getEnchantmentPower(BlockState blockState, Level level, BlockPos blockPos) {
-        return CommonAbstractions.INSTANCE.getEnchantPowerBonus(blockState, level, blockPos);
+        return EnchantingHelper.getEnchantPowerBonus(blockState, level, blockPos);
     }
 
     @Override

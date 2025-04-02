@@ -1,6 +1,6 @@
 package fuzs.enchantinginfuser.util;
 
-import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
+import fuzs.puzzleslib.api.item.v2.EnchantingHelper;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
@@ -28,7 +28,7 @@ public class ModEnchantmentHelper {
                     if (isBook) {
                         return true;
                     } else if (primaryOnly) {
-                        return CommonAbstractions.INSTANCE.canApplyAtEnchantingTable(holder, itemStack);
+                        return EnchantingHelper.canApplyAtEnchantingTable(holder, itemStack);
                     } else {
                         return holder.value().canEnchant(itemStack);
                     }

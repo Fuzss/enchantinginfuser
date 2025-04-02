@@ -3,8 +3,14 @@ package fuzs.enchantinginfuser.network.client;
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.puzzleslib.api.network.v3.ServerMessageListener;
 import fuzs.puzzleslib.api.network.v3.ServerboundMessage;
+import fuzs.puzzleslib.api.network.v4.codec.ExtraStreamCodecs;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,6 +22,14 @@ import java.util.function.IntUnaryOperator;
 public record ServerboundEnchantmentLevelMessage(int containerId,
                                                  Holder<Enchantment> enchantment,
                                                  Operation operation) implements ServerboundMessage<ServerboundEnchantmentLevelMessage> {
+    public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundEnchantmentLevelMessage> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT,
+            ServerboundEnchantmentLevelMessage::containerId,
+            ByteBufCodecs.holderRegistry(Registries.ENCHANTMENT),
+            ServerboundEnchantmentLevelMessage::enchantment,
+            Operation.STREAM_CODEC,
+            ServerboundEnchantmentLevelMessage::operation,
+            ServerboundEnchantmentLevelMessage::new);
 
     @Override
     public ServerMessageListener<ServerboundEnchantmentLevelMessage> getHandler() {
@@ -37,10 +51,12 @@ public record ServerboundEnchantmentLevelMessage(int containerId,
         ADD_ALL(Integer.MAX_VALUE),
         REMOVE_ALL(Integer.MIN_VALUE);
 
+        public static final StreamCodec<ByteBuf, Operation> STREAM_CODEC = ExtraStreamCodecs.fromEnum(Operation.class);
+
         private final IntUnaryOperator operator;
 
         Operation(int value) {
-            this(operand -> value);
+            this((int operand) -> value);
         }
 
         Operation(IntUnaryOperator operator) {

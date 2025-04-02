@@ -8,12 +8,22 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import java.util.Optional;
 
 public record ClientboundInfuserEnchantmentsMessage(int containerId,
                                                     Optional<ItemEnchantments> itemEnchantments) implements ClientboundMessage<ClientboundInfuserEnchantmentsMessage> {
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundInfuserEnchantmentsMessage> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT,
+            ClientboundInfuserEnchantmentsMessage::containerId,
+            ItemEnchantments.STREAM_CODEC.apply(ByteBufCodecs::optional),
+            ClientboundInfuserEnchantmentsMessage::itemEnchantments,
+            ClientboundInfuserEnchantmentsMessage::new);
+
     @Override
     public ClientMessageListener<ClientboundInfuserEnchantmentsMessage> getHandler() {
         return new ClientMessageListener<>() {

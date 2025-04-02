@@ -1,8 +1,8 @@
-package fuzs.enchantinginfuser.neoforge.data.client;
+package fuzs.enchantinginfuser.data.client;
 
 import fuzs.enchantinginfuser.client.renderer.blockentity.InfuserRenderer;
+import fuzs.puzzleslib.api.client.data.v2.AbstractAtlasProvider;
 import fuzs.puzzleslib.api.data.v2.core.DataProviderContext;
-import fuzs.puzzleslib.neoforge.api.client.data.v2.AbstractAtlasProvider;
 
 public class ModAtlasProvider extends AbstractAtlasProvider {
 

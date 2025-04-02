@@ -1,6 +1,6 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
-import fuzs.puzzleslib.api.client.gui.v2.screen.ScreenHelper;
+import fuzs.puzzleslib.api.client.gui.v2.ScreenHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;

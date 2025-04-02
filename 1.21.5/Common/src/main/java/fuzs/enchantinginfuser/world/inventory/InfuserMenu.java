@@ -1,6 +1,5 @@
 package fuzs.enchantinginfuser.world.inventory;
 
-import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.config.ModifiableItems;
 import fuzs.enchantinginfuser.config.ServerConfig;
 import fuzs.enchantinginfuser.network.ClientboundInfuserEnchantmentsMessage;
@@ -14,7 +13,8 @@ import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import fuzs.enchantinginfuser.world.level.block.InfuserType;
 import fuzs.puzzleslib.api.container.v1.ContainerMenuHelper;
 import fuzs.puzzleslib.api.container.v1.QuickMoveRuleSet;
-import fuzs.puzzleslib.api.network.v3.PlayerSet;
+import fuzs.puzzleslib.api.network.v4.MessageSender;
+import fuzs.puzzleslib.api.network.v4.PlayerSet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -205,9 +205,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     public boolean clickClientEnchantmentLevelButton(Holder<Enchantment> enchantment, int enchantmentLevel, ServerboundEnchantmentLevelMessage.Operation operation) {
         int newLevel = this.clickEnchantmentLevelButton(enchantment, operation);
         if (newLevel != enchantmentLevel) {
-            EnchantingInfuser.NETWORK.sendMessage(new ServerboundEnchantmentLevelMessage(this.containerId,
-                    enchantment,
-                    operation));
+            MessageSender.broadcast(new ServerboundEnchantmentLevelMessage(this.containerId, enchantment, operation));
             return true;
         } else {
             return false;
@@ -470,7 +468,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     private void sendEnchantments(Optional<ItemEnchantments> itemEnchantments) {
         this.levelAccess.execute((Level level, BlockPos blockPos) -> {
-            EnchantingInfuser.NETWORK.sendMessage(PlayerSet.ofEntity(this.player),
+            MessageSender.broadcast(PlayerSet.ofEntity(this.player),
                     new ClientboundInfuserEnchantmentsMessage(this.containerId, itemEnchantments));
         });
     }
