@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "minecraft:crying_obsidian",
+    "A": "minecraft:amethyst_shard",
+    "B": "minecraft:book",
+    "T": "minecraft:enchanting_table"
+  },
+  "pattern": [
+    " B ",
+    "A#A",
+    "#T#"
+  ],
+  "result": {
+    "count": 1,
+    "id": "enchantinginfuser:enchanting_infuser"
+  }
+}

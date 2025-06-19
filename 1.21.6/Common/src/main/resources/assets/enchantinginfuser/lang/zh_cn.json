@@ -1,0 +1,20 @@
+{
+  "block.enchantinginfuser.enchanting_infuser": "高级附魔台",
+  "block.enchantinginfuser.advanced_enchanting_infuser": "进阶高级附魔台",
+  "block.enchantinginfuser.description.choose": "允许选择魔咒。",
+  "block.enchantinginfuser.description.chooseAndModify": "允许选择魔咒，以及修改和删除现有的魔咒。",
+  "block.enchantinginfuser.description.repair": "也可以使用等级修复物品。",
+  "gui.enchantinginfuser.tooltip.enchanting_power": "%s书架",
+  "gui.enchantinginfuser.tooltip.enchanting_power.hint": "在附魔台周围放置书架，最多两层。别忘了角落！",
+  "gui.enchantinginfuser.tooltip.durability": "耐久：%s",
+  "gui.enchantinginfuser.tooltip.change": "%s -> %s",
+  "gui.enchantinginfuser.tooltip.points": "获得经验值",
+  "gui.enchantinginfuser.tooltip.required_enchanting_power": "当前书架：%s / %s",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "你需要更多的书架才能附魔",
+  "gui.enchantinginfuser.tooltip.lowPower1": "提升这个附魔的等级需要一个更多书架的附魔台。",
+  "gui.enchantinginfuser.tooltip.lowPower2": "修改这个附魔的等级需要一个更多书架的附魔台。",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment.apotheosis": "你需要更多的书架才能附魔",
+  "gui.enchantinginfuser.tooltip.lowPower1.apotheosis": "提升这个附魔的等级需要一个更多书架的附魔台。",
+  "gui.enchantinginfuser.tooltip.lowPower2.apotheosis": "修改这个附魔的等级需要一个更多书架的附魔台。",
+  "gui.enchantinginfuser.tooltip.incompatible": "该魔咒与%s不兼容"
+}

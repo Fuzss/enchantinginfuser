@@ -1,0 +1,16 @@
+{
+  "block.enchantinginfuser.advanced_enchanting_infuser": "Advanced Enchanting Infuser",
+  "block.enchantinginfuser.description.choose": "Choose enchantments for your gear.",
+  "block.enchantinginfuser.description.chooseAndModify": "Choose, modify and remove enchantments for your gear.",
+  "block.enchantinginfuser.description.repair": "Repair your gear with levels.",
+  "block.enchantinginfuser.enchanting_infuser": "Enchanting Infuser",
+  "gui.enchantinginfuser.tooltip.change": "%s -> %s",
+  "gui.enchantinginfuser.tooltip.current_enchanting_power": "Current Enchanting Power: %s / %s",
+  "gui.enchantinginfuser.tooltip.durability": "Durability: %s",
+  "gui.enchantinginfuser.tooltip.enchanting_power.hint": "Place more bookshelves in a square around the infuser on up to two layers.",
+  "gui.enchantinginfuser.tooltip.incompatible": "This enchantment is incompatible with: %s",
+  "gui.enchantinginfuser.tooltip.lowPower1": "Further increasing the level for this enchantment requires an infuser with more enchanting power.",
+  "gui.enchantinginfuser.tooltip.lowPower2": "Modifying the level for this enchantment requires an infuser with more enchanting power.",
+  "gui.enchantinginfuser.tooltip.points": "Gain Experience Points",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "This enchantment is too powerful for an infuser with such little enchanting power."
+}
