@@ -2,6 +2,7 @@ package fuzs.enchantinginfuser.world.inventory;
 
 import fuzs.enchantinginfuser.config.ModifiableItems;
 import fuzs.enchantinginfuser.config.ServerConfig;
+import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.enchantinginfuser.network.ClientboundInfuserEnchantmentsMessage;
 import fuzs.enchantinginfuser.network.client.ServerboundEnchantmentLevelMessage;
 import fuzs.enchantinginfuser.util.EnchantmentCostHelper;
@@ -74,12 +75,12 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     private int originalEnchantingCost;
     private boolean markedDirty;
 
-    public InfuserMenu(InfuserType infuserType, int containerId, Inventory inventory) {
+    public InfuserMenu(int containerId, Inventory inventory, InfuserType infuserType) {
         this(infuserType, containerId, inventory, new SimpleContainer(1), ContainerLevelAccess.NULL);
     }
 
     public InfuserMenu(InfuserType infuserType, int containerId, Inventory inventory, Container container, ContainerLevelAccess levelAccess) {
-        super(infuserType.getMenuType(), containerId);
+        super(ModRegistry.INFUSING_MENU_TYPE.value(), containerId);
         checkContainerSize(container, 1);
         this.infuserType = infuserType;
         this.enchantSlots = container;

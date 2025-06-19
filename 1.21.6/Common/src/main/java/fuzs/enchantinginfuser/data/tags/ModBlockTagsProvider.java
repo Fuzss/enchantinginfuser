@@ -1,4 +1,4 @@
-package fuzs.enchantinginfuser.data;
+package fuzs.enchantinginfuser.data.tags;
 
 import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.puzzleslib.api.data.v2.core.DataProviderContext;

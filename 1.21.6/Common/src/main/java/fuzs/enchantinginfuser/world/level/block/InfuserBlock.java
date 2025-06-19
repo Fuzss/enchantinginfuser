@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.config.ModifiableItems;
 import fuzs.enchantinginfuser.init.ModRegistry;
-import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import fuzs.puzzleslib.api.block.v1.entity.TickingEntityBlock;
@@ -20,11 +19,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -38,7 +33,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
 
 public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<InfuserBlockEntity> {
     public static final MapCodec<InfuserBlock> CODEC = RecordCodecBuilder.mapCodec((instance) -> {
@@ -107,29 +101,6 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
         }
 
         return InteractionResult.PASS;
-    }
-
-    @Override
-    @Nullable
-    public MenuProvider getMenuProvider(BlockState blockState, Level level, BlockPos blockPos) {
-        if (level.getBlockEntity(blockPos) instanceof InfuserBlockEntity blockEntity) {
-            Component component = blockEntity.getDisplayName();
-            return new SimpleMenuProvider((int containerId, Inventory inventory, Player player) -> {
-                if (blockEntity.canOpen(player)) {
-                    InfuserMenu menu = new InfuserMenu(this.type,
-                            containerId,
-                            inventory,
-                            blockEntity,
-                            ContainerLevelAccess.create(level, blockPos));
-                    menu.addSlotListener(menu);
-                    return menu;
-                } else {
-                    return null;
-                }
-            }, component);
-        } else {
-            return null;
-        }
     }
 
     @Override

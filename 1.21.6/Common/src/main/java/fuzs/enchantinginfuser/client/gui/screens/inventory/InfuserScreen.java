@@ -1,7 +1,6 @@
 package fuzs.enchantinginfuser.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.client.gui.components.*;
 import fuzs.enchantinginfuser.client.util.EnchantmentTooltipHelper;
@@ -20,7 +19,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
@@ -29,6 +28,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -53,8 +53,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
     private static final int ENCHANT_ONLY_BUTTON_OFFSET_Y = 55;
     private static final int REPAIR_BUTTON_OFFSET_Y = 66;
 
-    public final int enchantmentSeed = new Random().nextInt();
     private static boolean isPowerTooLow;
+    public final int enchantmentSeed = new Random().nextInt();
     private EditBox searchBox;
     private EnchantmentSelectionList scrollingList;
     private boolean ignoreTextInput;
@@ -99,9 +99,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
 
             @Override
             protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-                guiGraphics.pose().pushPose();
                 if (this.isHoveredOrFocused()) {
-                    guiGraphics.blitSprite(RenderType::guiTextured,
+                    guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
                             SLOT_HIGHLIGHT_BACK_SPRITE,
                             this.getX() - 4,
                             this.getY() - 4,
@@ -111,26 +110,24 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                 guiGraphics.renderFakeItem(new ItemStack(Items.BOOKSHELF), this.getX(), this.getY());
                 int posX = this.getX() + 19 - 2 - InfuserScreen.this.font.width(this.getMessage());
                 int posY = this.getY() + 6 + 3;
-                guiGraphics.pose().translate(0.0F, 0.0F, 200.0F);
                 guiGraphics.drawString(InfuserScreen.this.font,
                         this.getMessage(),
                         posX,
                         posY,
-                        this.getStringColor().getColor());
+                        ARGB.opaque(this.getStringColor().getColor()));
                 if (this.isHoveredOrFocused()) {
-                    guiGraphics.blitSprite(RenderType::guiTexturedOverlay,
+                    guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
                             SLOT_HIGHLIGHT_FRONT_SPRITE,
                             this.getX() - 4,
                             this.getY() - 4,
                             24,
                             24);
                 }
-                guiGraphics.pose().popPose();
             }
 
             private ChatFormatting getStringColor() {
-                if (InfuserScreen.this.menu.getEnchantmentPower() >=
-                        InfuserScreen.this.menu.getEnchantmentPowerLimit()) {
+                if (InfuserScreen.this.menu.getEnchantmentPower()
+                        >= InfuserScreen.this.menu.getEnchantmentPowerLimit()) {
                     return ChatFormatting.YELLOW;
                 } else if (isPowerTooLow) {
                     return ChatFormatting.RED;
@@ -269,8 +266,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                     }
                     return true;
                 } else {
-                    return this.searchBox.isFocused() && this.searchBox.isVisible() &&
-                            keyCode != InputConstants.KEY_ESCAPE || super.keyPressed(keyCode, scanCode, modifiers);
+                    return this.searchBox.isFocused() && this.searchBox.isVisible()
+                            && keyCode != InputConstants.KEY_ESCAPE || super.keyPressed(keyCode, scanCode, modifiers);
                 }
             }
         }
@@ -333,8 +330,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        guiGraphics.blit(RenderType::guiTextured,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 INFUSER_LOCATION,
                 this.leftPos,
                 this.topPos,
@@ -347,7 +343,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         this.searchBox.render(guiGraphics, mouseX, mouseY, partialTick);
         // render slot manually and do not include it as part of the background texture file,
         // so it can be placed further down when repairing is disabled
-        guiGraphics.blit(RenderType::guiTextured,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 INFUSER_LOCATION,
                 this.leftPos + 8 - 1,
                 this.topPos + (this.menu.getConfig().allowRepairing.isActive() ? 23 : 34) - 1,
@@ -376,8 +372,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         // AbstractContainerMenu::mouseDragged does not call super, so this is copied from ContainerEventHandler::mouseDragged
         // Fabric Api patches that in though so we only need it for NeoForge
         if (!ModLoaderEnvironment.INSTANCE.getModLoader().isFabricLike()) {
-            if (this.getFocused() != null && this.isDragging() && button == 0 &&
-                    this.getFocused().mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
+            if (this.getFocused() != null && this.isDragging() && button == 0 && this.getFocused()
+                    .mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
                 return true;
             }
         }
@@ -454,7 +450,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
 
             @Override
             public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
-                guiGraphics.blit(RenderType::guiTextured,
+                guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                         InfuserScreen.INFUSER_LOCATION,
                         left,
                         top,
@@ -471,14 +467,14 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                         top,
                         left + width - 18 - 2,
                         top + height,
-                        this.getFontColor());
+                        ARGB.opaque(this.getFontColor()));
                 for (AbstractWidget abstractWidget : this.children()) {
                     abstractWidget.setY(top);
                     abstractWidget.render(guiGraphics, mouseX, mouseY, partialTick);
                 }
-                if (hovering &&
-                        (this.enchantmentComponent.isInactive() || mouseX >= left + 18 && mouseX < left + width - 18)) {
-                    InfuserScreen.this.setTooltipForNextRenderPass(this.tooltip);
+                if (hovering && (this.enchantmentComponent.isInactive()
+                        || mouseX >= left + 18 && mouseX < left + width - 18)) {
+                    guiGraphics.setTooltipForNextFrame(this.tooltip, mouseX, mouseY);
                     if (this.enchantmentComponent.isNotAvailable()) {
                         InfuserScreen.setIsPowerTooLow(true);
                     }

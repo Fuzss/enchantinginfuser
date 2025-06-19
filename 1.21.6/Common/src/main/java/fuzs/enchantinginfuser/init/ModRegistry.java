@@ -37,10 +37,8 @@ public class ModRegistry {
             () -> Set.of(INFUSER_BLOCK.value(), ADVANCED_INFUSER_BLOCK.value()));
     public static final Holder.Reference<MenuType<InfuserMenu>> INFUSING_MENU_TYPE = REGISTRIES.registerMenuType(
             "infusing",
-            () -> (id, inventory) -> new InfuserMenu(InfuserType.NORMAL, id, inventory));
-    public static final Holder.Reference<MenuType<InfuserMenu>> ADVANCED_INFUSING_MENU_TYPE = REGISTRIES.registerMenuType(
-            "advanced_infusing",
-            () -> (id, inventory) -> new InfuserMenu(InfuserType.ADVANCED, id, inventory));
+            InfuserMenu::new,
+            InfuserType.STREAM_CODEC);
 
     static final TagFactory TAGS = TagFactory.make(EnchantingInfuser.MOD_ID);
     public static final TagKey<Enchantment> IN_ENCHANTING_INFUSER_ENCHANTMENT_TAG = TAGS.registerEnchantmentTag(

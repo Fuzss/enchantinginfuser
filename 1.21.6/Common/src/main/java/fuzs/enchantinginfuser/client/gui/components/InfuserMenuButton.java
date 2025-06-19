@@ -1,18 +1,19 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
+import fuzs.puzzleslib.api.client.gui.v2.GuiGraphicsHelper;
 import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
 import fuzs.puzzleslib.api.client.gui.v2.tooltip.TooltipBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -38,25 +39,18 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
-        drawStringWithBackground(Minecraft.getInstance().font,
-                guiGraphics,
-                this.getX() + 1,
-                this.getY() + 1,
-                this.getMessage(),
-                this.color);
+        this.drawStringWithBackground(guiGraphics, this.getX() + 1, this.getY() + 1, this.getMessage(), this.color);
     }
 
-    static void drawStringWithBackground(Font font, GuiGraphics guiGraphics, int posX, int posY, Component component, int color) {
-        guiGraphics.drawSpecial((MultiBufferSource bufferSource) -> {
-            font.drawInBatch8xOutline(component.getVisualOrderText(),
-                    posX + (19 - 2 - font.width(component)),
-                    posY + (6 + 3),
-                    color,
-                    0,
-                    guiGraphics.pose().last().pose(),
-                    bufferSource,
-                    0XF000F0);
-        });
+    protected void drawStringWithBackground(GuiGraphics guiGraphics, int posX, int posY, Component component, int color) {
+        Font font = Minecraft.getInstance().font;
+        GuiGraphicsHelper.drawInBatch8xOutline(guiGraphics,
+                font,
+                component,
+                posX + (19 - 2 - font.width(component)),
+                posY + (6 + 3),
+                ARGB.opaque(color),
+                ARGB.opaque(0));
     }
 
     public void refreshMessage(int value, boolean mayApply) {

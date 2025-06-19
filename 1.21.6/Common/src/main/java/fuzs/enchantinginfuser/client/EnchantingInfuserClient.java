@@ -13,13 +13,12 @@ public class EnchantingInfuserClient implements ClientModConstructor {
 
     @Override
     public void onClientSetup() {
-        ItemTooltipRegistry.registerItemTooltip(InfuserBlock.class, InfuserBlock::getDescriptionComponent);
+        ItemTooltipRegistry.BLOCK.registerItemTooltip(InfuserBlock.class, InfuserBlock::getDescriptionComponent);
     }
 
     @Override
     public void onRegisterMenuScreens(MenuScreensContext context) {
         context.registerMenuScreen(ModRegistry.INFUSING_MENU_TYPE.value(), InfuserScreen::new);
-        context.registerMenuScreen(ModRegistry.ADVANCED_INFUSING_MENU_TYPE.value(), InfuserScreen::new);
     }
 
     @Override

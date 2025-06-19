@@ -5,7 +5,6 @@ import com.mojang.math.Axis;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -42,7 +41,7 @@ public class InfuserItemRenderer extends InfuserRenderer {
             poseStack.pushPose();
             poseStack.translate(0.5F, 1.0F, 0.5F);
             float hoverOffset = Mth.sin((blockEntity.time + partialTick) / 10.0F) * 0.1F + 0.1F;
-            AABB aABB = ItemEntityRenderer.calculateModelBoundingBox(this.itemStackRenderState);
+            AABB aABB = this.itemStackRenderState.getModelBoundingBox();
             float modelYScale = -((float) aABB.minY) + 0.0625F;
             float openness = Mth.lerp(partialTick, blockEntity.oOpen, blockEntity.open);
             poseStack.translate(0.0, hoverOffset + modelYScale * openness - 0.15F * (1.0F - openness), 0.0);

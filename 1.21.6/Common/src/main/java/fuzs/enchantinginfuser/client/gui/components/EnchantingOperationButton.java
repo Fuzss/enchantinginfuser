@@ -7,19 +7,21 @@ import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
 import fuzs.puzzleslib.api.client.gui.v2.tooltip.TooltipBuilder;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class EnchantingOperationButton extends SpritelessImageButton {
+    private final boolean isPowerTooLow;
 
     public EnchantingOperationButton(EnchantmentComponent enchantmentComponent, int x, int y, int xTexOffset, OnPress onPress) {
         super(x, y, 18, 18, 220 + xTexOffset, 0, InfuserScreen.INFUSER_LOCATION, onPress);
         this.visible = !enchantmentComponent.isNotAvailable() && this.getVisibleValue(enchantmentComponent);
         this.active = this.getActiveValue(enchantmentComponent);
         Component component = this.getTooltipComponent(enchantmentComponent);
-        if (component != null) {
+        this.isPowerTooLow = component != null;
+        if (this.isPowerTooLow) {
             TooltipBuilder.create(enchantmentComponent.getWeakPowerTooltip(component)).splitLines().build(this);
         }
         this.setTextureLayout(LEGACY_TEXTURE_LAYOUT);
@@ -36,7 +38,7 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
     public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         if (this.isActive() && Screen.hasShiftDown()) {
             int yImage = this.isHoveredOrFocused() ? 2 : 1;
-            guiGraphics.blit(RenderType::guiTextured,
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                     this.resourceLocation,
                     this.getX() + 3,
                     this.getY(),
@@ -47,7 +49,7 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
                     this.textureWidth,
                     this.textureHeight,
                     ARGB.white(this.alpha));
-            guiGraphics.blit(RenderType::guiTextured,
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                     this.resourceLocation,
                     this.getX() - 3,
                     this.getY(),
@@ -61,7 +63,7 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
         } else {
             super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
         }
-        if (this.isHoveredOrFocused() && this.getTooltip() != null) {
+        if (this.isPowerTooLow && this.isHoveredOrFocused()) {
             InfuserScreen.setIsPowerTooLow(true);
         }
     }
@@ -79,15 +81,16 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
 
         @Override
         protected boolean getActiveValue(EnchantmentComponent enchantmentComponent) {
-            return !enchantmentComponent.isIncompatible() &&
-                    enchantmentComponent.enchantmentLevel() < enchantmentComponent.enchantmentValues().availableLevel();
+            return !enchantmentComponent.isIncompatible()
+                    && enchantmentComponent.enchantmentLevel() < enchantmentComponent.enchantmentValues()
+                    .availableLevel();
         }
 
         @Nullable
         @Override
         protected Component getTooltipComponent(EnchantmentComponent enchantmentComponent) {
-            if (enchantmentComponent.enchantmentLevel() >= enchantmentComponent.enchantmentValues().availableLevel() &&
-                    !enchantmentComponent.isNotAvailable()) {
+            if (enchantmentComponent.enchantmentLevel() >= enchantmentComponent.enchantmentValues().availableLevel()
+                    && !enchantmentComponent.isNotAvailable()) {
                 return EnchantmentTooltipHelper.INCREASE_LEVEL_COMPONENT;
             } else {
                 return null;
@@ -108,16 +111,16 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
 
         @Override
         protected boolean getActiveValue(EnchantmentComponent enchantmentComponent) {
-            return !enchantmentComponent.isIncompatible() && enchantmentComponent.enchantmentLevel() - 1 <
-                    enchantmentComponent.enchantmentValues().availableLevel();
+            return !enchantmentComponent.isIncompatible()
+                    && enchantmentComponent.enchantmentLevel() - 1 < enchantmentComponent.enchantmentValues()
+                    .availableLevel();
         }
 
         @Nullable
         @Override
         protected Component getTooltipComponent(EnchantmentComponent enchantmentComponent) {
-            if (enchantmentComponent.enchantmentLevel() - 1 >=
-                    enchantmentComponent.enchantmentValues().availableLevel() &&
-                    !enchantmentComponent.isNotAvailable()) {
+            if (enchantmentComponent.enchantmentLevel() - 1 >= enchantmentComponent.enchantmentValues().availableLevel()
+                    && !enchantmentComponent.isNotAvailable()) {
                 return EnchantmentTooltipHelper.MODIFY_LEVEL_COMPONENT;
             } else {
                 return null;

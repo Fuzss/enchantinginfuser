@@ -2,8 +2,8 @@ package fuzs.enchantinginfuser.neoforge;
 
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.data.ModBlockLootProvider;
-import fuzs.enchantinginfuser.data.ModBlockTagsProvider;
-import fuzs.enchantinginfuser.data.ModEnchantmentTagsProvider;
+import fuzs.enchantinginfuser.data.tags.ModBlockTagsProvider;
+import fuzs.enchantinginfuser.data.tags.ModEnchantmentTagsProvider;
 import fuzs.enchantinginfuser.data.ModRecipeProvider;
 import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;

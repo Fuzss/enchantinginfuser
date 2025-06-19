@@ -1,9 +1,9 @@
 package fuzs.enchantinginfuser.network.client;
 
 import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
-import fuzs.puzzleslib.api.network.v3.ServerMessageListener;
-import fuzs.puzzleslib.api.network.v3.ServerboundMessage;
 import fuzs.puzzleslib.api.network.v4.codec.ExtraStreamCodecs;
+import fuzs.puzzleslib.api.network.v4.message.MessageListener;
+import fuzs.puzzleslib.api.network.v4.message.play.ServerboundPlayMessage;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
@@ -11,17 +11,13 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.function.IntUnaryOperator;
 
 public record ServerboundEnchantmentLevelMessage(int containerId,
                                                  Holder<Enchantment> enchantment,
-                                                 Operation operation) implements ServerboundMessage<ServerboundEnchantmentLevelMessage> {
+                                                 Operation operation) implements ServerboundPlayMessage {
     public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundEnchantmentLevelMessage> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT,
             ServerboundEnchantmentLevelMessage::containerId,
@@ -32,14 +28,14 @@ public record ServerboundEnchantmentLevelMessage(int containerId,
             ServerboundEnchantmentLevelMessage::new);
 
     @Override
-    public ServerMessageListener<ServerboundEnchantmentLevelMessage> getHandler() {
-        return new ServerMessageListener<>() {
-
+    public MessageListener<Context> getListener() {
+        return new MessageListener<Context>() {
             @Override
-            public void handle(ServerboundEnchantmentLevelMessage message, MinecraftServer server, ServerGamePacketListenerImpl handler, ServerPlayer player, ServerLevel level) {
-                if (player.containerMenu.containerId == message.containerId &&
-                        player.containerMenu instanceof InfuserMenu menu) {
-                    menu.clickEnchantmentLevelButton(message.enchantment, message.operation);
+            public void accept(Context context) {
+                if (context.player().containerMenu instanceof InfuserMenu menu
+                        && menu.containerId == ServerboundEnchantmentLevelMessage.this.containerId) {
+                    menu.clickEnchantmentLevelButton(ServerboundEnchantmentLevelMessage.this.enchantment,
+                            ServerboundEnchantmentLevelMessage.this.operation);
                 }
             }
         };
