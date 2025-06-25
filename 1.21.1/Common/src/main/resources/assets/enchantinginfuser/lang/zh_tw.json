@@ -1,0 +1,20 @@
+{
+  "block.enchantinginfuser.enchanting_infuser": "高級附魔台",
+  "block.enchantinginfuser.advanced_enchanting_infuser": "進階高級附魔台",
+  "block.enchantinginfuser.description.choose": "允許選擇魔咒。",
+  "block.enchantinginfuser.description.chooseAndModify": "允許選擇魔咒，以及修改和刪除現有的魔咒。",
+  "block.enchantinginfuser.description.repair": "也可以使用等級修復物品。",
+  "gui.enchantinginfuser.tooltip.enchanting_power": "%s附魔能力",
+  "gui.enchantinginfuser.tooltip.enchanting_power.hint": "在附魔台周圍放置兩層書架。別忘了角落！",
+  "gui.enchantinginfuser.tooltip.durability": "耐久：%s",
+  "gui.enchantinginfuser.tooltip.change": "%s -> %s",
+  "gui.enchantinginfuser.tooltip.points": "獲得經驗值",
+  "gui.enchantinginfuser.tooltip.required_enchanting_power": "當前附魔能力：%s / %s",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "附魔能力不足",
+  "gui.enchantinginfuser.tooltip.lowPower1": "提升這個附魔的等級需要一個更多書架的附魔台。",
+  "gui.enchantinginfuser.tooltip.lowPower2": "修改這個附魔的等級需要一個更多書架的附魔台。",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment.apotheosis": "附魔能力不足",
+  "gui.enchantinginfuser.tooltip.lowPower1.apotheosis": "提升這個附魔的等級需要更高的附魔能力。",
+  "gui.enchantinginfuser.tooltip.lowPower2.apotheosis": "修改這個附魔的等級需要更高的附魔能力。",
+  "gui.enchantinginfuser.tooltip.incompatible": "該魔咒與%s不相容"
+}
