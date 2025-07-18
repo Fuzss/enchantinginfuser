@@ -9,9 +9,3 @@ dependencies {
 //    modImplementation libs.apothicattributes.neoforge
 //    modImplementation libs.apotheosis.neoforge
 }
-
-tasks.withType(net.fabricmc.loom.task.AbstractRunTask).configureEach {
-    doFirst {
-        patchLaunchCfg()
-    }
-}
