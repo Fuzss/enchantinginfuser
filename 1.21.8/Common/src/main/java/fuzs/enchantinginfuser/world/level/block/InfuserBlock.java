@@ -8,10 +8,12 @@ import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import fuzs.puzzleslib.api.block.v1.entity.TickingEntityBlock;
+import fuzs.puzzleslib.api.init.v3.registry.ResourceKeyHelper;
 import fuzs.puzzleslib.api.util.v1.InteractionResultHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -39,12 +41,12 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
         return instance.group(InfuserType.CODEC.fieldOf("type").forGetter(InfuserBlock::getType), propertiesCodec())
                 .apply(instance, InfuserBlock::new);
     });
-    public static final Component COMPONENT_CHOOSE = Component.translatable(
-            "block." + EnchantingInfuser.MOD_ID + ".description.choose");
-    public static final Component COMPONENT_CHOOSE_AND_MODIFY = Component.translatable(
-            "block." + EnchantingInfuser.MOD_ID + ".description.chooseAndModify");
-    public static final Component COMPONENT_REPAIR = Component.translatable(
-            "block." + EnchantingInfuser.MOD_ID + ".description.repair");
+    public static final Component COMPONENT_CHOOSE = ResourceKeyHelper.getComponent(Registries.BLOCK,
+            EnchantingInfuser.id("enchanting_infuser.description.choose"));
+    public static final Component COMPONENT_CHOOSE_AND_MODIFY = ResourceKeyHelper.getComponent(Registries.BLOCK,
+            EnchantingInfuser.id("enchanting_infuser.description.choose_and_modify"));
+    public static final Component COMPONENT_REPAIR = ResourceKeyHelper.getComponent(Registries.BLOCK,
+            EnchantingInfuser.id("enchanting_infuser.description.repair"));
     protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
 
     private final InfuserType type;
@@ -140,11 +142,12 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
         } else {
             component = InfuserBlock.COMPONENT_CHOOSE_AND_MODIFY;
         }
-        MutableComponent mutableComponent = Component.empty().append(component).withStyle(ChatFormatting.GRAY);
+        MutableComponent mutableComponent = Component.empty().append(component).withStyle(ChatFormatting.GOLD);
         if (this.getType().getConfig().allowRepairing.isActive()) {
-            mutableComponent = mutableComponent.append(CommonComponents.SPACE).append(InfuserBlock.COMPONENT_REPAIR);
+            return mutableComponent.append(CommonComponents.SPACE).append(InfuserBlock.COMPONENT_REPAIR);
+        } else {
+            return mutableComponent;
         }
-        return mutableComponent;
     }
 
     @Override

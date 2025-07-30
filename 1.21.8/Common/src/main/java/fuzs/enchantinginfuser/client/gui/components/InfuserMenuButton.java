@@ -1,10 +1,12 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
+import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.puzzleslib.api.client.gui.v2.GuiGraphicsHelper;
 import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
 import fuzs.puzzleslib.api.client.gui.v2.tooltip.TooltipBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -24,10 +26,14 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class InfuserMenuButton extends SpritelessImageButton {
-    public static final String KEY_TOOLTIP_EXPERIENCE = "gui.enchantinginfuser.tooltip.points";
-    public static final String KEY_TOOLTIP_CHANGE = "gui.enchantinginfuser.tooltip.change";
-    public static final String KEY_TOOLTIP_DURABILITY = "gui.enchantinginfuser.tooltip.durability";
-    public static final String KEY_TOOLTIP_HINT = "gui.enchantinginfuser.tooltip.enchanting_power.hint";
+    public static final String KEY_TOOLTIP_EXPERIENCE = Util.makeDescriptionId("gui",
+            EnchantingInfuser.id("infusing.tooltip.points"));
+    public static final String KEY_TOOLTIP_CHANGE = Util.makeDescriptionId("gui",
+            EnchantingInfuser.id("infusing.tooltip.change"));
+    public static final String KEY_TOOLTIP_DURABILITY = Util.makeDescriptionId("gui",
+            EnchantingInfuser.id("infusing.tooltip.durability"));
+    public static final String KEY_TOOLTIP_HINT = Util.makeDescriptionId("gui",
+            EnchantingInfuser.id("infusing.tooltip.enchanting_power_hint"));
 
     private int color = -1;
 

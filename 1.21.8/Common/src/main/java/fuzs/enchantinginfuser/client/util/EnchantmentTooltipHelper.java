@@ -20,16 +20,16 @@ import java.util.Collections;
 import java.util.List;
 
 public class EnchantmentTooltipHelper {
-    public static final String KEY_INCOMPATIBLE_ENCHANTMENTS =
-            "gui." + EnchantingInfuser.MOD_ID + ".tooltip.incompatible";
-    public static final Component UNKNOWN_ENCHANT_COMPONENT = Component.translatable(
-            "gui." + EnchantingInfuser.MOD_ID + ".tooltip.unknown_enchantment").withStyle(ChatFormatting.GRAY);
-    public static final Component INCREASE_LEVEL_COMPONENT = Component.translatable(
-            "gui." + EnchantingInfuser.MOD_ID + ".tooltip.lowPower1").withStyle(ChatFormatting.GRAY);
-    public static final Component MODIFY_LEVEL_COMPONENT = Component.translatable(
-            "gui." + EnchantingInfuser.MOD_ID + ".tooltip.lowPower2").withStyle(ChatFormatting.GRAY);
-    public static final String KEY_CURRENT_ENCHANTING_POWER =
-            "gui." + EnchantingInfuser.MOD_ID + ".tooltip.current_enchanting_power";
+    public static final String KEY_INCOMPATIBLE_ENCHANTMENTS = Util.makeDescriptionId("gui",
+            EnchantingInfuser.id("enchantment.tooltip.incompatible"));
+    public static final Component UNKNOWN_ENCHANT_COMPONENT = Component.translatable(Util.makeDescriptionId("gui",
+            EnchantingInfuser.id("enchantment.tooltip.unknown_enchantment"))).withStyle(ChatFormatting.GRAY);
+    public static final Component INCREASE_LEVEL_COMPONENT = Component.translatable(Util.makeDescriptionId("gui",
+            EnchantingInfuser.id("enchantment.tooltip.low_power1"))).withStyle(ChatFormatting.GRAY);
+    public static final Component MODIFY_LEVEL_COMPONENT = Component.translatable(Util.makeDescriptionId("gui",
+            EnchantingInfuser.id("enchantment.tooltip.low_power2"))).withStyle(ChatFormatting.GRAY);
+    public static final String KEY_CURRENT_ENCHANTING_POWER = Util.makeDescriptionId("gui",
+            EnchantingInfuser.id("enchantment.tooltip.current_enchanting_power"));
 
     public static List<Component> getWeakPowerTooltip(int currentPower, int requiredPower, Component component) {
         List<Component> lines = new ArrayList<>();

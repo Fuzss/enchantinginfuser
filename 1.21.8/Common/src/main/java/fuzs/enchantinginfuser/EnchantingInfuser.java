@@ -6,9 +6,11 @@ import fuzs.enchantinginfuser.network.ClientboundInfuserEnchantmentsMessage;
 import fuzs.enchantinginfuser.network.client.ServerboundEnchantmentLevelMessage;
 import fuzs.puzzleslib.api.config.v3.ConfigHolder;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;
+import fuzs.puzzleslib.api.core.v1.context.PackRepositorySourcesContext;
 import fuzs.puzzleslib.api.core.v1.context.PayloadTypesContext;
 import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import fuzs.puzzleslib.api.event.v1.BuildCreativeModeTabContentsCallback;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -21,6 +23,7 @@ public class EnchantingInfuser implements ModConstructor {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
     public static final ConfigHolder CONFIG = ConfigHolder.builder(MOD_ID).server(ServerConfig.class);
+    public static final ResourceLocation TREASURE_ENCHANTMENTS_LOCATION = EnchantingInfuser.id("treasure_enchantments");
 
     @Override
     public void onConstructMod() {
@@ -41,6 +44,11 @@ public class EnchantingInfuser implements ModConstructor {
         context.playToClient(ClientboundInfuserEnchantmentsMessage.class,
                 ClientboundInfuserEnchantmentsMessage.STREAM_CODEC);
         context.playToServer(ServerboundEnchantmentLevelMessage.class, ServerboundEnchantmentLevelMessage.STREAM_CODEC);
+    }
+
+    @Override
+    public void onAddDataPackFinders(PackRepositorySourcesContext context) {
+        context.registerBuiltInPack(TREASURE_ENCHANTMENTS_LOCATION, Component.literal("Treasure Enchantments"), false);
     }
 
     public static ResourceLocation id(String path) {
