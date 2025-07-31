@@ -2,7 +2,10 @@ package fuzs.enchantinginfuser.util;
 
 import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.minecraft.core.*;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
@@ -76,20 +79,9 @@ public class ModEnchantmentHelper {
         }
     }
 
-    public static Rarity getItemNameRarity(HolderLookup.Provider registries, ItemStack itemStack, boolean isEnchanted) {
-        if (!isEnchanted) {
-            return itemStack.getOrDefault(DataComponents.RARITY, Rarity.COMMON);
-        } else {
-            itemStack = new ItemStack(itemStack.getItem());
-            ItemEnchantments.Mutable itemEnchantments = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-            HolderLookup.RegistryLookup<Enchantment> enchantments = registries.lookupOrThrow(Registries.ENCHANTMENT);
-            // just any entry must be present for the item to count as enchanted
-            // alternatively create a custom ItemEnchantments implementation
-            itemEnchantments.set(null, 1);
-            itemStack.set(DataComponents.ENCHANTMENTS, itemEnchantments.toImmutable());
-            Rarity rarity = itemStack.getRarity();
-            itemStack.set(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
-            return rarity;
-        }
+    public static Rarity getItemNameRarity(ItemStack itemStack, ItemEnchantments itemEnchantments) {
+        ItemStack newItemStack = new ItemStack(itemStack.getItem());
+        newItemStack.set(DataComponents.ENCHANTMENTS, itemEnchantments);
+        return newItemStack.getRarity();
     }
 }

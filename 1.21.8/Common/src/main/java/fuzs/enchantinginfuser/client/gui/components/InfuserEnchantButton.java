@@ -53,10 +53,9 @@ public class InfuserEnchantButton extends InfuserMenuButton {
 
     @Override
     Rarity getItemNameRarity(ItemStack itemStack, ItemEnchantments itemEnchantments) {
-        boolean isEnchanted = !itemEnchantments.isEmpty();
-        itemStack = ModEnchantmentHelper.getEnchantedItemStack(itemStack, isEnchanted);
-        HolderLookup.Provider registries = Minecraft.getInstance().getConnection().registryAccess();
-        return ModEnchantmentHelper.getItemNameRarity(registries, itemStack, isEnchanted);
+        ItemStack enchantedItemStack = ModEnchantmentHelper.getEnchantedItemStack(itemStack,
+                !itemEnchantments.isEmpty());
+        return ModEnchantmentHelper.getItemNameRarity(enchantedItemStack, itemEnchantments);
     }
 
     @Override
