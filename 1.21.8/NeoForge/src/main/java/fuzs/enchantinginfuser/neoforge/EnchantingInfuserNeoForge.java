@@ -1,7 +1,7 @@
 package fuzs.enchantinginfuser.neoforge;
 
 import fuzs.enchantinginfuser.EnchantingInfuser;
-import fuzs.enchantinginfuser.data.ModBlockLootProvider;
+import fuzs.enchantinginfuser.data.loot.ModBlockLootProvider;
 import fuzs.enchantinginfuser.data.ModRecipeProvider;
 import fuzs.enchantinginfuser.data.tags.BuiltInEnchantmentTagsProvider;
 import fuzs.enchantinginfuser.data.tags.ModBlockTagsProvider;

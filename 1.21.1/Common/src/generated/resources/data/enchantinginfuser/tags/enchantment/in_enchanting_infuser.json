@@ -1,5 +1,8 @@
 {
   "values": [
-    "#minecraft:in_enchanting_table"
+    {
+      "id": "#minecraft:in_enchanting_table",
+      "required": false
+    }
   ]
 }

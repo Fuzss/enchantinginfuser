@@ -1,4 +1,4 @@
-package fuzs.enchantinginfuser.data;
+package fuzs.enchantinginfuser.data.tags;
 
 import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.puzzleslib.api.data.v2.core.DataProviderContext;
@@ -16,7 +16,7 @@ public class ModEnchantmentTagsProvider extends AbstractTagProvider<Enchantment>
 
     @Override
     public void addTags(HolderLookup.Provider provider) {
-        this.add(ModRegistry.IN_ENCHANTING_INFUSER_ENCHANTMENT_TAG).addTag(EnchantmentTags.IN_ENCHANTING_TABLE);
-        this.add(ModRegistry.IN_ADVANCED_ENCHANTING_INFUSER_ENCHANTMENT_TAG).addTag(EnchantmentTags.IN_ENCHANTING_TABLE);
+        this.add(ModRegistry.IN_ENCHANTING_INFUSER_ENCHANTMENT_TAG).addOptionalTag(EnchantmentTags.IN_ENCHANTING_TABLE);
+        this.add(ModRegistry.IN_ADVANCED_ENCHANTING_INFUSER_ENCHANTMENT_TAG).addOptionalTag(EnchantmentTags.IN_ENCHANTING_TABLE);
     }
 }
