@@ -1,7 +1,7 @@
 package fuzs.enchantinginfuser.client;
 
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
-import fuzs.enchantinginfuser.client.renderer.blockentity.InfuserItemRenderer;
+import fuzs.enchantinginfuser.client.renderer.blockentity.InfuserRenderer;
 import fuzs.enchantinginfuser.init.ModRegistry;
 import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
@@ -23,6 +23,6 @@ public class EnchantingInfuserClient implements ClientModConstructor {
 
     @Override
     public void onRegisterBlockEntityRenderers(BlockEntityRenderersContext context) {
-        context.registerBlockEntityRenderer(ModRegistry.INFUSER_BLOCK_ENTITY_TYPE.value(), InfuserItemRenderer::new);
+        context.registerBlockEntityRenderer(ModRegistry.INFUSER_BLOCK_ENTITY_TYPE.value(), InfuserRenderer::new);
     }
 }

@@ -12,6 +12,7 @@ import fuzs.puzzleslib.api.init.v3.registry.ResourceKeyHelper;
 import fuzs.puzzleslib.api.util.v1.InteractionResultHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
@@ -93,13 +94,13 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof InfuserBlockEntity blockEntity) {
-            if (!level.isClientSide) {
+            if (!level.isClientSide()) {
                 player.openMenu(state.getMenuProvider(level, pos));
                 // items might still be in inventory slots, so this needs to update so that enchantment buttons are shown
                 player.containerMenu.slotsChanged(blockEntity);
             }
 
-            return InteractionResultHelper.sidedSuccess(level.isClientSide);
+            return InteractionResultHelper.sidedSuccess(level.isClientSide());
         }
 
         return InteractionResult.PASS;
@@ -156,12 +157,13 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
-        if (level.getBlockEntity(pos) instanceof InfuserBlockEntity blockEntity) {
+    public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos, Direction direction) {
+        if (level.getBlockEntity(blockPos) instanceof InfuserBlockEntity blockEntity) {
             if (!blockEntity.getItem(0).isEmpty()) {
                 return 15;
             }
         }
+
         return 0;
     }
 }

@@ -5,8 +5,8 @@ import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.client.util.EnchantmentTooltipHelper;
 import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
 import fuzs.puzzleslib.api.client.gui.v2.tooltip.TooltipBuilder;
+import fuzs.puzzleslib.api.util.v1.CommonHelper;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
@@ -36,7 +36,7 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
 
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        if (this.isActive() && Screen.hasShiftDown()) {
+        if (this.isActive() && CommonHelper.hasShiftDown()) {
             int yImage = this.isHoveredOrFocused() ? 2 : 1;
             guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                     this.resourceLocation,

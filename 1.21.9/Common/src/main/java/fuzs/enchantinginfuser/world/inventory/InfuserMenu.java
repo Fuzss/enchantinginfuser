@@ -216,8 +216,8 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     public int clickEnchantmentLevelButton(Holder<Enchantment> enchantment, IntUnaryOperator operation) {
         // the enchantment is newly added and is not compatible with existing enchantments, so no level is allowed
         int enchantmentLevel = this.enchantmentLevels.getInt(enchantment);
-        if (enchantmentLevel == 0 &&
-                !EnchantmentHelper.isEnchantmentCompatible(this.getItemEnchantments().keySet(), enchantment)) {
+        if (enchantmentLevel == 0 && !EnchantmentHelper.isEnchantmentCompatible(this.getItemEnchantments().keySet(),
+                enchantment)) {
             return 0;
         } else {
             int newEnchantmentLevel = operation.applyAsInt(enchantmentLevel);
@@ -459,7 +459,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 enchantments,
                 this.getEnchantmentPowerLimit(),
                 enchantmentValue);
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             this.requiredEnchantmentPowers = EnchantmentPowerHelper.getRequiredEnchantmentPowers(this.getEnchantmentPower(),
                     enchantments,
                     this.getEnchantmentPowerLimit(),

@@ -14,11 +14,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -137,7 +139,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
             }
 
             @Override
-            public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
                 return false;
             }
 
@@ -225,12 +227,12 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
     }
 
     @Override
-    public boolean charTyped(char codePoint, int modifiers) {
+    public boolean charTyped(CharacterEvent characterEvent) {
         if (this.ignoreTextInput) {
             return false;
         } else {
             String s = this.searchBox.getValue();
-            if (this.searchBox.charTyped(codePoint, modifiers)) {
+            if (this.searchBox.charTyped(characterEvent)) {
                 if (!Objects.equals(s, this.searchBox.getValue())) {
                     this.refreshSearchResults();
                 }
@@ -242,41 +244,41 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent keyEvent) {
         this.ignoreTextInput = false;
         if (!this.searchBox.isFocused()) {
-            if (this.minecraft.options.keyChat.matches(keyCode, scanCode)) {
+            if (this.minecraft.options.keyChat.matches(keyEvent)) {
                 this.ignoreTextInput = true;
                 this.searchBox.setFocused(true);
                 return true;
             } else {
-                return super.keyPressed(keyCode, scanCode, modifiers);
+                return super.keyPressed(keyEvent);
             }
         } else {
             boolean flag = this.hoveredSlot != null && this.hoveredSlot.hasItem();
-            boolean flag1 = InputConstants.getKey(keyCode, scanCode).getNumericKeyValue().isPresent();
-            if (flag && flag1 && this.checkHotbarKeyPressed(keyCode, scanCode)) {
+            boolean flag1 = InputConstants.getKey(keyEvent).getNumericKeyValue().isPresent();
+            if (flag && flag1 && this.checkHotbarKeyPressed(keyEvent)) {
                 this.ignoreTextInput = true;
                 return true;
             } else {
                 String s = this.searchBox.getValue();
-                if (this.searchBox.keyPressed(keyCode, scanCode, modifiers)) {
+                if (this.searchBox.keyPressed(keyEvent)) {
                     if (!Objects.equals(s, this.searchBox.getValue())) {
                         this.refreshSearchResults();
                     }
                     return true;
                 } else {
-                    return this.searchBox.isFocused() && this.searchBox.isVisible()
-                            && keyCode != InputConstants.KEY_ESCAPE || super.keyPressed(keyCode, scanCode, modifiers);
+                    return this.searchBox.isFocused() && this.searchBox.isVisible() && !keyEvent.isEscape()
+                            || super.keyPressed(keyEvent);
                 }
             }
         }
     }
 
     @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+    public boolean keyReleased(KeyEvent keyEvent) {
         this.ignoreTextInput = false;
-        return super.keyReleased(keyCode, scanCode, modifiers);
+        return super.keyReleased(keyEvent);
     }
 
     public void refreshSearchResults() {
@@ -368,17 +370,18 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+    public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double dragX, double dragY) {
         // AbstractContainerMenu::mouseDragged does not call super, so this is copied from ContainerEventHandler::mouseDragged
         // Fabric Api patches that in though so we only need it for NeoForge
         if (!ModLoaderEnvironment.INSTANCE.getModLoader().isFabricLike()) {
-            if (this.getFocused() != null && this.isDragging() && button == 0 && this.getFocused()
-                    .mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
+            if (this.getFocused() != null && this.isDragging()
+                    && mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_LEFT && this.getFocused()
+                    .mouseDragged(mouseButtonEvent, dragX, dragY)) {
                 return true;
             }
         }
 
-        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        return super.mouseDragged(mouseButtonEvent, dragX, dragY);
     }
 
     @Override
@@ -409,7 +412,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
             super.clearEntries();
         }
 
-        class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+        class Entry extends AbstractMenuSelectionList.Entry<Entry> {
             private final EnchantmentComponent enchantmentComponent;
             private final Component component;
             private final List<FormattedCharSequence> tooltip;
@@ -449,31 +452,32 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
             }
 
             @Override
-            public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partialTick) {
+            public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean hovering, float partialTick) {
                 guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                         InfuserScreen.INFUSER_LOCATION,
-                        left,
-                        top,
+                        this.getContentX(),
+                        this.getContentY(),
                         0,
-                        185 + this.getYImage() * EnchantmentSelectionList.this.itemHeight,
-                        width,
-                        height,
+                        185 + this.getYImage() * EnchantmentSelectionList.this.defaultEntryHeight,
+                        this.getContentWidth(),
+                        this.getContentHeight(),
                         256,
                         256);
                 AbstractWidget.renderScrollingString(guiGraphics,
                         EnchantmentSelectionList.this.minecraft.font,
                         this.component,
-                        left + 18 + 2,
-                        top,
-                        left + width - 18 - 2,
-                        top + height,
+                        this.getContentX() + 18 + 2,
+                        this.getContentY(),
+                        this.getContentRight() - 18 - 2,
+                        this.getContentBottom(),
                         ARGB.opaque(this.getFontColor()));
                 for (AbstractWidget abstractWidget : this.children()) {
-                    abstractWidget.setY(top);
+                    abstractWidget.setY(this.getContentY());
                     abstractWidget.render(guiGraphics, mouseX, mouseY, partialTick);
                 }
+
                 if (hovering && (this.enchantmentComponent.isInactive()
-                        || mouseX >= left + 18 && mouseX < left + width - 18)) {
+                        || mouseX >= this.getContentX() + 18 && mouseX < this.getContentRight() - 18)) {
                     guiGraphics.setTooltipForNextFrame(this.tooltip, mouseX, mouseY);
                     if (this.enchantmentComponent.isNotAvailable()) {
                         InfuserScreen.setIsPowerTooLow(true);

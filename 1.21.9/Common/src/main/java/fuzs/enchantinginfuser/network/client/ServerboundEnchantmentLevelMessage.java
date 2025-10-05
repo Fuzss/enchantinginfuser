@@ -4,8 +4,8 @@ import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.puzzleslib.api.network.v4.codec.ExtraStreamCodecs;
 import fuzs.puzzleslib.api.network.v4.message.MessageListener;
 import fuzs.puzzleslib.api.network.v4.message.play.ServerboundPlayMessage;
+import fuzs.puzzleslib.api.util.v1.CommonHelper;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -65,11 +65,11 @@ public record ServerboundEnchantmentLevelMessage(int containerId,
         }
 
         public static Operation remove() {
-            return Screen.hasShiftDown() ? REMOVE_ALL : REMOVE;
+            return CommonHelper.hasShiftDown() ? REMOVE_ALL : REMOVE;
         }
 
         public static Operation add() {
-            return Screen.hasShiftDown() ? ADD_ALL : ADD;
+            return CommonHelper.hasShiftDown() ? ADD_ALL : ADD;
         }
     }
 }

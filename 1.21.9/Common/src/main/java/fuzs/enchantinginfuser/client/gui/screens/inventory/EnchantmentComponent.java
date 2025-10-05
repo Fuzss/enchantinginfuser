@@ -32,6 +32,7 @@ public record EnchantmentComponent(InfuserMenu.EnchantmentValues enchantmentValu
                 incompatibleEnchantments.add(holder);
             }
         }
+
         return new EnchantmentComponent(enchantmentValues,
                 enchantmentLevel,
                 ImmutableSet.copyOf(incompatibleEnchantments));
@@ -65,11 +66,12 @@ public record EnchantmentComponent(InfuserMenu.EnchantmentValues enchantmentValu
             FormattedText randomName = EnchantmentNames.getInstance().getRandomName(font, maxWidth);
             List<FormattedCharSequence> lines = font.split(randomName, maxWidth);
             if (!lines.isEmpty()) {
-                return ComponentHelper.toComponent(lines.getFirst());
+                return ComponentHelper.getAsComponent(lines.getFirst());
             } else {
                 return Component.literal("???????");
             }
         }
+
         if (this.isPresent()) {
             return EnchantmentTooltipHelper.getDisplayNameWithLevel(enchantment, this.enchantmentLevel);
         } else {
