@@ -1,0 +1,17 @@
+{
+  "block.enchantinginfuser.enchanting_infuser": "Зачаровувач",
+  "block.enchantinginfuser.advanced_enchanting_infuser": "Просунутий зачаровувач",
+  "block.enchantinginfuser.description.choose": "Обери зачаруваня для того обладнання",
+  "block.enchantinginfuser.description.chooseAndModify": "Оберай, покращуй або видаляй зачаруваня твого обладнання.",
+  "block.enchantinginfuser.description.repair": "Ремонтуй свої речі за Рівень.",
+  "gui.enchantinginfuser.tooltip.enchanting_power": "Сила зачарування",
+  "gui.enchantinginfuser.tooltip.current_enchanting_power": "Поточна %s: %s / %s",
+  "gui.enchantinginfuser.tooltip.enchanting_power.hint": "Помістіть більше книжкових полиць у формі квадрату навколо заварювача у два шари.",
+  "gui.enchantinginfuser.tooltip.durability": "Міцніть: %s",
+  "gui.enchantinginfuser.tooltip.change": "%s -> %s",
+  "gui.enchantinginfuser.tooltip.points": "Отримати очки чар",
+  "gui.enchantinginfuser.tooltip.unknown_enchantment": "Це зачарування занадто потужне для Зачаровувача з такою малою магічною силою.",
+  "gui.enchantinginfuser.tooltip.lowPower1": "Для подальшого підвищення рівня цього зачарування потрібен Зачаровувач з більшою силою зачарування.",
+  "gui.enchantinginfuser.tooltip.lowPower2": "Для зміни рівня цього зачарування потрібен Зачаровувач з більшою силою зачарування.",
+  "gui.enchantinginfuser.tooltip.incompatible": "Це зачаровування не сумісне з: %s"
+}
