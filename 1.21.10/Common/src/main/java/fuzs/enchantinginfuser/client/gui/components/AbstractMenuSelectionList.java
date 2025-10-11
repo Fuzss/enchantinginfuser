@@ -3,11 +3,17 @@ package fuzs.enchantinginfuser.client.gui.components;
 import fuzs.puzzleslib.api.client.gui.v2.ScreenHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A selection list implementation that can be used as part of a screen anywhere, without having to cover the whole
@@ -29,6 +35,16 @@ public abstract class AbstractMenuSelectionList<E extends AbstractMenuSelectionL
         super(minecraft, width, height, y, itemHeight);
         this.scrollbarOffset = scrollbarOffset;
         this.setX(x);
+    }
+
+    @Override
+    public int addEntry(E entry) {
+        return super.addEntry(entry);
+    }
+
+    @Override
+    public void clearEntries() {
+        super.clearEntries();
     }
 
     @Override
@@ -152,6 +168,7 @@ public abstract class AbstractMenuSelectionList<E extends AbstractMenuSelectionL
     }
 
     protected abstract static class Entry<E extends AbstractMenuSelectionList.Entry<E>> extends ContainerObjectSelectionList.Entry<E> {
+        private final List<AbstractWidget> children = new ArrayList<>();
 
         @Override
         public int getContentX() {
@@ -171,6 +188,29 @@ public abstract class AbstractMenuSelectionList<E extends AbstractMenuSelectionL
         @Override
         public int getContentWidth() {
             return this.getWidth();
+        }
+
+        protected <T extends AbstractWidget> T addRenderableWidget(T widget) {
+            this.children.add(widget);
+            return widget;
+        }
+
+        @Override
+        public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean isHovering, float partialTick) {
+            for (AbstractWidget abstractWidget : this.children) {
+                abstractWidget.setY(this.getContentY());
+                abstractWidget.render(guiGraphics, mouseX, mouseY, partialTick);
+            }
+        }
+
+        @Override
+        public List<? extends GuiEventListener> children() {
+            return this.children;
+        }
+
+        @Override
+        public List<? extends NarratableEntry> narratables() {
+            return this.children;
         }
     }
 }

@@ -15,7 +15,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.CharacterEvent;
@@ -416,8 +415,6 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
             private final EnchantmentComponent enchantmentComponent;
             private final Component component;
             private final List<FormattedCharSequence> tooltip;
-            private final AbstractWidget removeButton;
-            private final AbstractWidget addButton;
 
             public Entry(Holder<Enchantment> enchantment, EnchantmentComponent enchantmentComponent) {
                 this.enchantmentComponent = enchantmentComponent;
@@ -427,7 +424,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                         InfuserScreen.this.enchantmentSeed);
                 this.tooltip = ClientComponentSplitter.splitTooltipLines(enchantmentComponent.getTooltip(enchantment))
                         .toList();
-                this.removeButton = new EnchantingOperationButton.Remove(enchantmentComponent,
+                this.addRenderableWidget(new EnchantingOperationButton.Remove(enchantmentComponent,
                         EnchantmentSelectionList.this.getX(),
                         EnchantmentSelectionList.this.getY(),
                         (Button button) -> {
@@ -437,8 +434,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                                             ServerboundEnchantmentLevelMessage.Operation.remove())) {
                                 InfuserScreen.this.refreshSearchResults();
                             }
-                        });
-                this.addButton = new EnchantingOperationButton.Add(enchantmentComponent,
+                        }));
+                this.addRenderableWidget(new EnchantingOperationButton.Add(enchantmentComponent,
                         EnchantmentSelectionList.this.getX() + EnchantmentSelectionList.this.getWidth() - 18,
                         EnchantmentSelectionList.this.getY(),
                         (Button button) -> {
@@ -448,7 +445,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                                             ServerboundEnchantmentLevelMessage.Operation.add())) {
                                 InfuserScreen.this.refreshSearchResults();
                             }
-                        });
+                        }));
             }
 
             @Override
@@ -471,11 +468,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                         this.getContentRight() - 18 - 2,
                         this.getContentBottom(),
                         ARGB.opaque(this.getFontColor()));
-                for (AbstractWidget abstractWidget : this.children()) {
-                    abstractWidget.setY(this.getContentY());
-                    abstractWidget.render(guiGraphics, mouseX, mouseY, partialTick);
-                }
-
+                super.renderContent(guiGraphics, mouseX, mouseY, hovering, partialTick);
                 if (hovering && (this.enchantmentComponent.isInactive()
                         || mouseX >= this.getContentX() + 18 && mouseX < this.getContentRight() - 18)) {
                     guiGraphics.setTooltipForNextFrame(this.tooltip, mouseX, mouseY);
@@ -492,16 +485,6 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
             private int getFontColor() {
                 return this.enchantmentComponent.isInactive() ? 0x685E4A :
                         this.enchantmentComponent.isPresent() ? ChatFormatting.YELLOW.getColor() : -1;
-            }
-
-            @Override
-            public List<? extends AbstractWidget> children() {
-                return List.of(this.removeButton, this.addButton);
-            }
-
-            @Override
-            public List<? extends NarratableEntry> narratables() {
-                return List.of(this.removeButton, this.addButton);
             }
         }
     }
