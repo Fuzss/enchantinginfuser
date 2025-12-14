@@ -10,7 +10,7 @@ import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.data.models.model.TexturedModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
@@ -37,9 +37,9 @@ public class ModModelProvider extends AbstractModelProvider {
     }
 
     public final void createEnchantingInfuserBlock(Block block, BlockModelGenerators blockModelGenerators) {
-        ResourceLocation resourceLocation = ENCHANTING_TABLE_TEXTURED_MODEL.create(block,
+        Identifier identifier = ENCHANTING_TABLE_TEXTURED_MODEL.create(block,
                 blockModelGenerators.modelOutput);
         blockModelGenerators.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block,
-                BlockModelGenerators.plainVariant(resourceLocation)));
+                BlockModelGenerators.plainVariant(identifier)));
     }
 }

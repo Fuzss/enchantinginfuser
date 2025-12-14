@@ -12,7 +12,6 @@ import fuzs.enchantinginfuser.util.PlayerExperienceHelper;
 import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import fuzs.enchantinginfuser.world.level.block.InfuserBlock;
 import fuzs.enchantinginfuser.world.level.block.InfuserType;
-import fuzs.puzzleslib.api.container.v1.ContainerMenuHelper;
 import fuzs.puzzleslib.api.container.v1.QuickMoveRuleSet;
 import fuzs.puzzleslib.api.network.v4.MessageSender;
 import fuzs.puzzleslib.api.network.v4.PlayerSet;
@@ -23,7 +22,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -95,20 +94,21 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         });
         for (int k = 0; k < 4; ++k) {
             EquipmentSlot equipmentSlot = InventoryMenu.SLOT_IDS[k];
-            ResourceLocation resourceLocation = InventoryMenu.TEXTURE_EMPTY_SLOTS.get(equipmentSlot);
+            Identifier identifier = InventoryMenu.TEXTURE_EMPTY_SLOTS.get(equipmentSlot);
             this.addSlot(new ArmorSlot(inventory,
                     inventory.player,
                     equipmentSlot,
                     39 - k,
                     8 + 188 * (k / 2),
                     103 + (k % 2) * 18,
-                    resourceLocation));
+                    identifier));
         }
-        ContainerMenuHelper.addInventorySlots(this, inventory, 30, 103);
+
+        this.addStandardInventorySlots(inventory, 30, 103);
         this.addSlot(new Slot(inventory, 40, 8, 161) {
 
             @Override
-            public ResourceLocation getNoItemIcon() {
+            public Identifier getNoItemIcon() {
                 return InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD;
             }
         });

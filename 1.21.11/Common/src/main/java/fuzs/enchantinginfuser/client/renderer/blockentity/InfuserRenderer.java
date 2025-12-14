@@ -5,9 +5,8 @@ import com.mojang.math.Axis;
 import fuzs.enchantinginfuser.EnchantingInfuser;
 import fuzs.enchantinginfuser.client.renderer.blockentity.state.InfuserRenderState;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
-import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.object.book.BookModel;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -17,6 +16,7 @@ import net.minecraft.client.renderer.blockentity.state.EnchantTableRenderState;
 import net.minecraft.client.renderer.entity.state.ItemEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
@@ -25,7 +25,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity, InfuserRenderState> {
     public static final Material BOOK_LOCATION = Sheets.BLOCK_ENTITIES_MAPPER.apply(EnchantingInfuser.id(
@@ -49,7 +49,7 @@ public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity, 
     }
 
     @Override
-    public void extractRenderState(InfuserBlockEntity blockEntity, InfuserRenderState renderState, float partialTick, Vec3 cameraPosition, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+    public void extractRenderState(InfuserBlockEntity blockEntity, InfuserRenderState renderState, float partialTick, Vec3 cameraPosition, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
         this.enchantTableRenderer.extractRenderState(blockEntity,
                 renderState,
                 partialTick,
@@ -95,7 +95,7 @@ public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity, 
         submitNodeCollector.submitModel(this.bookModel,
                 state,
                 poseStack,
-                BOOK_LOCATION.renderType(RenderType::entitySolid),
+                BOOK_LOCATION.renderType(RenderTypes::entitySolid),
                 enchantTableRenderState.lightCoords,
                 OverlayTexture.NO_OVERLAY,
                 -1,

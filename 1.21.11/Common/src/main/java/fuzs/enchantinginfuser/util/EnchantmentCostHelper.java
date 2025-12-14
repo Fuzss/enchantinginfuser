@@ -8,7 +8,7 @@ import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 
@@ -33,8 +33,10 @@ public class EnchantmentCostHelper {
         // it then checks for compatibility and treats those as duplicates, the 'duplicate' with the higher cost is kept
         int scalingEnchantmentCosts = 0;
         for (Holder<Enchantment> enchantment : getMostExpensiveEnchantments(itemEnchantments)) {
-            if (scalingNamespaces.isEmpty() ||
-                    scalingNamespaces.contains(enchantment.unwrapKey().orElseThrow().location().getNamespace())) {
+            if (scalingNamespaces.isEmpty() || scalingNamespaces.contains(enchantment.unwrapKey()
+                    .orElseThrow()
+                    .identifier()
+                    .getNamespace())) {
                 scalingEnchantmentCosts += getMaxEnchantmentCost(enchantment);
             }
         }

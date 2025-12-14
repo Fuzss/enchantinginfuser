@@ -38,8 +38,7 @@ public class ServerConfig implements ConfigCore {
                         "This value will be fixed at 50 when Apotheosis is installed."
                 }
         )
-        @Config.IntRange(min = 0)
-        public int maximumBookshelves = 15;
+        @Config.IntRange(min = 0) public int maximumBookshelves = 15;
         @Config(description = "Allow enchantments on an already enchanted item to be increased / removed.")
         public ModifiableItems allowModifyingEnchantments = ModifiableItems.UNENCHANTED;
         @Config(description = "Allow books to be enchanted in an infuser.")
@@ -76,8 +75,7 @@ public class ServerConfig implements ConfigCore {
                         "Cost level to scale prices by. This is not a strict value, meaning it can be exceeded (e.g. when applying treasure enchantments)."
                 }
         )
-        @Config.IntRange(min = 1)
-        public int maximumCost = 30;
+        @Config.IntRange(min = 1) public int maximumCost = 30;
         @Config(description = "When scaling costs, only account for vanilla enchantments. Otherwise enchanting costs will become ludicrously cheap with many modded enchantments present.")
         public boolean scaleCostsByVanillaOnly = true;
     }

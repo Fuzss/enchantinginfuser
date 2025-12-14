@@ -10,7 +10,6 @@ import fuzs.puzzleslib.api.client.gui.v2.tooltip.ClientComponentSplitter;
 import fuzs.puzzleslib.api.client.gui.v2.tooltip.TooltipBuilder;
 import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -27,7 +26,9 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
@@ -38,16 +39,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
 public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implements ContainerListener {
-    public static final ResourceLocation INFUSER_LOCATION = EnchantingInfuser.id(
+    public static final Identifier INFUSER_LOCATION = EnchantingInfuser.id(
             "textures/gui/container/enchanting_infuser.png");
-    private static final ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE = ResourceLocation.withDefaultNamespace(
+    private static final Identifier SLOT_HIGHLIGHT_BACK_SPRITE = Identifier.withDefaultNamespace(
             "container/slot_highlight_back");
-    private static final ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE = ResourceLocation.withDefaultNamespace(
+    private static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace(
             "container/slot_highlight_front");
     private static final int BUTTONS_OFFSET_X = 7;
     private static final int ENCHANT_BUTTON_OFFSET_Y = 44;
@@ -218,10 +219,10 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
     }
 
     @Override
-    public void resize(Minecraft minecraft, int width, int height) {
-        String s = this.searchBox.getValue();
-        super.resize(minecraft, width, height);
-        this.searchBox.setValue(s);
+    public void resize(int width, int height) {
+        String string = this.searchBox.getValue();
+        super.resize(width, height);
+        this.searchBox.setValue(string);
         this.refreshSearchResults();
     }
 
@@ -418,10 +419,10 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
 
             public Entry(Holder<Enchantment> enchantment, EnchantmentComponent enchantmentComponent) {
                 this.enchantmentComponent = enchantmentComponent;
-                this.component = enchantmentComponent.getDisplayName(enchantment,
+                this.component = ComponentUtils.mergeStyles(enchantmentComponent.getDisplayName(enchantment,
                         EnchantmentSelectionList.this.getWidth() - 18 * 2,
                         EnchantmentSelectionList.this.minecraft.font,
-                        InfuserScreen.this.enchantmentSeed);
+                        InfuserScreen.this.enchantmentSeed), Style.EMPTY.withColor(ARGB.opaque(this.getFontColor())));
                 this.tooltip = ClientComponentSplitter.splitTooltipLines(enchantmentComponent.getTooltip(enchantment))
                         .toList();
                 this.addRenderableWidget(new EnchantingOperationButton.Remove(enchantmentComponent,
@@ -460,14 +461,12 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                         this.getContentHeight(),
                         256,
                         256);
-                AbstractWidget.renderScrollingString(guiGraphics,
-                        EnchantmentSelectionList.this.minecraft.font,
-                        this.component,
-                        this.getContentX() + 18 + 2,
-                        this.getContentY(),
-                        this.getContentRight() - 18 - 2,
-                        this.getContentBottom(),
-                        ARGB.opaque(this.getFontColor()));
+                guiGraphics.textRenderer(GuiGraphics.HoveredTextEffects.NONE)
+                        .acceptScrollingWithDefaultCenter(this.component,
+                                this.getContentX() + 18 + 2,
+                                this.getContentRight() - 18 - 2,
+                                this.getContentY(),
+                                this.getContentBottom());
                 super.renderContent(guiGraphics, mouseX, mouseY, hovering, partialTick);
                 if (hovering && (this.enchantmentComponent.isInactive()
                         || mouseX >= this.getContentX() + 18 && mouseX < this.getContentRight() - 18)) {

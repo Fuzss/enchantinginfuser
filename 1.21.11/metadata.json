@@ -1,0 +1,61 @@
+{
+    "mod": {
+        "id": "enchantinginfuser",
+        "group": "fuzs.enchantinginfuser",
+        "name": "Enchanting Infuser",
+        "version": "21.11.0",
+        "authors": [
+            "Fuzs"
+        ],
+        "description": "An all new enchanting table: Choose your enchantments for fair prices! Plus no more randomness!",
+        "license": "MPL-2.0"
+    },
+    "dependencies": [
+        {
+            "name": "fabricapi",
+            "type": "required",
+            "platforms": [
+                "fabric"
+            ]
+        },
+        {
+            "name": "forgeconfigapiport",
+            "type": "required",
+            "platforms": [
+                "fabric"
+            ]
+        },
+        {
+            "name": "puzzleslib",
+            "type": "required",
+            "platforms": [
+                "fabric",
+                "neoforge"
+            ]
+        }
+    ],
+    "links": [
+        {
+            "name": "curseforge",
+            "slug": "enchanting-infuser",
+            "id": "551151"
+        },
+        {
+            "name": "github",
+            "slug": "enchantinginfuser"
+        },
+        {
+            "name": "modrinth",
+            "slug": "enchanting-infuser",
+            "id": "ePv85y52"
+        }
+    ],
+    "environments": {
+        "client": "required",
+        "server": "required"
+    },
+    "platforms": [
+        "fabric",
+        "neoforge"
+    ]
+}

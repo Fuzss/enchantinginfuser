@@ -10,7 +10,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class EnchantingOperationButton extends SpritelessImageButton {
     private final boolean isPowerTooLow;
@@ -35,11 +35,11 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
     protected abstract Component getTooltipComponent(EnchantmentComponent enchantmentComponent);
 
     @Override
-    public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         if (this.isActive() && CommonHelper.hasShiftDown()) {
             int yImage = this.isHoveredOrFocused() ? 2 : 1;
             guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
-                    this.resourceLocation,
+                    this.identifier,
                     this.getX() + 3,
                     this.getY(),
                     this.xTexStart,
@@ -50,7 +50,7 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
                     this.textureHeight,
                     ARGB.white(this.alpha));
             guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
-                    this.resourceLocation,
+                    this.identifier,
                     this.getX() - 3,
                     this.getY(),
                     this.xTexStart,
@@ -61,8 +61,9 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
                     this.textureHeight,
                     ARGB.white(this.alpha));
         } else {
-            super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
+            super.renderContents(guiGraphics, mouseX, mouseY, partialTicks);
         }
+
         if (this.isPowerTooLow && this.isHoveredOrFocused()) {
             InfuserScreen.setIsPowerTooLow(true);
         }

@@ -30,11 +30,11 @@ import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class InfuserBlockEntity extends EnchantingTableBlockEntity implements WorldlyContainer, TickingBlockEntity, ListBackedContainer, MenuProviderWithData<InfuserType> {
     private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
-    private LockCode code = LockCode.NO_LOCK;
+    private LockCode lockKey = LockCode.NO_LOCK;
 
     public InfuserBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(blockPos, blockState);
@@ -50,7 +50,7 @@ public class InfuserBlockEntity extends EnchantingTableBlockEntity implements Wo
     @Override
     public void loadAdditional(ValueInput valueInput) {
         super.loadAdditional(valueInput);
-        this.code = LockCode.fromTag(valueInput);
+        this.lockKey = LockCode.fromTag(valueInput);
         this.items.clear();
         ContainerHelper.loadAllItems(valueInput, this.items);
     }
@@ -58,7 +58,7 @@ public class InfuserBlockEntity extends EnchantingTableBlockEntity implements Wo
     @Override
     protected void saveAdditional(ValueOutput valueOutput) {
         super.saveAdditional(valueOutput);
-        this.code.addToTag(valueOutput);
+        this.lockKey.addToTag(valueOutput);
         ContainerHelper.saveAllItems(valueOutput, this.items, true);
     }
 
@@ -123,7 +123,7 @@ public class InfuserBlockEntity extends EnchantingTableBlockEntity implements Wo
     }
 
     public boolean canOpen(Player player) {
-        return BaseContainerBlockEntity.canUnlock(player, this.code, this.getDisplayName());
+        return this.lockKey.canUnlock(player);
     }
 
     @Override
@@ -138,16 +138,18 @@ public class InfuserBlockEntity extends EnchantingTableBlockEntity implements Wo
 
     @Override
     public @Nullable AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
-        if (this.canOpen(player)) {
-            InfuserType type = ((InfuserBlock) this.getBlockState().getBlock()).getType();
-            InfuserMenu menu = new InfuserMenu(type,
+        if (this.canOpen(player) && this.getBlockState().getBlock() instanceof InfuserBlock block) {
+            InfuserMenu infuserMenu = new InfuserMenu(block.getType(),
                     containerId,
                     inventory,
                     this,
                     ContainerLevelAccess.create(this.getLevel(), this.getBlockPos()));
-            menu.addSlotListener(menu);
-            return menu;
+            infuserMenu.addSlotListener(infuserMenu);
+            return infuserMenu;
         } else {
+            BaseContainerBlockEntity.sendChestLockedNotifications(this.getBlockPos().getCenter(),
+                    player,
+                    this.getDisplayName());
             return null;
         }
     }

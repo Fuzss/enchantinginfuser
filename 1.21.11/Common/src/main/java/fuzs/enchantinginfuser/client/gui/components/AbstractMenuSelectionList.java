@@ -9,7 +9,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 import java.util.ArrayList;
@@ -22,9 +22,9 @@ import java.util.List;
  * Also, the scroll bar is mostly handled separately and is placed outside the bounds of the actual list.
  */
 public abstract class AbstractMenuSelectionList<E extends AbstractMenuSelectionList.Entry<E>> extends ContainerObjectSelectionList<E> {
-    private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace(
+    private static final Identifier SCROLLER_SPRITE = Identifier.withDefaultNamespace(
             "container/creative_inventory/scroller");
-    private static final ResourceLocation SCROLLER_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace(
+    private static final Identifier SCROLLER_DISABLED_SPRITE = Identifier.withDefaultNamespace(
             "container/creative_inventory/scroller_disabled");
     private static final int SCROLLER_WIDTH = 12;
     private static final int SCROLLER_HEIGHT = 15;
@@ -58,9 +58,9 @@ public abstract class AbstractMenuSelectionList<E extends AbstractMenuSelectionL
         int posX = this.scrollBarX();
         double scrollAmount = this.maxScrollAmount() > 0 ? this.scrollAmount() / this.maxScrollAmount() : 0;
         int posY = this.getY() + (int) (scrollAmount * (this.getHeight() - SCROLLER_HEIGHT));
-        ResourceLocation resourceLocation = this.maxScrollAmount() > 0 ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+        Identifier identifier = this.maxScrollAmount() > 0 ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
         guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
-                resourceLocation,
+                identifier,
                 posX,
                 posY,
                 SCROLLER_WIDTH,
