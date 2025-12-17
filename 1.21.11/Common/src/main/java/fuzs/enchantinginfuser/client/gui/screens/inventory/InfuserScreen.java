@@ -14,7 +14,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -46,10 +45,6 @@ import java.util.*;
 public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implements ContainerListener {
     public static final Identifier INFUSER_LOCATION = EnchantingInfuser.id(
             "textures/gui/container/enchanting_infuser.png");
-    private static final Identifier SLOT_HIGHLIGHT_BACK_SPRITE = Identifier.withDefaultNamespace(
-            "container/slot_highlight_back");
-    private static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace(
-            "container/slot_highlight_front");
     private static final int BUTTONS_OFFSET_X = 7;
     private static final int ENCHANT_BUTTON_OFFSET_Y = 44;
     private static final int ENCHANT_ONLY_BUTTON_OFFSET_Y = 55;
@@ -93,59 +88,32 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         this.addWidget(this.searchBox);
         this.scrollingList = new EnchantmentSelectionList(this.leftPos + 30, this.topPos + 18);
         this.addRenderableWidget(this.scrollingList);
-        this.powerWidget = this.addRenderableOnly(new AbstractWidget(this.leftPos + 196,
+        this.powerWidget = this.addRenderableOnly(new ItemStackDisplayWidget(this.leftPos + 196,
                 this.topPos + 161,
-                16,
-                16,
-                CommonComponents.EMPTY) {
+                this.font,
+                new ItemStack(Items.BOOKSHELF)) {
+            private Component maximumEnchantmentPowerMessage = CommonComponents.EMPTY;
+            private Component powerIsTooLowMessage = CommonComponents.EMPTY;
 
             @Override
-            protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-                if (this.isHoveredOrFocused()) {
-                    guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
-                            SLOT_HIGHLIGHT_BACK_SPRITE,
-                            this.getX() - 4,
-                            this.getY() - 4,
-                            24,
-                            24);
-                }
-                guiGraphics.renderFakeItem(new ItemStack(Items.BOOKSHELF), this.getX(), this.getY());
-                int posX = this.getX() + 19 - 2 - InfuserScreen.this.font.width(this.getMessage());
-                int posY = this.getY() + 6 + 3;
-                guiGraphics.drawString(InfuserScreen.this.font,
-                        this.getMessage(),
-                        posX,
-                        posY,
-                        ARGB.opaque(this.getStringColor().getColor()));
-                if (this.isHoveredOrFocused()) {
-                    guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
-                            SLOT_HIGHLIGHT_FRONT_SPRITE,
-                            this.getX() - 4,
-                            this.getY() - 4,
-                            24,
-                            24);
-                }
-            }
-
-            private ChatFormatting getStringColor() {
+            public Component getMessage() {
                 if (InfuserScreen.this.menu.getEnchantmentPower()
                         >= InfuserScreen.this.menu.getEnchantmentPowerLimit()) {
-                    return ChatFormatting.YELLOW;
+                    return this.maximumEnchantmentPowerMessage;
                 } else if (isPowerTooLow) {
-                    return ChatFormatting.RED;
+                    return this.powerIsTooLowMessage;
                 } else {
-                    return ChatFormatting.WHITE;
+                    return super.getMessage();
                 }
             }
 
             @Override
-            public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-                return false;
-            }
-
-            @Override
-            protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
-                // NO-OP
+            public void setMessage(Component message) {
+                super.setMessage(message);
+                this.maximumEnchantmentPowerMessage = ComponentUtils.mergeStyles(message,
+                        Style.EMPTY.withColor(ChatFormatting.YELLOW));
+                this.powerIsTooLowMessage = ComponentUtils.mergeStyles(message,
+                        Style.EMPTY.withColor(ChatFormatting.RED));
             }
         });
         this.enchantButton = this.addRenderableWidget(new InfuserEnchantButton(this.leftPos + BUTTONS_OFFSET_X,
@@ -209,6 +177,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         if (enchantmentPower < enchantmentPowerLimit) {
             builder.addLines(Component.translatable(InfuserMenuButton.KEY_TOOLTIP_HINT).withStyle(ChatFormatting.GRAY));
         }
+
         builder.build(this.powerWidget);
     }
 
@@ -298,6 +267,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                 this.scrollingList.addEntry(enchantment, enchantmentComponent);
             }
         }
+
         for (Holder<Enchantment> enchantment : enchantments) {
             if (!holders.contains(enchantment) && this.matchesSearch(enchantment)) {
                 InfuserMenu.EnchantmentValues enchantmentValues = this.menu.getEnchantmentValues(enchantment);
@@ -307,19 +277,20 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                 this.scrollingList.addEntry(enchantment, enchantmentComponent);
             }
         }
+
         if (size != this.scrollingList.children().size()) {
             this.scrollingList.setScrollAmount(0.0);
         }
     }
 
     private boolean matchesSearch(Holder<Enchantment> enchantment) {
-        String s = this.searchBox.getValue().toLowerCase(Locale.ROOT).trim();
-        if (s.isEmpty()) {
+        String inputValue = this.searchBox.getValue().toLowerCase(Locale.ROOT).trim();
+        if (inputValue.isEmpty()) {
             return true;
         } else if (this.menu.getAvailableEnchantmentLevel(enchantment) == 0) {
             return false;
         } else {
-            return enchantment.value().description().getString().toLowerCase(Locale.ROOT).contains(s);
+            return enchantment.value().description().getString().toLowerCase(Locale.ROOT).contains(inputValue);
         }
     }
 
