@@ -276,13 +276,13 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         }
     }
 
-    private void processEnchantingCost(Player player, Level level, BlockPos pos, int enchantingCost) {
+    private void processEnchantingCost(Player player, Level level, BlockPos blockPos, int enchantingCost) {
         if (enchantingCost < 0) {
+            int amount = PlayerExperienceHelper.calculateExperienceDelta(this.getItemEnchantments(),
+                    this.getOriginalEnchantments(),
+                    level.random);
             ExperienceOrb.award((ServerLevel) level,
-                    Vec3.atCenterOf(pos),
-                    PlayerExperienceHelper.calculateExperienceDelta(this.getItemEnchantments(),
-                            this.getOriginalEnchantments(),
-                            level.random));
+                    Vec3.atCenterOf(blockPos.above()), amount);
         } else if (!player.getAbilities().instabuild) {
             // don't use Player::onEnchantmentPerformed as it also resets enchantments seed which we have nothing to do with
             player.giveExperienceLevels(-enchantingCost);

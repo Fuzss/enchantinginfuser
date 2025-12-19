@@ -43,6 +43,11 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
     }
 
     @Override
+    public void setMessage(Component message) {
+        this.message = this.inactiveMessage = message;
+    }
+
+    @Override
     public void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.renderContents(guiGraphics, mouseX, mouseY, partialTick);
         this.drawStringWithBackground(guiGraphics, this.getX() + 1, this.getY() + 1, this.getMessage(), this.color);

@@ -133,6 +133,9 @@ public class InfuserEnchantButton extends InfuserMenuButton {
         }
     }
 
+    /**
+     * @see ItemEnchantments#getTagOrEmpty(HolderLookup.Provider, ResourceKey, TagKey)
+     */
     static <T> HolderSet<T> getTagOrEmpty(HolderLookup.Provider registries, ResourceKey<Registry<T>> registryKey, TagKey<T> key) {
         Optional<HolderSet.Named<T>> optional = registries.lookupOrThrow(registryKey).get(key);
         return optional.map((HolderSet.Named<T> holders) -> (HolderSet<T>) holders).orElseGet(HolderSet::direct);

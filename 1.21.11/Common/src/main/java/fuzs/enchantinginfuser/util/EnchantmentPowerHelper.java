@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.apache.commons.lang3.math.Fraction;
 
@@ -87,7 +86,8 @@ public class EnchantmentPowerHelper {
      * @param itemEnchantments the enchantment pool for a specific item
      * @param powerLimit       maximum amount of enchanting power providers (=bookshelves) for the current
      *                         configuration
-     * @param enchantmentValue item enchantment value from {@link Item#getEnchantmentValue()}
+     * @param enchantmentValue item enchantment value from
+     *                         {@link net.minecraft.core.component.DataComponents#ENCHANTABLE}
      * @return the absolute amount of required enchanting power providers (=bookshelves)
      */
     public static int getScaledPowerForLevel(Holder<Enchantment> enchantment, int enchantmentLevel, Collection<Holder<Enchantment>> itemEnchantments, int powerLimit, int enchantmentValue) {
@@ -178,7 +178,7 @@ public class EnchantmentPowerHelper {
     private static int getPowerForLevel(Holder<Enchantment> enchantment, int enchantmentLevel) {
         int minCost = EnchantingBehavior.get().getMinCost(enchantment, enchantmentLevel);
         int maxCost = EnchantingBehavior.get().getMaxCost(enchantment, enchantmentLevel);
-        return minCost +
-                (maxCost - minCost) * enchantmentLevel / (EnchantingBehavior.get().getMaxLevel(enchantment) + 1);
+        return minCost + (maxCost - minCost) * enchantmentLevel / (EnchantingBehavior.get().getMaxLevel(enchantment)
+                + 1);
     }
 }
