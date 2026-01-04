@@ -3,20 +3,21 @@ package fuzs.enchantinginfuser.client.gui.components;
 import fuzs.enchantinginfuser.client.gui.screens.inventory.EnchantmentComponent;
 import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.client.util.EnchantmentTooltipHelper;
-import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
 import fuzs.puzzleslib.api.client.gui.v2.tooltip.TooltipBuilder;
 import fuzs.puzzleslib.api.util.v1.CommonHelper;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ARGB;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
-public abstract class EnchantingOperationButton extends SpritelessImageButton {
+public abstract class EnchantingOperationButton extends ImageButton {
     private final boolean isPowerTooLow;
 
-    public EnchantingOperationButton(EnchantmentComponent enchantmentComponent, int x, int y, int xTexOffset, OnPress onPress) {
-        super(x, y, 18, 18, 220 + xTexOffset, 0, InfuserScreen.INFUSER_LOCATION, onPress);
+    public EnchantingOperationButton(EnchantmentComponent enchantmentComponent, int x, int y, WidgetSprites widgetSprites, OnPress onPress) {
+        super(x, y, 18, 18, widgetSprites, onPress);
         this.visible = !enchantmentComponent.isNotAvailable() && this.getVisibleValue(enchantmentComponent);
         this.active = this.getActiveValue(enchantmentComponent);
         Component component = this.getTooltipComponent(enchantmentComponent);
@@ -24,7 +25,6 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
         if (this.isPowerTooLow) {
             TooltipBuilder.create(enchantmentComponent.getWeakPowerTooltip(component)).splitLines().build(this);
         }
-        this.setTextureLayout(LEGACY_TEXTURE_LAYOUT);
     }
 
     protected abstract boolean getVisibleValue(EnchantmentComponent enchantmentComponent);
@@ -35,33 +35,23 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
     protected abstract Component getTooltipComponent(EnchantmentComponent enchantmentComponent);
 
     @Override
-    public void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         if (this.isActive() && CommonHelper.hasShiftDown()) {
-            int yImage = this.isHoveredOrFocused() ? 2 : 1;
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
-                    this.identifier,
-                    this.getX() + 3,
-                    this.getY(),
-                    this.xTexStart,
-                    this.yTexStart + yImage * this.yDiffTex,
-                    this.width,
-                    this.height,
-                    this.textureWidth,
-                    this.textureHeight,
-                    ARGB.white(this.alpha));
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
-                    this.identifier,
+            Identifier identifier = this.sprites.get(true, this.isHoveredOrFocused());
+            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
+                    identifier,
                     this.getX() - 3,
                     this.getY(),
-                    this.xTexStart,
-                    this.yTexStart + yImage * this.yDiffTex,
                     this.width,
-                    this.height,
-                    this.textureWidth,
-                    this.textureHeight,
-                    ARGB.white(this.alpha));
+                    this.height);
+            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
+                    identifier,
+                    this.getX() + 3,
+                    this.getY(),
+                    this.width,
+                    this.height);
         } else {
-            super.renderContents(guiGraphics, mouseX, mouseY, partialTicks);
+            super.renderContents(guiGraphics, mouseX, mouseY, partialTick);
         }
 
         if (this.isPowerTooLow && this.isHoveredOrFocused()) {
@@ -72,7 +62,7 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
     public static class Add extends EnchantingOperationButton {
 
         public Add(EnchantmentComponent enchantmentComponent, int x, int y, OnPress onPress) {
-            super(enchantmentComponent, x, y, 18, onPress);
+            super(enchantmentComponent, x, y, InfuserScreen.ADD_BUTTON_SPRITES, onPress);
         }
 
         @Override
@@ -102,7 +92,7 @@ public abstract class EnchantingOperationButton extends SpritelessImageButton {
     public static class Remove extends EnchantingOperationButton {
 
         public Remove(EnchantmentComponent enchantmentComponent, int x, int y, OnPress onPress) {
-            super(enchantmentComponent, x, y, 0, onPress);
+            super(enchantmentComponent, x, y, InfuserScreen.REMOVE_BUTTON_SPRITES, onPress);
         }
 
         @Override

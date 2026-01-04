@@ -1,5 +1,6 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
+import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -12,7 +13,7 @@ import java.util.List;
 public class InfuserRepairButton extends InfuserMenuButton {
 
     public InfuserRepairButton(int x, int y, OnPress onPress) {
-        super(x, y, 178, 185, onPress);
+        super(x, y, InfuserScreen.REPAIR_BUTTON_SPRITES, onPress);
     }
 
     @Override

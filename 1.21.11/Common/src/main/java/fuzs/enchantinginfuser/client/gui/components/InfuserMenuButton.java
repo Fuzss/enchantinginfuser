@@ -1,14 +1,14 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
 import fuzs.enchantinginfuser.EnchantingInfuser;
-import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.puzzleslib.api.client.gui.v2.GuiGraphicsHelper;
-import fuzs.puzzleslib.api.client.gui.v2.components.SpritelessImageButton;
 import fuzs.puzzleslib.api.client.gui.v2.tooltip.TooltipBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class InfuserMenuButton extends SpritelessImageButton {
+public abstract class InfuserMenuButton extends ImageButton {
     public static final String KEY_TOOLTIP_EXPERIENCE = Util.makeDescriptionId("gui",
             EnchantingInfuser.id("infusing.tooltip.points"));
     public static final String KEY_TOOLTIP_CHANGE = Util.makeDescriptionId("gui",
@@ -37,9 +37,8 @@ public abstract class InfuserMenuButton extends SpritelessImageButton {
 
     private int color = -1;
 
-    public InfuserMenuButton(int x, int y, int xTexStart, int yTexStart, OnPress onPress) {
-        super(x, y, 18, 18, xTexStart, yTexStart, InfuserScreen.INFUSER_LOCATION, onPress);
-        this.setTextureLayout(SpritelessImageButton.LEGACY_TEXTURE_LAYOUT);
+    public InfuserMenuButton(int x, int y, WidgetSprites widgetSprites, OnPress onPress) {
+        super(x, y, 18, 18, widgetSprites, onPress);
     }
 
     @Override

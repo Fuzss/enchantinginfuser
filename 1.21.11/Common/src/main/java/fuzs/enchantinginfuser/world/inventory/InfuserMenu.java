@@ -61,7 +61,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     public static final int ENCHANTING_COST_DATA_SLOT = 1;
     public static final int REPAIR_COST_DATA_SLOT = 2;
 
-    private final InfuserType infuserType;
+    private final InfuserType type;
     private final Container enchantSlots;
     private final ContainerLevelAccess levelAccess;
     private final Player player;
@@ -74,19 +74,18 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     private int originalEnchantingCost;
     private boolean markedDirty;
 
-    public InfuserMenu(int containerId, Inventory inventory, InfuserType infuserType) {
-        this(infuserType, containerId, inventory, new SimpleContainer(1), ContainerLevelAccess.NULL);
+    public InfuserMenu(int containerId, Inventory inventory, InfuserType type) {
+        this(type, containerId, inventory, new SimpleContainer(1), ContainerLevelAccess.NULL);
     }
 
-    public InfuserMenu(InfuserType infuserType, int containerId, Inventory inventory, Container container, ContainerLevelAccess levelAccess) {
+    public InfuserMenu(InfuserType type, int containerId, Inventory inventory, Container container, ContainerLevelAccess levelAccess) {
         super(ModRegistry.INFUSING_MENU_TYPE.value(), containerId);
         checkContainerSize(container, 1);
-        this.infuserType = infuserType;
+        this.type = type;
         this.enchantSlots = container;
         this.levelAccess = levelAccess;
         this.player = inventory.player;
         this.addSlot(new Slot(container, 0, 8, this.getConfig().allowRepairing.isActive() ? 23 : 34) {
-
             @Override
             public int getMaxStackSize() {
                 return 1;
@@ -105,7 +104,12 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         }
 
         this.addStandardInventorySlots(inventory, 30, 103);
-        this.addSlot(new Slot(inventory, 40, 8, 161) {
+        this.addSlot(new Slot(inventory, Inventory.SLOT_OFFHAND, 8, 161) {
+            @Override
+            public void setByPlayer(ItemStack newItemStack, ItemStack oldItemStack) {
+                inventory.player.onEquipItem(EquipmentSlot.OFFHAND, oldItemStack, newItemStack);
+                super.setByPlayer(newItemStack, oldItemStack);
+            }
 
             @Override
             public Identifier getNoItemIcon() {
@@ -118,7 +122,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     public ServerConfig.InfuserConfig getConfig() {
-        return this.infuserType.getConfig();
+        return this.type.getConfig();
     }
 
     @Override
@@ -281,8 +285,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
             int amount = PlayerExperienceHelper.calculateExperienceDelta(this.getItemEnchantments(),
                     this.getOriginalEnchantments(),
                     level.random);
-            ExperienceOrb.award((ServerLevel) level,
-                    Vec3.atCenterOf(blockPos.above()), amount);
+            ExperienceOrb.award((ServerLevel) level, Vec3.atCenterOf(blockPos.above()), amount);
         } else if (!player.getAbilities().instabuild) {
             // don't use Player::onEnchantmentPerformed as it also resets enchantments seed which we have nothing to do with
             player.giveExperienceLevels(-enchantingCost);
@@ -359,11 +362,9 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        return QuickMoveRuleSet.of(this, this::moveItemStackTo)
-                .addContainerSlotRule(0)
-                .addInventoryRules()
-                .addInventoryCompartmentRules()
-                .quickMoveStack(player, index);
+        return QuickMoveRuleSet.of(this, this::moveItemStackTo).addContainerSlotRule(0, (Slot slot) -> {
+            return this.type.getConfig().allowModifyingEnchantments.predicate.test(slot.getItem());
+        }).addInventoryRules().addInventoryCompartmentRules().quickMoveStack(player, index);
     }
 
     public int getEnchantmentPower() {
@@ -371,7 +372,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     }
 
     public int getEnchantmentPowerLimit() {
-        return EnchantingBehavior.get().getEnchantmentPowerLimit(this.infuserType);
+        return EnchantingBehavior.get().getEnchantmentPowerLimit(this.type);
     }
 
     public ItemStack getEnchantableStack() {
@@ -451,7 +452,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     private void initializeEnchantmentMaps(Level level) {
         Collection<Holder<Enchantment>> enchantments = ModEnchantmentHelper.getEnchantmentsForItem(level.registryAccess(),
                 this.getEnchantableStack(),
-                this.infuserType.getAvailableEnchantments(),
+                this.type.getAvailableEnchantments(),
                 !this.getConfig().allowAnvilEnchantments);
         int enchantmentValue = this.getEnchantableStack().has(DataComponents.ENCHANTABLE) ?
                 this.getEnchantableStack().get(DataComponents.ENCHANTABLE).value() : 0;

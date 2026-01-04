@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.WorldlyContainer;
@@ -88,13 +89,7 @@ public class InfuserBlockEntity extends EnchantingTableBlockEntity implements Wo
 
     @Override
     public boolean stillValid(Player player) {
-        if (this.level != null && this.level.getBlockEntity(this.worldPosition) != this) {
-            return false;
-        } else {
-            return !(player.distanceToSqr(this.worldPosition.getX() + 0.5,
-                    this.worldPosition.getY() + 0.5,
-                    this.worldPosition.getZ() + 0.5) > 64.0);
-        }
+        return Container.stillValidBlockEntity(this, player);
     }
 
     @Override

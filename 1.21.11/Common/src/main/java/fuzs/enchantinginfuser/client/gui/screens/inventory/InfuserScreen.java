@@ -14,6 +14,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -34,6 +36,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -43,15 +46,34 @@ import org.jspecify.annotations.Nullable;
 import java.util.*;
 
 public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implements ContainerListener {
-    public static final Identifier INFUSER_LOCATION = EnchantingInfuser.id(
-            "textures/gui/container/enchanting_infuser.png");
+    public static final Identifier TEXTURE_LOCATION = EnchantingInfuser.id("textures/gui/container/infuser.png");
+    public static final Identifier SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot");
+    public static final WidgetSprites BUTTON_SPRITES = new WidgetSprites(EnchantingInfuser.id("container/infuser/button"),
+            EnchantingInfuser.id("container/infuser/button_disabled"),
+            EnchantingInfuser.id("container/infuser/button_highlighted"));
+    public static final WidgetSprites ENCHANT_BUTTON_SPRITES = new WidgetSprites(EnchantingInfuser.id(
+            "container/infuser/enchant_button"),
+            EnchantingInfuser.id("container/infuser/enchant_button_disabled"),
+            EnchantingInfuser.id("container/infuser/enchant_button_highlighted"));
+    public static final WidgetSprites REPAIR_BUTTON_SPRITES = new WidgetSprites(EnchantingInfuser.id(
+            "container/infuser/repair_button"),
+            EnchantingInfuser.id("container/infuser/repair_button_disabled"),
+            EnchantingInfuser.id("container/infuser/repair_button_highlighted"));
+    public static final WidgetSprites REMOVE_BUTTON_SPRITES = new WidgetSprites(EnchantingInfuser.id(
+            "container/infuser/remove_button"),
+            EnchantingInfuser.id("container/infuser/remove_button_disabled"),
+            EnchantingInfuser.id("container/infuser/remove_button_highlighted"));
+    public static final WidgetSprites ADD_BUTTON_SPRITES = new WidgetSprites(EnchantingInfuser.id(
+            "container/infuser/add_button"),
+            EnchantingInfuser.id("container/infuser/add_button_disabled"),
+            EnchantingInfuser.id("container/infuser/add_button_highlighted"));
     private static final int BUTTONS_OFFSET_X = 7;
     private static final int ENCHANT_BUTTON_OFFSET_Y = 44;
     private static final int ENCHANT_ONLY_BUTTON_OFFSET_Y = 55;
     private static final int REPAIR_BUTTON_OFFSET_Y = 66;
 
     private static boolean isPowerTooLow;
-    public final int enchantmentSeed = new Random().nextInt();
+    private final int enchantmentSeed = new Random().nextInt();
     private EditBox searchBox;
     private EnchantmentSelectionList scrollingList;
     private boolean ignoreTextInput;
@@ -85,7 +107,8 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
         this.searchBox.setMaxLength(50);
         this.searchBox.setBordered(false);
         this.searchBox.setTextColor(-1);
-        this.addWidget(this.searchBox);
+        this.searchBox.setInvertHighlightedTextColor(false);
+        this.addRenderableWidget(this.searchBox);
         this.scrollingList = new EnchantmentSelectionList(this.leftPos + 30, this.topPos + 18);
         this.addRenderableWidget(this.scrollingList);
         this.powerWidget = this.addRenderableOnly(new ItemStackDisplayWidget(this.leftPos + 196,
@@ -304,7 +327,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
-                INFUSER_LOCATION,
+                TEXTURE_LOCATION,
                 this.leftPos,
                 this.topPos,
                 0,
@@ -313,26 +336,20 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                 this.imageHeight,
                 256,
                 256);
-        this.searchBox.render(guiGraphics, mouseX, mouseY, partialTick);
-        // render slot manually and do not include it as part of the background texture file,
-        // so it can be placed further down when repairing is disabled
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
-                INFUSER_LOCATION,
-                this.leftPos + 8 - 1,
-                this.topPos + (this.menu.getConfig().allowRepairing.isActive() ? 23 : 34) - 1,
-                196,
-                185,
+        Slot slot = this.menu.getSlot(0);
+        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
+                SLOT_SPRITE,
+                this.leftPos + slot.x - 1,
+                this.topPos + slot.y - 1,
                 18,
-                18,
-                256,
-                256);
+                18);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         // AbstractContainerMenu::mouseScrolled does not call super, so this is copied from ContainerEventHandler::mouseScrolled
         if (this.getChildAt(mouseX, mouseY)
-                .filter(listener -> listener.mouseScrolled(mouseX, mouseY, scrollX, scrollY))
+                .filter((GuiEventListener listener) -> listener.mouseScrolled(mouseX, mouseY, scrollX, scrollY))
                 .isPresent()) {
             return true;
         } else {
@@ -422,16 +439,14 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
 
             @Override
             public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean hovering, float partialTick) {
-                guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
-                        InfuserScreen.INFUSER_LOCATION,
+                Identifier buttonSprite = BUTTON_SPRITES.get(!this.enchantmentComponent.isInactive(),
+                        this.enchantmentComponent.isPresent());
+                guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
+                        buttonSprite,
                         this.getContentX(),
                         this.getContentY(),
-                        0,
-                        185 + this.getYImage() * EnchantmentSelectionList.this.defaultEntryHeight,
                         this.getContentWidth(),
-                        this.getContentHeight(),
-                        256,
-                        256);
+                        this.getContentHeight());
                 guiGraphics.textRenderer(GuiGraphics.HoveredTextEffects.NONE)
                         .acceptScrollingWithDefaultCenter(this.component,
                                 this.getContentX() + 18 + 2,
@@ -446,10 +461,6 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> implemen
                         InfuserScreen.setIsPowerTooLow(true);
                     }
                 }
-            }
-
-            private int getYImage() {
-                return this.enchantmentComponent.isInactive() ? 0 : this.enchantmentComponent.isPresent() ? 2 : 1;
             }
 
             private int getFontColor() {

@@ -1,6 +1,7 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
 import com.google.common.collect.Sets;
+import fuzs.enchantinginfuser.client.gui.screens.inventory.InfuserScreen;
 import fuzs.enchantinginfuser.client.util.EnchantmentTooltipHelper;
 import fuzs.enchantinginfuser.util.ModEnchantmentHelper;
 import net.minecraft.ChatFormatting;
@@ -31,7 +32,7 @@ import java.util.Optional;
 public class InfuserEnchantButton extends InfuserMenuButton {
 
     public InfuserEnchantButton(int x, int y, OnPress onPress) {
-        super(x, y, 160, 185, onPress);
+        super(x, y, InfuserScreen.ENCHANT_BUTTON_SPRITES, onPress);
     }
 
     @Override

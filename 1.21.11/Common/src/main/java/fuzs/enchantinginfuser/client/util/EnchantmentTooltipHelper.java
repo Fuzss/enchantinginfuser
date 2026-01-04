@@ -60,6 +60,7 @@ public class EnchantmentTooltipHelper {
         if (translationKey != null) {
             lines.add(Component.translatable(translationKey).withStyle(ChatFormatting.GRAY));
         }
+
         return lines;
     }
 
@@ -70,10 +71,11 @@ public class EnchantmentTooltipHelper {
         if (minLevel != maxLevel) {
             component.append("-").append(Component.translatable("enchantment.level." + maxLevel));
         }
+
         return wrapInRoundBrackets(component).withStyle(ChatFormatting.GRAY);
     }
 
-    static MutableComponent wrapInRoundBrackets(Component component) {
+    private static MutableComponent wrapInRoundBrackets(Component component) {
         return Component.literal("(").append(component).append(")");
     }
 
