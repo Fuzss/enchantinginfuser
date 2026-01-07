@@ -1,7 +1,6 @@
 package fuzs.enchantinginfuser.client.gui.components;
 
 import fuzs.enchantinginfuser.EnchantingInfuser;
-import fuzs.puzzleslib.api.client.gui.v2.GuiGraphicsHelper;
 import fuzs.puzzleslib.api.client.gui.v2.tooltip.TooltipBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -14,7 +13,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
@@ -32,10 +30,8 @@ public abstract class InfuserMenuButton extends ImageButton {
             EnchantingInfuser.id("infusing.tooltip.change"));
     public static final String KEY_TOOLTIP_DURABILITY = Util.makeDescriptionId("gui",
             EnchantingInfuser.id("infusing.tooltip.durability"));
-    public static final String KEY_TOOLTIP_HINT = Util.makeDescriptionId("gui",
-            EnchantingInfuser.id("infusing.tooltip.enchanting_power_hint"));
 
-    private int color = -1;
+    private Component backdropMessage = CommonComponents.EMPTY;
 
     public InfuserMenuButton(int x, int y, WidgetSprites widgetSprites, OnPress onPress) {
         super(x, y, 18, 18, widgetSprites, onPress);
@@ -44,28 +40,38 @@ public abstract class InfuserMenuButton extends ImageButton {
     @Override
     public void setMessage(Component message) {
         this.message = this.inactiveMessage = message;
+        this.backdropMessage = message.copy().withStyle(ChatFormatting.BLACK);
     }
 
     @Override
     public void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.renderContents(guiGraphics, mouseX, mouseY, partialTick);
-        this.drawStringWithBackground(guiGraphics, this.getX() + 1, this.getY() + 1, this.getMessage(), this.color);
+        this.renderLabel(guiGraphics);
     }
 
-    protected void drawStringWithBackground(GuiGraphics guiGraphics, int posX, int posY, Component component, int color) {
+    protected void renderLabel(GuiGraphics guiGraphics) {
         Font font = Minecraft.getInstance().font;
-        GuiGraphicsHelper.drawInBatch8xOutline(guiGraphics,
-                font,
-                component,
-                posX + (19 - 2 - font.width(component)),
-                posY + (6 + 3),
-                ARGB.opaque(color),
-                ARGB.opaque(0));
+        int posX = this.getX() + this.getWidth() - font.width(this.getMessage());
+        int posY = this.getY() + this.getHeight() - font.lineHeight + 1;
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                if (i != 0 || j != 0) {
+                    guiGraphics.drawString(font, this.backdropMessage, posX + i, posY + j, -1, false);
+                }
+            }
+        }
+
+        guiGraphics.drawString(font, this.getMessage(), posX, posY, -1, false);
     }
 
     public void refreshMessage(int value, boolean mayApply) {
-        this.setMessage(value != 0 ? Component.literal(this.getStringValue(value)) : CommonComponents.EMPTY);
-        this.color = this.getStringColor(value, mayApply).getColor();
+        if (value != 0) {
+            ChatFormatting chatFormatting = this.getStringColor(value, mayApply);
+            Component component = Component.literal(this.getStringValue(value)).withStyle(chatFormatting);
+            this.setMessage(component);
+        } else {
+            this.setMessage(CommonComponents.EMPTY);
+        }
     }
 
     abstract ChatFormatting getStringColor(int value, boolean mayApply);

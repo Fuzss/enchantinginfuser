@@ -181,7 +181,7 @@ public abstract class AbstractMenuSelectionList<E extends AbstractMenuSelectionL
         return super.getRowTop(index) - 4;
     }
 
-    protected abstract static class Entry<E extends AbstractMenuSelectionList.Entry<E>> extends ContainerObjectSelectionList.Entry<E> {
+    protected abstract static class Entry<E extends Entry<E>> extends ContainerObjectSelectionList.Entry<E> {
         private final List<AbstractWidget> children = new ArrayList<>();
 
         @Override

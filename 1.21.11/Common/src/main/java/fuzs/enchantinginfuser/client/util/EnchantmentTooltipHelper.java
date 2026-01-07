@@ -22,23 +22,8 @@ import java.util.List;
 public class EnchantmentTooltipHelper {
     public static final String KEY_INCOMPATIBLE_ENCHANTMENTS = Util.makeDescriptionId("gui",
             EnchantingInfuser.id("enchantment.tooltip.incompatible"));
-    public static final Component UNKNOWN_ENCHANT_COMPONENT = Component.translatable(Util.makeDescriptionId("gui",
-            EnchantingInfuser.id("enchantment.tooltip.unknown_enchantment"))).withStyle(ChatFormatting.GRAY);
-    public static final Component INCREASE_LEVEL_COMPONENT = Component.translatable(Util.makeDescriptionId("gui",
-            EnchantingInfuser.id("enchantment.tooltip.low_power1"))).withStyle(ChatFormatting.GRAY);
-    public static final Component MODIFY_LEVEL_COMPONENT = Component.translatable(Util.makeDescriptionId("gui",
-            EnchantingInfuser.id("enchantment.tooltip.low_power2"))).withStyle(ChatFormatting.GRAY);
     public static final String KEY_CURRENT_ENCHANTING_POWER = Util.makeDescriptionId("gui",
             EnchantingInfuser.id("enchantment.tooltip.current_enchanting_power"));
-
-    public static List<Component> getWeakPowerTooltip(int currentPower, int requiredPower, Component component) {
-        List<Component> lines = new ArrayList<>();
-        Component currentPowerComponent = Component.literal(String.valueOf(currentPower)).withStyle(ChatFormatting.RED);
-        Component requiredPowerComponent = Component.literal(String.valueOf(requiredPower));
-        lines.add(Component.translatable(KEY_CURRENT_ENCHANTING_POWER, currentPowerComponent, requiredPowerComponent));
-        lines.add(component);
-        return lines;
-    }
 
     public static List<Component> getIncompatibleEnchantmentsTooltip(Collection<Holder<Enchantment>> incompatibleEnchantments) {
         Component component = Component.translatable(KEY_INCOMPATIBLE_ENCHANTMENTS,
@@ -50,23 +35,21 @@ public class EnchantmentTooltipHelper {
         return Collections.singletonList(component);
     }
 
-    public static List<Component> getEnchantmentTooltip(Holder<Enchantment> enchantment) {
-        List<Component> lines = new ArrayList<>();
-        lines.add(Component.empty()
-                .append(enchantment.value().description())
-                .append(CommonComponents.SPACE)
-                .append(getLevelComponent(enchantment)));
-        String translationKey = getEnchantmentDescriptionKey(enchantment);
+    public static List<Component> getEnchantmentTooltip(Holder<Enchantment> holder) {
+        List<Component> tooltipLines = new ArrayList<>();
+        Component levelComponent = getLevelComponent(holder);
+        tooltipLines.add(holder.value().description().copy().append(CommonComponents.SPACE).append(levelComponent));
+        String translationKey = getEnchantmentDescriptionKey(holder);
         if (translationKey != null) {
-            lines.add(Component.translatable(translationKey).withStyle(ChatFormatting.GRAY));
+            tooltipLines.add(Component.translatable(translationKey).withStyle(ChatFormatting.GRAY));
         }
 
-        return lines;
+        return tooltipLines;
     }
 
-    private static Component getLevelComponent(Holder<Enchantment> enchantment) {
-        int minLevel = enchantment.value().getMinLevel();
-        int maxLevel = EnchantingBehavior.get().getMaxLevel(enchantment);
+    private static Component getLevelComponent(Holder<Enchantment> holder) {
+        int minLevel = holder.value().getMinLevel();
+        int maxLevel = EnchantingBehavior.get().getMaxLevel(holder);
         MutableComponent component = Component.translatable("enchantment.level." + minLevel);
         if (minLevel != maxLevel) {
             component.append("-").append(Component.translatable("enchantment.level." + maxLevel));
@@ -80,8 +63,8 @@ public class EnchantmentTooltipHelper {
     }
 
     @Nullable
-    private static String getEnchantmentDescriptionKey(Holder<Enchantment> enchantment) {
-        String translationKey = enchantment.unwrapKey().map((ResourceKey<Enchantment> resourceKey) -> {
+    private static String getEnchantmentDescriptionKey(Holder<Enchantment> holder) {
+        String translationKey = holder.unwrapKey().map((ResourceKey<Enchantment> resourceKey) -> {
             return Util.makeDescriptionId(resourceKey.registry().getPath(), resourceKey.identifier());
         }).orElse(null);
         if (translationKey == null) {
@@ -95,13 +78,13 @@ public class EnchantmentTooltipHelper {
         }
     }
 
-    public static MutableComponent getDisplayName(Holder<Enchantment> enchantment) {
-        return enchantment.value().description().copy().setStyle(Style.EMPTY);
+    public static MutableComponent getDisplayName(Holder<Enchantment> holder) {
+        return holder.value().description().copy().setStyle(Style.EMPTY);
     }
 
-    public static MutableComponent getDisplayNameWithLevel(Holder<Enchantment> enchantment, int level) {
-        MutableComponent component = getDisplayName(enchantment);
-        if (level != 1 || EnchantingBehavior.get().getMaxLevel(enchantment) != 1) {
+    public static MutableComponent getDisplayNameWithLevel(Holder<Enchantment> holder, int level) {
+        MutableComponent component = getDisplayName(holder);
+        if (level != 1 || EnchantingBehavior.get().getMaxLevel(holder) != 1) {
             return component.append(CommonComponents.SPACE)
                     .append(Component.translatable("enchantment.level." + level));
         } else {

@@ -27,10 +27,10 @@ public class EnchantingInfuser implements ModConstructor {
     @Override
     public void onConstructMod() {
         ModRegistry.bootstrap();
-        registerLoadingHandlers();
+        registerEventHandlers();
     }
 
-    private static void registerLoadingHandlers() {
+    private static void registerEventHandlers() {
         BuildCreativeModeTabContentsCallback.buildCreativeModeTabContents(CreativeModeTabs.FUNCTIONAL_BLOCKS)
                 .register((CreativeModeTab creativeModeTab, CreativeModeTab.ItemDisplayParameters itemDisplayParameters, CreativeModeTab.Output output) -> {
                     output.accept(ModRegistry.INFUSER_ITEM.value());

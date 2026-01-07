@@ -9,7 +9,6 @@ import fuzs.enchantinginfuser.world.item.enchantment.EnchantingBehavior;
 import fuzs.enchantinginfuser.world.level.block.entity.InfuserBlockEntity;
 import fuzs.puzzleslib.api.block.v1.entity.TickingEntityBlock;
 import fuzs.puzzleslib.api.init.v3.registry.ResourceKeyHelper;
-import fuzs.puzzleslib.api.util.v1.InteractionResultHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,6 +18,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
@@ -34,7 +34,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<InfuserBlockEntity> {
@@ -57,11 +56,16 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
         this.type = type;
     }
 
-    public static boolean isValidBookShelf(Level level, BlockPos pos, BlockPos offset) {
+    public static boolean isValidBookShelf(Level level, BlockPos blockPos, BlockPos blockPosOffset) {
         if (EnchantingBehavior.get()
-                .getEnchantmentPower(level.getBlockState(pos.offset(offset)), level, pos.offset(offset)) != 0.0F) {
-            BlockPos inBetweenPos = pos.offset(offset.getX() / 2, offset.getY(), offset.getZ() / 2);
-            return level.getBlockState(inBetweenPos).getCollisionShape(level, inBetweenPos) != Shapes.block();
+                .getEnchantmentPower(level.getBlockState(blockPos.offset(blockPosOffset)),
+                        level,
+                        blockPos.offset(blockPosOffset)) != 0.0F) {
+            BlockPos inBetweenPos = blockPos.offset(blockPosOffset.getX() / 2,
+                    blockPosOffset.getY(),
+                    blockPosOffset.getZ() / 2);
+            BlockState blockState = level.getBlockState(inBetweenPos);
+            return !blockState.isSolidRender() || blockState.is(BlockTags.ENCHANTMENT_POWER_TRANSMITTER);
         } else {
             return false;
         }
@@ -100,7 +104,7 @@ public class InfuserBlock extends BaseEntityBlock implements TickingEntityBlock<
                 player.containerMenu.slotsChanged(blockEntity);
             }
 
-            return InteractionResultHelper.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         return InteractionResult.PASS;

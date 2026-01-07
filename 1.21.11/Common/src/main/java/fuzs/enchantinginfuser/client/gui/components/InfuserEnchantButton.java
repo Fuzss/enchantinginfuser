@@ -72,12 +72,12 @@ public class InfuserEnchantButton extends InfuserMenuButton {
                 changedLines,
                 unchangedLines,
                 removedLines);
-        List<FormattedText> lines = new ArrayList<>();
-        lines.addAll(newLines);
-        lines.addAll(changedLines);
-        lines.addAll(unchangedLines);
-        lines.addAll(removedLines);
-        return lines;
+        List<FormattedText> tooltipLines = new ArrayList<>();
+        tooltipLines.addAll(newLines);
+        tooltipLines.addAll(changedLines);
+        tooltipLines.addAll(unchangedLines);
+        tooltipLines.addAll(removedLines);
+        return tooltipLines;
     }
 
     private void getEnchantmentLines(ItemEnchantments itemEnchantments, ItemEnchantments originalEnchantments, List<FormattedText> newLines, List<FormattedText> changedLines, List<FormattedText> unchangedLines, List<FormattedText> removedLines) {
@@ -94,6 +94,7 @@ public class InfuserEnchantButton extends InfuserMenuButton {
                     removedLines,
                     enchantment);
         }
+
         for (Holder<Enchantment> enchantment : Sets.union(itemEnchantments.keySet(), originalEnchantments.keySet())) {
             if (!holderSet.contains(enchantment)) {
                 this.addEnchantmentLine(itemEnchantments,

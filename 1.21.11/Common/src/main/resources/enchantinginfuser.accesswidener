@@ -1,3 +1,4 @@
 accessWidener   v2  named
-accessible  field   net/minecraft/client/gui/components/AbstractScrollArea  scrolling   Z
-extendable  method  net/minecraft/client/gui/components/AbstractSelectionList   getFirstEntryY  ()I
+transitive-accessible   field   net/minecraft/client/gui/components/AbstractScrollArea  scrolling   Z
+transitive-extendable   method  net/minecraft/client/gui/components/AbstractSelectionList   getFirstEntryY  ()I
+transitive-accessible   field   net/minecraft/client/gui/components/AbstractWidget  tooltip Lnet/minecraft/client/gui/components/WidgetTooltipHolder;

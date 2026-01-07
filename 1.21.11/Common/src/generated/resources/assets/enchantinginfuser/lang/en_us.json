@@ -4,7 +4,7 @@
   "block.enchantinginfuser.enchanting_infuser.description.choose": "Choose enchantments for your gear.",
   "block.enchantinginfuser.enchanting_infuser.description.choose_and_modify": "Choose, modify and remove enchantments for your gear.",
   "block.enchantinginfuser.enchanting_infuser.description.repair": "Repair your gear with levels.",
-  "gui.enchantinginfuser.enchantment.tooltip.current_enchanting_power": "Current Enchanting Power: %s / %s",
+  "gui.enchantinginfuser.enchantment.tooltip.current_enchanting_power": "Enchanting Power: %s / %s",
   "gui.enchantinginfuser.enchantment.tooltip.incompatible": "This enchantment is incompatible with: %s",
   "gui.enchantinginfuser.enchantment.tooltip.low_power1": "Further increasing the level for this enchantment requires an infuser with more enchanting power.",
   "gui.enchantinginfuser.enchantment.tooltip.low_power2": "Modifying the level for this enchantment requires an infuser with more enchanting power.",

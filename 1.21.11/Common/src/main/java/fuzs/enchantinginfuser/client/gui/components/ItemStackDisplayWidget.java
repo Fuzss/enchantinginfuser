@@ -22,7 +22,7 @@ public class ItemStackDisplayWidget extends AbstractWidget {
 
     @Override
     protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        if (this.isHoveredOrFocused()) {
+        if (this.hasHighlight()) {
             guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
                     AbstractContainerScreen.SLOT_HIGHLIGHT_BACK_SPRITE,
                     this.getX() - 4,
@@ -35,7 +35,7 @@ public class ItemStackDisplayWidget extends AbstractWidget {
         int posX = this.getX() + 19 - 2 - this.font.width(this.getMessage());
         int posY = this.getY() + 6 + 3;
         guiGraphics.drawString(this.font, this.getMessage(), posX, posY, -1);
-        if (this.isHoveredOrFocused()) {
+        if (this.hasHighlight()) {
             guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
                     AbstractContainerScreen.SLOT_HIGHLIGHT_FRONT_SPRITE,
                     this.getX() - 4,
@@ -43,6 +43,10 @@ public class ItemStackDisplayWidget extends AbstractWidget {
                     24,
                     24);
         }
+    }
+
+    private boolean hasHighlight() {
+        return this.isHoveredOrFocused() && this.tooltip.get() != null;
     }
 
     @Override

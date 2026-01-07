@@ -133,14 +133,12 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
     @Override
     public void setItem(int slotId, int stateId, ItemStack stack) {
         super.setItem(slotId, stateId, stack);
-        // need this here to update client screen listener when receiving data changes via ClientboundContainerSetDataPacket
         this.broadcastChanges();
     }
 
     @Override
     public void setData(int id, int data) {
         super.setData(id, data);
-        // need this here to update client screen listener when receiving data changes via ClientboundContainerSetDataPacket
         this.broadcastChanges();
     }
 
@@ -161,6 +159,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 }
             });
         }
+
         super.slotsChanged(container);
     }
 
@@ -191,6 +190,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                         EnchantingBehavior.get().getEnchantmentPowerLimitScale(blockState, level, pos.offset(offset)));
             }
         }
+
         // Apotheosis has bookshelves with negative enchanting power, so make sure this value doesn't go there
         return (int) Math.min(Math.max(0.0F, enchantingPower), this.getConfig().maximumBookshelves * maxPowerScale);
     }
@@ -236,6 +236,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 this.enchantingCost.set(this.calculateEnchantingCost());
                 this.broadcastChanges();
             }
+
             return newEnchantmentLevel;
         }
     }
@@ -263,6 +264,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                         CriteriaTriggers.ENCHANTED_ITEM.trigger(serverPlayer, itemStack, this.getEnchantingCost());
                     }
                 }
+
                 this.enchantSlots.setChanged();
                 this.slotsChanged(this.enchantSlots);
                 level.playSound(null,
@@ -307,6 +309,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 if (!player.getAbilities().instabuild) {
                     player.giveExperienceLevels(-this.getRepairCost());
                 }
+
                 ItemStack itemStack = this.getEnchantableStack();
                 int itemRepairCost = itemStack.getOrDefault(DataComponents.REPAIR_COST, 0);
                 itemStack = itemStack.copy();
@@ -314,6 +317,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                 if (this.getConfig().increaseAnvilRepairCost) {
                     itemStack.set(DataComponents.REPAIR_COST, AnvilMenu.calculateIncreasedRepairCost(itemRepairCost));
                 }
+
                 this.enchantSlots.setItem(ENCHANT_ITEM_SLOT, itemStack);
                 level.levelEvent(LevelEvent.SOUND_ANVIL_USED, pos, 0);
             });
@@ -347,6 +351,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
                     this.getConfig().costs.maximumCost * EnchantingBehavior.get().getMaximumCostMultiplier());
             enchantmentCostsScale = Math.min(1.0F, maximumCost / (float) scalingEnchantmentCosts);
         }
+
         float enchantmentCosts = EnchantmentCostHelper.getEnchantmentCosts(itemEnchantments, enchantmentCostsScale);
         int minimumCosts = itemEnchantments.entrySet().stream().mapToInt(Object2IntMap.Entry::getIntValue).sum();
         return Math.max(Mth.ceil(enchantmentCosts), minimumCosts);
@@ -408,6 +413,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         for (Object2IntMap.Entry<Holder<Enchantment>> entry : this.enchantmentLevels.object2IntEntrySet()) {
             itemEnchantments.set(entry.getKey(), entry.getIntValue());
         }
+
         return itemEnchantments.toImmutable();
     }
 
@@ -437,6 +443,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
             this.requiredEnchantmentPowers = Object2IntMaps.emptyMap();
             this.originalEnchantingCost = 0;
         }
+
         this.sendEnchantments(itemEnchantments);
     }
 
@@ -445,6 +452,7 @@ public class InfuserMenu extends AbstractContainerMenu implements ContainerListe
         for (Object2IntMap.Entry<Holder<Enchantment>> entry : itemEnchantments.entrySet()) {
             enchantmentLevels.put(entry.getKey(), entry.getIntValue());
         }
+
         this.enchantmentLevels = enchantmentLevels;
         this.markedDirty = false;
     }
