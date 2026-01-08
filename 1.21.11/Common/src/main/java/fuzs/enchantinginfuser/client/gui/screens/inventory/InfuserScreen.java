@@ -9,10 +9,9 @@ import fuzs.enchantinginfuser.world.inventory.InfuserMenu;
 import fuzs.puzzleslib.api.client.gui.v2.tooltip.TooltipBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -391,14 +390,19 @@ public class InfuserScreen extends AbstractWidgetsContainerScreen<InfuserMenu> i
                 Component component = ComponentUtils.mergeStyles(levelBasedEntry.getDisplayName(holder,
                         EnchantmentSelectionList.this.getWidth() - SQUARE_BUTTON_SIZE * 2,
                         InfuserScreen.this.enchantmentSeed), this.getStyle(levelBasedEntry));
-                AbstractWidget abstractWidget = this.addRenderableWidget(new ScrollingStringWidget(
+                StringWidget stringWidget = this.addRenderableWidget(new ScrollingStringWidget(
                         EnchantmentSelectionList.this.getX() + SQUARE_BUTTON_SIZE,
                         EnchantmentSelectionList.this.getY(),
                         EnchantmentSelectionList.this.getWidth() - SQUARE_BUTTON_SIZE * 2,
                         SQUARE_BUTTON_SIZE,
                         component,
                         InfuserScreen.this.font));
-                TooltipBuilder.create(levelBasedEntry.getTooltip(holder)).splitLines().build(abstractWidget);
+                TooltipBuilder.create(levelBasedEntry.getTooltip(holder))
+                        .splitLines()
+                        .setTooltipPositionerFactory((ClientTooltipPositioner clientTooltipPositioner, AbstractWidget abstractWidget) -> {
+                            return DefaultTooltipPositioner.INSTANCE;
+                        })
+                        .build(stringWidget);
                 this.addRenderableWidget(new LevelBasedOperationButton.Remove(levelBasedEntry,
                         EnchantmentSelectionList.this.getX(),
                         EnchantmentSelectionList.this.getY(),
